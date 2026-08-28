@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { buildScene, fanOffsets } from '~/map/scene'
+import { bowFor, bowSet, buildScene } from '~/map/scene'
 import type { Line } from '~/model/live-lines'
 import type { LonLat } from '~/model/random-point'
 import type { Point } from '~/map/geometry'
@@ -32,27 +32,41 @@ const base = {
   project: identity,
 }
 
-describe('fanOffsets', () => {
+describe('bowSet', () => {
   test('gives nothing for no lines', () => {
-    expect(fanOffsets(0, 10)).toEqual([])
+    expect(bowSet(0, 30)).toEqual([])
   })
 
-  test('runs a single line straight down the middle', () => {
-    expect(fanOffsets(1, 10)).toEqual([0])
+  test('gives a lone line the route own curve, unchanged', () => {
+    expect(bowSet(1, 30)).toEqual([30])
   })
 
-  test('splits a pair evenly either side', () => {
-    expect(fanOffsets(2, 10)).toEqual([-5, 5])
+  test('spreads a fan around that curve', () => {
+    const bows = bowSet(5, 100)
+
+    expect(bows).toHaveLength(5)
+    expect(bows[2]).toBeCloseTo(100, 6)
+    expect(bows[0]).toBeLessThan(bows[4]!)
   })
 
-  test('centres an odd fan on zero', () => {
-    expect(fanOffsets(5, 10)).toEqual([-20, -10, 0, 10, 20])
+  test('keeps every line of a fan on the same side of the chord', () => {
+    // An additive spread wider than the base bow pushes an inner line back
+    // through zero, and a line with no bow is a straight line.
+    for (const bow of bowSet(9, 20)) expect(bow).toBeGreaterThan(0)
   })
 
-  test('is symmetric, so a route is not visually biased to one side', () => {
-    const offsets = fanOffsets(7, 4)
+  test('never leaves a line of a fan uncurved', () => {
+    for (const bow of bowSet(9, 20)) expect(Math.abs(bow)).toBeGreaterThan(5)
+  })
 
-    expect(offsets.reduce((a, b) => a + b, 0)).toBeCloseTo(0, 9)
+  test('gives every line of a fan a different curve', () => {
+    expect(new Set(bowSet(5, 100)).size).toBe(5)
+  })
+
+  test('is symmetric about the route own curve', () => {
+    const bows = bowSet(5, 100)
+
+    expect(bows.reduce((a, b) => a + b, 0) / bows.length).toBeCloseTo(100, 6)
   })
 })
 
@@ -82,6 +96,40 @@ describe('buildScene', () => {
 
     expect(arc.points[0]).toEqual([-64, -34])
     expect(arc.points.at(-1)).toEqual([-58, -34])
+  })
+
+  test('never draws a route straight, not even a lone one', () => {
+    // Arrange — one line, so nothing fans it off the chord.
+    const scene = buildScene({ ...base, lines: [line()] })
+    const arc = scene.arcs[0]!
+
+    // Act — how far the midpoint sits off the straight line between the ends.
+    const first = arc.points[0]!
+    const last = arc.points.at(-1)!
+    const mid = arc.points[Math.floor(arc.points.length / 2)]!
+    const offset = Math.hypot(
+      mid[0] - (first[0] + last[0]) / 2,
+      mid[1] - (first[1] + last[1]) / 2,
+    )
+
+    // Assert — a straight line across a world map reads as a diagram.
+    expect(offset).toBeGreaterThan(10)
+  })
+
+  test('curves every line of a fan, not only the outer ones', () => {
+    const lines = Array.from({ length: 5 }, (_, i) => line({ orderId: `o${i}` }))
+    const scene = buildScene({ ...base, lines })
+
+    for (const arc of scene.arcs) {
+      const first = arc.points[0]!
+      const last = arc.points.at(-1)!
+      const mid = arc.points[Math.floor(arc.points.length / 2)]!
+      const offset = Math.hypot(
+        mid[0] - (first[0] + last[0]) / 2,
+        mid[1] - (first[1] + last[1]) / 2,
+      )
+      expect(offset).toBeGreaterThan(5)
+    }
   })
 
   test('counts the lines resting on each currency and each instance', () => {
@@ -183,5 +231,39 @@ describe('buildScene · currencies with no drawable counterparty', () => {
     })
 
     expect(scene.currencies).toHaveLength(1)
+  })
+})
+
+describe('bowFor', () => {
+  test('curves a long route more than a short one', () => {
+    expect(bowFor(1000)).toBeGreaterThan(bowFor(300))
+  })
+
+  test('curves a very short hop anyway, rather than leaving it flat', () => {
+    expect(bowFor(0)).toBeGreaterThan(10)
+    expect(bowFor(10)).toBe(bowFor(0))
+  })
+
+  test('is proportional once past the floor', () => {
+    expect(bowFor(2000) / bowFor(1000)).toBeCloseTo(2, 6)
+  })
+})
+
+describe('bowFor · the ceiling', () => {
+  test('caps a long route so it stays on the globe', () => {
+    expect(bowFor(4000, 120)).toBe(120)
+  })
+
+  test('leaves a route under the cap alone', () => {
+    expect(bowFor(300, 400)).toBeCloseTo(51, 6)
+  })
+
+  test('still curves a short hop even under a tight cap', () => {
+    // The floor wins over the ceiling: a flat line is the thing to avoid.
+    expect(bowFor(10, 2)).toBeGreaterThan(10)
+  })
+
+  test('is uncapped when no ceiling is given', () => {
+    expect(bowFor(4000)).toBeGreaterThan(400)
   })
 })

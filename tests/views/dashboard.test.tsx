@@ -149,15 +149,46 @@ describe('Dashboard · real figures', () => {
     })
   })
 
-  test('says the instance routes are missing rather than drawing them anyway', async () => {
-    // Nothing published names an instance, so the map cannot draw a route
-    // and says so instead of implying the network has none.
+  test('draws movement out of every market that traded', async () => {
+    // How many routes a market gets is measured: its share of the busiest.
     const { container } = render(<Dashboard />)
 
     await waitFor(() => {
-      expect(container.querySelector('.b-map-gap')?.textContent).toMatch(/instances/)
+      expect(container.querySelectorAll('[data-layer="arcs"] path').length).toBeGreaterThan(10)
     })
-    expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(0)
+  })
+
+  test('gives a traveller to every route, so the movement is visible', async () => {
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      const arcs = container.querySelectorAll('[data-layer="arcs"] path').length
+      expect(container.querySelectorAll('[data-layer="travellers"] circle')).toHaveLength(arcs)
+    })
+  })
+
+  test('says the routes are illustrative rather than letting them be read as fact', async () => {
+    // Nothing published names an instance, so nothing on this map may claim
+    // one. The note is what keeps the drawing honest.
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      const note = container.querySelector('.b-map-gap')?.textContent ?? ''
+      expect(note).toMatch(/ilustrativas/)
+      expect(note).toMatch(/instances/)
+    })
+  })
+
+  test('labels no anchor, because none of them is a place anything named', async () => {
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('[data-layer="arcs"] path').length).toBeGreaterThan(0)
+    })
+    // Every label on the map is a currency code; none is an instance.
+    const labels = [...container.querySelectorAll('svg text')].map((t) => t.textContent ?? '')
+    expect(labels.length).toBeGreaterThan(0)
+    for (const label of labels) expect(label).toMatch(/^[A-Z]{3}$/)
   })
 
   test('reports the archive extent the index states', async () => {

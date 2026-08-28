@@ -30,6 +30,17 @@ export type WorldPulseProps = {
 /** Seconds for a traveller to cross its line and come back. */
 const ROUND_TRIP_S = 5.2
 
+/**
+ * A horizontal step wider than this fraction of the map is the antimeridian
+ * seam and not a segment.
+ *
+ * A route is sampled into dozens of points, so even one crossing the whole
+ * map advances a few tens of pixels per step; a wrap jumps most of the width
+ * at once. A fifth sits far above the first and far below the second, and
+ * half — the first guess — let a 790-pixel streak through.
+ */
+const SEAM_FRACTION = 0.2
+
 /** What the map says about itself to a reader who cannot see it. */
 export function describeScene(scene: Scene): string {
   if (scene.arcs.length === 0) return 'Sin flujo de órdenes que mostrar.'
@@ -96,13 +107,17 @@ export function WorldPulse(props: WorldPulseProps) {
     // Busiest first: when two labels cannot both fit, the one carrying more
     // flow keeps it and the other is left to the legend.
     const labels: Label[] = [
-      ...instances.map((n) => ({
-        key: n.key,
-        lines: n.lines,
-        x: n.xy[0] + n.r + 5,
-        y: n.xy[1] + 3,
-        text: n.label,
-      })),
+      // An anchor has no name, so it has no label to place. Only a real
+      // instance would, and none is published.
+      ...instances
+        .filter((n) => n.label.length > 0)
+        .map((n) => ({
+          key: n.key,
+          lines: n.lines,
+          x: n.xy[0] + n.r + 5,
+          y: n.xy[1] + 3,
+          text: n.label,
+        })),
       ...currencies.map((n) => ({
         key: n.key,
         lines: n.lines,
@@ -174,6 +189,11 @@ export function WorldPulse(props: WorldPulseProps) {
       style={{ position: 'absolute', inset: 0, display: 'block' }}
     >
       <defs>
+        {/* Routes are clipped to the globe: an arc that leaves the sphere
+            stops reading as a route over it. */}
+        <clipPath id="wp-sphere">
+          <path d={projection.sphere} />
+        </clipPath>
         <radialGradient id="wp-glow-currency">
           <stop offset="0%" stop-color={PALETTE.currency} stop-opacity="0.42" />
           <stop offset="100%" stop-color={PALETTE.currency} stop-opacity="0" />
@@ -203,13 +223,13 @@ export function WorldPulse(props: WorldPulseProps) {
         ))}
       </g>
 
-      <g data-layer="arcs">
+      <g data-layer="arcs" clip-path="url(#wp-sphere)">
         {scene.arcs.map((arc) => {
           const style = arcStyle(arc)
           return (
             <path
               key={arc.orderId}
-              d={toPathData(arc.points)}
+              d={toPathData(arc.points, props.width * SEAM_FRACTION)}
               fill="none"
               stroke={style.stroke}
               stroke-width={style.width}
@@ -223,23 +243,42 @@ export function WorldPulse(props: WorldPulseProps) {
       <g data-layer="instances">
         {nodes.instances.map((instance) => {
           const r = instance.r
+          const named = instance.label.length > 0
           return (
             <g key={instance.pubkey}>
-              <circle
-                cx={instance.xy[0]}
-                cy={instance.xy[1]}
-                r={r * 3.2}
-                fill="url(#wp-glow-instance)"
-              />
-              <rect
-                x={instance.xy[0] - r}
-                y={instance.xy[1] - r}
-                width={r * 2}
-                height={r * 2}
-                fill={PALETTE.instance}
-                transform={`rotate(45 ${instance.xy[0]} ${instance.xy[1]})`}
-              />
-              {nodes.shown.has(instance.key) && (
+              {named ? (
+                <>
+                  <circle
+                    cx={instance.xy[0]}
+                    cy={instance.xy[1]}
+                    r={r * 3.2}
+                    fill="url(#wp-glow-instance)"
+                  />
+                  <rect
+                    x={instance.xy[0] - r}
+                    y={instance.xy[1] - r}
+                    width={r * 2}
+                    height={r * 2}
+                    fill={PALETTE.instance}
+                    transform={`rotate(45 ${instance.xy[0]} ${instance.xy[1]})`}
+                  />
+                </>
+              ) : (
+                // An anchor: a hollow mark, deliberately faint and unlabelled,
+                // so nothing suggests a mostro is here. Nothing published says
+                // where one is.
+                <circle
+                  cx={instance.xy[0]}
+                  cy={instance.xy[1]}
+                  r={Math.max(2.5, r * 0.7)}
+                  fill="none"
+                  stroke={PALETTE.instance}
+                  stroke-width="1"
+                  stroke-opacity="0.34"
+                  stroke-dasharray="2 2"
+                />
+              )}
+              {named && nodes.shown.has(instance.key) && (
                 <NodeLabel node={instance.xy} r={r} text={instance.label} />
               )}
             </g>
@@ -282,7 +321,7 @@ export function WorldPulse(props: WorldPulseProps) {
       </g>
 
       {!reducedMotion && (
-        <g data-layer="travellers">
+        <g data-layer="travellers" clip-path="url(#wp-sphere)">
           {scene.arcs.map((arc, i) => (
             <circle
               key={arc.orderId}

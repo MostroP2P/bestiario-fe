@@ -11,9 +11,10 @@ import { LoadingAnnouncement, Skeleton, SkeletonKpi, SkeletonMap } from '~/compo
 import { WorldPulse } from '~/components/WorldPulse'
 import { useAtlas } from '~/map/useAtlas'
 import { useMeasuredSize, usePrefersReducedMotion } from '~/map/hooks'
-import { placeCurrencies } from '~/map/placements'
+import { placeAnchors, placeCurrencies } from '~/map/placements'
+import { ANCHOR_COUNT, flowLines } from '~/map/flows'
 import { createProjection } from '~/map/projection'
-import { buildScene, type Scene } from '~/map/scene'
+import { buildScene, MAX_BOW_OF_HEIGHT, type Scene } from '~/map/scene'
 import { sessionSeed } from '~/model/rng'
 
 /**
@@ -101,17 +102,32 @@ export function Dashboard() {
     [atlasState, marketWeights, seed],
   )
 
+  const anchors = useMemo(
+    () =>
+      atlasState.status === 'ready'
+        ? placeAnchors(atlasState.atlas, seed, ANCHOR_COUNT)
+        : null,
+    [atlasState, seed],
+  )
+
+  // Routes: how many a market gets is measured — its share of the busiest —
+  // and where each one goes is not. See map/flows.ts.
+  const flows = useMemo(() => flowLines(marketWeights, ANCHOR_COUNT), [marketWeights])
+
   const scene = useMemo(() => {
-    if (!projection || !placed || atlasState.status !== 'ready') return EMPTY_SCENE
+    if (!projection || !placed || !anchors || atlasState.status !== 'ready') return EMPTY_SCENE
     return buildScene({
-      lines: [],
+      lines: flows,
       currencies: marketWeights,
       currencyAt: (code) => placed.get(code) ?? null,
-      instanceAt: () => null,
-      instanceLabel: (pubkey) => pubkey,
+      instanceAt: (id) => anchors.get(id) ?? null,
+      // An anchor has no name. Nothing published names an instance, and an
+      // empty label is what keeps this from inventing one.
+      instanceLabel: () => '',
       project: projection.project,
+      maxBow: mapHeight * MAX_BOW_OF_HEIGHT,
     })
-  }, [projection, placed, atlasState, marketWeights])
+  }, [projection, placed, anchors, atlasState, marketWeights, flows, mapHeight])
 
   const mapReady = atlasState.status === 'ready' && projection !== null && !loading
 
@@ -188,13 +204,14 @@ export function Dashboard() {
               </h2>
               <p>
                 Cada punto es una moneda con órdenes en la ventana elegida, en su país. Su
-                tamaño es cuántas órdenes se publicaron en ella.
+                tamaño y cuántas rutas salen de ella son su volumen de órdenes.
               </p>
               {instancesState?.status === 'unavailable' && (
                 <p class="b-map-gap">
-                  Las rutas hacia cada mostro no se dibujan: bestiario todavía no publica el
-                  documento <code>instances</code>, y sin él nada dice qué instancia opera
-                  qué moneda.
+                  Las rutas son ilustrativas: van a anclajes sin nombre, no a mostros.
+                  bestiario todavía no publica el documento <code>instances</code>, y sin
+                  él nada dice qué instancia opera qué moneda. Lo medido es la moneda, su
+                  país y sus órdenes.
                 </p>
               )}
             </div>

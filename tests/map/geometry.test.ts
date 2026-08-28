@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { arcPoints, bowPoints, type Point } from '~/map/geometry'
+import { arcPoints, bowPoints, toPathData, type Point } from '~/map/geometry'
 
 /** A trivial projection: degrees straight to pixels, so the maths is visible. */
 const identity = (p: [number, number]): Point | null => [p[0], p[1]]
@@ -80,5 +80,46 @@ describe('bowPoints', () => {
 
   test('leaves a line too short to bow alone', () => {
     expect(bowPoints([[1, 1]], 20)).toEqual([[1, 1]])
+  })
+})
+
+describe('toPathData', () => {
+  test('draws a polyline as one stroke', () => {
+    expect(toPathData([[0, 0], [10, 5], [20, 0]])).toBe('M0.0,0.0L10.0,5.0L20.0,0.0')
+  })
+
+  test('lifts the pen where the projection wraps', () => {
+    // Arrange — a route crossing the antimeridian: the projection puts one
+    // sample at the right edge and the next at the left.
+    const points: Point[] = [
+      [900, 100],
+      [990, 110],
+      [10, 120],
+      [90, 130],
+    ]
+
+    // Act
+    const path = toPathData(points, 500)
+
+    // Assert — two strokes, not one streak across the map.
+    expect(path).toBe('M900.0,100.0L990.0,110.0M10.0,120.0L90.0,130.0')
+  })
+
+  test('joins everything when no seam is possible', () => {
+    const points: Point[] = [[0, 0], [900, 0]]
+
+    expect(toPathData(points)).toBe('M0.0,0.0L900.0,0.0')
+  })
+
+  test('does not break on a step that is merely long', () => {
+    expect(toPathData([[0, 0], [400, 0]], 500)).toBe('M0.0,0.0L400.0,0.0')
+  })
+
+  test('handles a single point', () => {
+    expect(toPathData([[5, 5]], 500)).toBe('M5.0,5.0')
+  })
+
+  test('handles no points', () => {
+    expect(toPathData([], 500)).toBe('')
   })
 })

@@ -76,7 +76,28 @@ export function bowPoints(points: readonly Point[], amount: number): Point[] {
   })
 }
 
-/** An SVG path `d` for a polyline, rounded so the markup stays readable. */
-export function toPathData(points: readonly Point[]): string {
-  return 'M' + points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join('L')
+/**
+ * An SVG path `d` for a polyline, broken where the projection wraps.
+ *
+ * A great circle that crosses the antimeridian projects to points at one edge
+ * of the map and then at the other. Joined with a line, that is a bright
+ * streak straight across the world — the most conspicuous wrong thing this
+ * map can draw, and the reason `maxJump` exists: a step wider than it is not
+ * a segment, it is the seam, and the path lifts its pen over it.
+ *
+ * Coordinates are rounded to a tenth of a pixel, which is below what a screen
+ * can show and keeps the markup readable.
+ */
+export function toPathData(points: readonly Point[], maxJump: number = Infinity): string {
+  let path = ''
+  let previous: Point | null = null
+
+  for (const point of points) {
+    const [x, y] = point
+    const wrapped =
+      previous !== null && Math.abs(x - previous[0]) > maxJump
+    path += `${previous === null || wrapped ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
+    previous = point
+  }
+  return path
 }

@@ -15,7 +15,41 @@ import type { Line, LinePhase } from '~/model/live-lines'
 import type { LonLat } from '~/model/random-point'
 
 const SAMPLES = 48
-const SPACING = 9
+
+/**
+ * How far a route bows, as a fraction of the straight distance between its
+ * ends.
+ *
+ * Every route bows, including a lone one. A great circle projected onto a
+ * flat map is a straight line often enough — between two places at similar
+ * latitudes, or over a short hop — and a straight line across a world map
+ * reads as a diagram rather than as a route. The arc is the visual language
+ * of a path over a globe, and a map that only sometimes uses it looks broken
+ * rather than varied.
+ */
+const BOW_RATIO = 0.17
+
+/** A short hop still curves: proportion alone would leave it flat. */
+const MIN_BOW = 16
+
+/**
+ * A ceiling on the bow, as a fraction of the map's height.
+ *
+ * Proportion alone sends a route that crosses the world hundreds of pixels
+ * off its chord, out past the sphere and off the panel. A route that leaves
+ * the globe stops reading as a route over it.
+ */
+export const MAX_BOW_OF_HEIGHT = 0.3
+
+/**
+ * How far a fan spreads either side of its route's own curve, as a fraction
+ * of that curve.
+ *
+ * Multiplicative and not additive: an additive spread wider than the base bow
+ * pushes an inner line back through zero and out the other side, and a line
+ * with no bow is the straight line this whole scheme exists to avoid.
+ */
+const FAN_SPREAD = 0.55
 
 export type SceneArc = {
   readonly orderId: string
@@ -54,21 +88,34 @@ export type SceneInput = {
   readonly instanceLabel: (pubkey: string) => string
   readonly project: Projection
   readonly samples?: number
-  readonly spacing?: number
+  /** The tallest bow any route may take, so none leaves the sphere. */
+  readonly maxBow?: number
 }
 
 /**
- * Bow amounts that fan `count` lines symmetrically around their route, so the
- * fifth order on a route is visibly the fifth and not a redraw of the first.
+ * How far a route of this straight-line length bows at its midpoint, capped
+ * so a long one stays on the globe it is drawn over.
  */
-export function fanOffsets(count: number, spacing: number): number[] {
+export function bowFor(chord: number, maxBow: number = Infinity): number {
+  return Math.min(Math.max(MIN_BOW, chord * BOW_RATIO), Math.max(MIN_BOW, maxBow))
+}
+
+/**
+ * The bow of each line in a fan of `count`, spread around `base`.
+ *
+ * Every one of them curves, and they curve by visibly different amounts, so
+ * five orders on a route read as five lines rather than as one thick one —
+ * and none of them comes out straight.
+ */
+export function bowSet(count: number, base: number): number[] {
+  if (count <= 0) return []
   const centre = (count - 1) / 2
-  return Array.from({ length: count }, (_, i) => (i - centre) * spacing)
+  const step = centre === 0 ? 0 : FAN_SPREAD / centre
+  return Array.from({ length: count }, (_, i) => base * (1 + (i - centre) * step))
 }
 
 export function buildScene(input: SceneInput): Scene {
   const samples = input.samples ?? SAMPLES
-  const spacing = input.spacing ?? SPACING
 
   // Grouped by route first: a fan is a property of the route, not of an order.
   const byRoute = new Map<string, Line[]>()
@@ -99,14 +146,23 @@ export function buildScene(input: SceneInput): Scene {
     const spine = arcPoints(from, to, input.project, samples)
     if (!spine) continue
 
-    const offsets = fanOffsets(group.length, spacing)
+    // Every route curves, and a fan curves around that curve rather than
+    // around the chord — so no line in a fan comes out straight either.
+    const first = spine[0]!
+    const last = spine[spine.length - 1]!
+    const base = bowFor(
+      Math.hypot(last[0] - first[0], last[1] - first[1]),
+      input.maxBow ?? Infinity,
+    )
+    const bows = bowSet(group.length, base)
+
     group.forEach((line, i) => {
       arcs.push({
         orderId: line.orderId,
         fiat: line.fiat,
         instancePubkey: line.instancePubkey,
         phase: line.phase,
-        points: bowPoints(spine, offsets[i] ?? 0),
+        points: bowPoints(spine, bows[i] ?? base),
       })
     })
 

@@ -202,3 +202,47 @@ describe('describeScene', () => {
     expect(describeScene(scene)).toMatch(/1 instancias sin ubicar/)
   })
 })
+
+describe('WorldPulse · the antimeridian', () => {
+  test('breaks a wrapped route rather than streaking it across the map', () => {
+    // Arrange — a route from Fiji to Peru: the short way crosses the seam.
+    const places: Record<string, LonLat> = { FJD: [178, -18], 'node-pe': [-77, -12] }
+    const wrapped: Line = {
+      orderId: 'w',
+      fiat: 'FJD',
+      instancePubkey: 'node-pe',
+      phase: 'live',
+      updatedAt: 0,
+    }
+    const scene = buildScene({
+      lines: [wrapped],
+      currencyAt: (code) => places[code] ?? null,
+      instanceAt: (key) => places[key] ?? null,
+      instanceLabel: () => '',
+      project: projection.project,
+    })
+
+    // Act
+    const { container } = render(
+      <WorldPulse
+        scene={scene}
+        land={[]}
+        projection={projection}
+        width={900}
+        height={408}
+        reducedMotion={false}
+      />,
+    )
+
+    // Assert — no single segment spans most of the map.
+    const d = container.querySelector('[data-layer="arcs"] path')?.getAttribute('d') ?? ''
+    let worst = 0
+    for (const sub of d.split('M').filter(Boolean)) {
+      const pts = sub.split('L').map((p) => p.split(',').map(Number))
+      for (let i = 1; i < pts.length; i++) {
+        worst = Math.max(worst, Math.abs((pts[i]?.[0] ?? 0) - (pts[i - 1]?.[0] ?? 0)))
+      }
+    }
+    expect(worst).toBeLessThan(900 * 0.2)
+  })
+})

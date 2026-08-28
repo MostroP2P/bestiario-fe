@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { geoContains } from 'd3-geo'
 import type { Topology } from 'topojson-specification'
 import { buildAtlas } from '~/model/atlas'
-import { placeCurrencies, placeInstances } from '~/map/placements'
+import { placeAnchors, placeCurrencies, placeInstances } from '~/map/placements'
 
 const atlas = buildAtlas(
   JSON.parse(readFileSync('public/geo/countries-110m.json', 'utf8')) as Topology,
@@ -77,5 +77,60 @@ describe('placeCurrencies', () => {
     const after = placeCurrencies(['ARS', 'VES'], atlas, 9)
 
     expect([...before]).toEqual([...after])
+  })
+})
+
+describe('placeAnchors', () => {
+  test('places as many anchors as it is asked for', () => {
+    // Act
+    const anchors = placeAnchors(atlas, 5, 7)
+
+    // Assert
+    expect(anchors.size).toBe(7)
+  })
+
+  test('names them as anchors, never as instances', () => {
+    for (const key of placeAnchors(atlas, 5, 7).keys()) {
+      expect(key).toMatch(/^anchor:\d+$/)
+    }
+  })
+
+  test('spreads them across the world rather than clustering', () => {
+    // One per region, so no two share a longitude by accident.
+    const points = [...placeAnchors(atlas, 5, 7).values()]
+    const longitudes = points.map(([lon]) => lon)
+
+    expect(Math.max(...longitudes) - Math.min(...longitudes)).toBeGreaterThan(120)
+  })
+
+  test('puts each anchor on land', () => {
+    const anchors = placeAnchors(atlas, 11, 7)
+
+    for (const point of anchors.values()) {
+      const onLand = atlas.features.some((feature) => geoContains(feature, point))
+      expect(onLand).toBe(true)
+    }
+  })
+
+  test('does not move between renders of one visit', () => {
+    expect([...placeAnchors(atlas, 3, 7)]).toEqual([...placeAnchors(atlas, 3, 7)])
+  })
+
+  test('scatters differently on the next visit', () => {
+    expect([...placeAnchors(atlas, 1, 7)]).not.toEqual([...placeAnchors(atlas, 2, 7)])
+  })
+
+  test('does not move the currencies when the anchor count changes', () => {
+    // Separate streams: the markets are measured and must not shift because
+    // the illustration around them did.
+    const before = placeCurrencies(['ARS', 'VES'], atlas, 9)
+    placeAnchors(atlas, 9, 12)
+    const after = placeCurrencies(['ARS', 'VES'], atlas, 9)
+
+    expect([...before]).toEqual([...after])
+  })
+
+  test('asks for none and gets none', () => {
+    expect(placeAnchors(atlas, 5, 0).size).toBe(0)
   })
 })
