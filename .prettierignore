@@ -4,3 +4,4 @@ node_modules
 tests/fixtures
 docs
 *.md
+public/geo
