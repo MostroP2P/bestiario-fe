@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'preact/hooks'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { MAP } from '~/config'
 import { InstanceRail } from '~/components/InstanceRail'
 import { WorldPulse } from '~/components/WorldPulse'
 import { useAtlas } from '~/map/useAtlas'
+import { useMeasuredWidth, usePrefersReducedMotion } from '~/map/hooks'
+import { createProjection } from '~/map/projection'
+import { buildScene, type Scene } from '~/map/scene'
 import { placeCurrencies, placeInstances } from '~/map/placements'
 import { activeLines, type LiveOrder } from '~/model/live-lines'
 import { buildGrid, heatLevel } from '~/model/matrix'
@@ -34,6 +37,16 @@ const HEAT_INK = ['#2c4552', '#bcd6e3', '#bcd6e3', '#bcd6e3', '#061019']
 /** How often a settled line is re-checked against its grace period. */
 const TICK_MS = 5_000
 
+/** The map's height in artboard 2a. */
+const MAP_HEIGHT = 408
+
+const EMPTY_SCENE: Scene = {
+  arcs: [],
+  currencies: [],
+  instances: [],
+  unplaced: { currencies: 0, instances: 0 },
+}
+
 const TABS = [
   { id: 'resumen', label: 'RESUMEN', href: '#/' },
   { id: 'ordenes', label: 'ÓRDENES', href: '#/orders' },
@@ -50,6 +63,9 @@ export type DashboardProps = {
 
 export function Dashboard(props: DashboardProps) {
   const atlasState = useAtlas(`${import.meta.env.BASE_URL}geo/countries-110m.json`)
+  const mapRef = useRef<HTMLElement>(null)
+  const mapWidth = useMeasuredWidth(mapRef)
+  const reducedMotion = usePrefersReducedMotion()
   const seed = useMemo(() => sessionSeed(), [])
   const [selected, setSelected] = useState<string | null>(SAMPLE_INSTANCES[0]?.pubkey ?? null)
 
@@ -86,6 +102,40 @@ export function Dashboard(props: DashboardProps) {
     [],
   )
 
+  const projection = useMemo(
+    () => (mapWidth > 0 ? createProjection(mapWidth, MAP_HEIGHT) : null),
+    [mapWidth],
+  )
+
+  const currencyAt = useCallback(
+    (code: string) => placements?.currencies.get(code) ?? null,
+    [placements],
+  )
+  const instanceAt = useCallback(
+    (pubkey: string) => placements?.instances.get(pubkey) ?? null,
+    [placements],
+  )
+  const instanceLabel = useCallback(
+    (pubkey: string) => instanceName.get(pubkey) ?? pubkey,
+    [instanceName],
+  )
+
+  // One scene, read by the map and by the counts beside it, so the headline
+  // can never claim a market the map is not drawing.
+  const scene = useMemo(
+    () =>
+      projection && placements
+        ? buildScene({
+            lines,
+            currencyAt,
+            instanceAt,
+            instanceLabel,
+            project: projection.project,
+          })
+        : EMPTY_SCENE,
+    [projection, placements, lines, currencyAt, instanceAt, instanceLabel],
+  )
+
   const grid = useMemo(
     () =>
       buildGrid(
@@ -96,8 +146,7 @@ export function Dashboard(props: DashboardProps) {
     [lines],
   )
 
-  const activeCurrencies = new Set(lines.map((l) => l.fiat)).size
-  const activeInstances = new Set(lines.map((l) => l.instancePubkey)).size
+  const unplaced = scene.unplaced.currencies + scene.unplaced.instances
 
   return (
     <div class="b-page">
@@ -143,7 +192,12 @@ export function Dashboard(props: DashboardProps) {
             </div>
           </div>
 
-          <section class="b-map" aria-labelledby="map-heading">
+          <section
+            class="b-map"
+            aria-labelledby="map-heading"
+            ref={mapRef}
+            style={{ height: `${MAP_HEIGHT}px`, background: 'var(--panel)' }}
+          >
             {atlasState.status === 'loading' && (
               <p class="b-map-state">CARGANDO GEOMETRÍA…</p>
             )}
@@ -152,13 +206,14 @@ export function Dashboard(props: DashboardProps) {
                 SIN GEOMETRÍA · {atlasState.reason}
               </p>
             )}
-            {placements && (
+            {placements && projection && (
               <WorldPulse
-                lines={lines}
+                scene={scene}
                 land={placements.land}
-                currencyAt={(code) => placements.currencies.get(code) ?? null}
-                instanceAt={(pubkey) => placements.instances.get(pubkey) ?? null}
-                instanceLabel={(pubkey) => instanceName.get(pubkey) ?? pubkey}
+                projection={projection}
+                width={mapWidth}
+                height={MAP_HEIGHT}
+                reducedMotion={reducedMotion}
               />
             )}
             <div class="b-map-caption">
@@ -172,8 +227,13 @@ export function Dashboard(props: DashboardProps) {
             </div>
             <div class="b-map-count">
               <span class="b-eyebrow">MERCADOS ACTIVOS</span>
-              <strong>{activeCurrencies}</strong>
-              <small>en {activeInstances} mostros</small>
+              <strong>{scene.currencies.length}</strong>
+              <small>en {scene.instances.length} mostros</small>
+              {unplaced > 0 && (
+                <small class="b-unplaced">
+                  {unplaced} sin ubicar, fuera del mapa
+                </small>
+              )}
             </div>
           </section>
 

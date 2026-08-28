@@ -629,3 +629,11 @@ body {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* A place the map could not honestly draw is said, not hidden. */
+.b-unplaced {
+  color: var(--warn) !important;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}

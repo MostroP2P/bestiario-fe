@@ -1,22 +1,20 @@
-import { afterEach, beforeAll, describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test } from 'vitest'
 import { cleanup, render } from '@testing-library/preact'
 import { WorldPulse, describeScene } from '~/components/WorldPulse'
+import { buildScene, type Scene } from '~/map/scene'
+import { createProjection } from '~/map/projection'
 import type { Line } from '~/model/live-lines'
 import type { LonLat } from '~/model/random-point'
-import type { Scene } from '~/map/scene'
+import type { MapProjection } from '~/map/projection'
 
 const PLACES: Record<string, LonLat> = {
   ARS: [-64, -34],
   VES: [-66, 8],
   'node-ar': [-58, -34],
+  'node-ve': [-67, 10],
 }
 
-const props = {
-  land: [],
-  currencyAt: (code: string) => PLACES[code] ?? null,
-  instanceAt: (pubkey: string) => PLACES[pubkey] ?? null,
-  instanceLabel: (pubkey: string) => pubkey,
-}
+const projection: MapProjection = createProjection(900, 408)
 
 function line(over: Partial<Line> = {}): Line {
   return {
@@ -29,119 +27,133 @@ function line(over: Partial<Line> = {}): Line {
   }
 }
 
-function stubMatchMedia(matches: boolean) {
-  window.matchMedia = ((query: string) => ({
-    matches,
-    media: query,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-  })) as unknown as typeof window.matchMedia
+function sceneOf(lines: readonly Line[]): Scene {
+  return buildScene({
+    lines,
+    currencyAt: (code) => PLACES[code] ?? null,
+    instanceAt: (pubkey) => PLACES[pubkey] ?? null,
+    instanceLabel: (pubkey) => pubkey,
+    project: projection.project,
+  })
 }
 
-/** jsdom has neither, and the component measures itself with one. */
-beforeAll(() => {
-  globalThis.ResizeObserver = class {
-    private cb: ResizeObserverCallback
-    constructor(cb: ResizeObserverCallback) {
-      this.cb = cb
-    }
-    observe() {
-      this.cb(
-        [{ contentRect: { width: 900, height: 408 } } as ResizeObserverEntry],
-        this,
-      )
-    }
-    unobserve() {}
-    disconnect() {}
-  }
-})
+function draw(lines: readonly Line[], reducedMotion = false) {
+  return render(
+    <WorldPulse
+      scene={sceneOf(lines)}
+      land={[]}
+      projection={projection}
+      width={900}
+      height={408}
+      reducedMotion={reducedMotion}
+    />,
+  )
+}
 
-// Unmounting is what cancels the animation frame loop; without it the run
-// never ends.
+// Unmounting is what cancels the animation frame loop.
 afterEach(cleanup)
 
 describe('WorldPulse', () => {
-  beforeAll(() => stubMatchMedia(false))
-
-  test('draws one line per active order', () => {
+  test('draws every arc the scene carries', () => {
     // Arrange
     const lines = Array.from({ length: 5 }, (_, i) => line({ orderId: `ars-${i}` }))
 
     // Act
-    const { container } = render(<WorldPulse {...props} lines={lines} />)
+    const { container } = draw(lines)
 
     // Assert
-    expect(container.querySelectorAll('path[stroke-opacity]')).toHaveLength(5)
+    expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(5)
   })
 
-  test('gives each of those lines a shape of its own', () => {
+  test('gives each of those arcs a shape of its own', () => {
     const lines = Array.from({ length: 5 }, (_, i) => line({ orderId: `ars-${i}` }))
 
-    const { container } = render(<WorldPulse {...props} lines={lines} />)
+    const { container } = draw(lines)
 
     const shapes = new Set(
-      [...container.querySelectorAll('path[stroke-opacity]')].map((p) => p.getAttribute('d')),
+      [...container.querySelectorAll('[data-layer="arcs"] path')].map((p) =>
+        p.getAttribute('d'),
+      ),
     )
     expect(shapes.size).toBe(5)
   })
 
   test('marks a settling line by more than its colour', () => {
-    const { container } = render(
-      <WorldPulse {...props} lines={[line(), line({ orderId: 'o2', phase: 'settling' })]} />,
-    )
+    const { container } = draw([line(), line({ orderId: 'o2', phase: 'settling' })])
 
-    const dashed = [...container.querySelectorAll('path[stroke-opacity]')].filter((p) =>
+    const dashed = [...container.querySelectorAll('[data-layer="arcs"] path')].filter((p) =>
       p.getAttribute('stroke-dasharray'),
     )
     expect(dashed).toHaveLength(1)
   })
 
-  test('describes itself for a reader who cannot see it', () => {
-    const { container } = render(<WorldPulse {...props} lines={[line()]} />)
+  test('draws a currency and an instance for the route', () => {
+    const { container } = draw([line()])
 
-    expect(container.querySelector('svg')?.getAttribute('aria-label')).toMatch(
-      /1 order flows between 1 currencies and 1 Mostro instances/,
-    )
-  })
-
-  test('draws no line for an order it cannot place', () => {
-    const { container } = render(<WorldPulse {...props} lines={[line({ fiat: 'XXX' })]} />)
-
-    expect(container.querySelectorAll('path[stroke-opacity]')).toHaveLength(0)
-  })
-
-  test('renders with no orders at all', () => {
-    const { container } = render(<WorldPulse {...props} lines={[]} />)
-
-    expect(container.querySelector('svg')?.getAttribute('aria-label')).toBe(
-      'No order flow to show.',
-    )
+    expect(container.querySelectorAll('[data-layer="currencies"] > g')).toHaveLength(1)
+    expect(container.querySelectorAll('[data-layer="instances"] > g')).toHaveLength(1)
   })
 
   test('sizes a currency by how many lines rest on it', () => {
-    const one = render(<WorldPulse {...props} lines={[line()]} />)
-    const oneRadius = one.container.querySelector('circle[stroke-opacity]')?.getAttribute('r')
+    const one = draw([line()])
+    const small = one.container
+      .querySelector('[data-layer="currencies"] circle[stroke-opacity]')
+      ?.getAttribute('r')
     cleanup()
 
-    const many = render(
+    const many = draw(Array.from({ length: 9 }, (_, i) => line({ orderId: `o${i}` })))
+    const large = many.container
+      .querySelector('[data-layer="currencies"] circle[stroke-opacity]')
+      ?.getAttribute('r')
+
+    expect(Number(large)).toBeGreaterThan(Number(small))
+  })
+
+  test('draws one traveller per arc', () => {
+    const { container } = draw([line(), line({ orderId: 'o2' })])
+
+    expect(container.querySelectorAll('[data-layer="travellers"] circle')).toHaveLength(2)
+  })
+
+  test('draws no travellers when motion is not wanted', () => {
+    const { container } = draw([line()], true)
+
+    expect(container.querySelector('[data-layer="travellers"]')).toBeNull()
+  })
+
+  test('still draws the lines themselves when motion is not wanted', () => {
+    const { container } = draw([line()], true)
+
+    expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(1)
+  })
+
+  test('describes itself for a reader who cannot see it', () => {
+    const { container } = draw([line()])
+
+    expect(container.querySelector('svg')?.getAttribute('aria-label')).toMatch(
+      /1 órdenes activas entre 1 monedas y 1 instancias/,
+    )
+  })
+
+  test('draws the land it is given', () => {
+    const { container } = render(
       <WorldPulse
-        {...props}
-        lines={Array.from({ length: 9 }, (_, i) => line({ orderId: `o${i}` }))}
+        scene={sceneOf([])}
+        land={[
+          {
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'Polygon', coordinates: [[[0, 0], [10, 0], [10, 10], [0, 0]]] },
+          },
+        ]}
+        projection={projection}
+        width={900}
+        height={408}
+        reducedMotion={false}
       />,
     )
-    const manyRadius = many.container.querySelector('circle[stroke-opacity]')?.getAttribute('r')
 
-    expect(Number(manyRadius)).toBeGreaterThan(Number(oneRadius))
-  })
-})
-
-describe('WorldPulse · reduced motion', () => {
-  beforeAll(() => stubMatchMedia(true))
-
-  test('draws no travelling dots when motion is not wanted', () => {
-    const { container } = render(<WorldPulse {...props} lines={[line()]} />)
-
-    expect(container.querySelectorAll('circle[r="1.9"]')).toHaveLength(0)
+    expect(container.querySelectorAll('[data-layer="land"] path')).toHaveLength(1)
   })
 })
 
@@ -154,7 +166,7 @@ describe('describeScene', () => {
   }
 
   test('says so when there is nothing to show', () => {
-    expect(describeScene(empty)).toBe('No order flow to show.')
+    expect(describeScene(empty)).toBe('Sin flujo de órdenes que mostrar.')
   })
 
   test('says what it could not place rather than quietly omitting it', () => {
@@ -164,7 +176,7 @@ describe('describeScene', () => {
       unplaced: { currencies: 2, instances: 1 },
     }
 
-    expect(describeScene(scene)).toMatch(/2 currencies could not be placed/)
-    expect(describeScene(scene)).toMatch(/1 instances could not be placed/)
+    expect(describeScene(scene)).toMatch(/2 monedas sin ubicar/)
+    expect(describeScene(scene)).toMatch(/1 instancias sin ubicar/)
   })
 })

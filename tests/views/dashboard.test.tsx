@@ -16,12 +16,12 @@ beforeAll(() => {
     observe() {
       this.cb(
         [{ contentRect: { width: 1026, height: 408 } } as ResizeObserverEntry],
-        this as unknown as ResizeObserver,
+        this,
       )
     }
     unobserve() {}
     disconnect() {}
-  } as unknown as typeof ResizeObserver
+  }
 
   window.matchMedia = ((query: string) => ({
     matches: false,
@@ -89,7 +89,7 @@ describe('Dashboard', () => {
 
     // Assert — the atlas has to arrive before anything is drawn.
     await waitFor(() => {
-      expect(container.querySelectorAll('path[stroke-opacity]')).toHaveLength(4)
+      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(4)
     })
   })
 
@@ -122,7 +122,7 @@ describe('Dashboard', () => {
     await waitFor(() => {
       expect(container.querySelector('svg[role="img"]')).not.toBeNull()
     })
-    expect(container.querySelectorAll('path[stroke-opacity]')).toHaveLength(0)
+    expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(0)
     expect(container.querySelector('.b-map-count strong')?.textContent).toBe('0')
   })
 
@@ -132,8 +132,51 @@ describe('Dashboard', () => {
     const { container } = render(<Dashboard orders={[stale, order({ id: 'live' })]} />)
 
     await waitFor(() => {
-      expect(container.querySelectorAll('path[stroke-opacity]')).toHaveLength(1)
+      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(1)
     })
+  })
+
+  test('counts only what the map actually draws', async () => {
+    // Arrange - k1 is mostro.network, whose name places it nowhere, so its
+    // orders cannot be drawn and must not be counted either.
+    const orders = [
+      order({ id: 'drawn', instancePubkey: 'k3' }),
+      order({ id: 'undrawable', fiat: 'COP', instancePubkey: 'k1' }),
+    ]
+
+    // Act
+    const { container } = render(<Dashboard orders={orders} />)
+
+    // Assert
+    await waitFor(() => {
+      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(1)
+    })
+    expect(container.querySelector('.b-map-count strong')?.textContent).toBe('1')
+    expect(container.querySelector('.b-map-count small')?.textContent).toBe('en 1 mostros')
+  })
+
+  test('says how many places it could not draw rather than hiding them', async () => {
+    const orders = [
+      order({ id: 'drawn', instancePubkey: 'k3' }),
+      order({ id: 'undrawable', instancePubkey: 'k1' }),
+    ]
+
+    const { container } = render(<Dashboard orders={orders} />)
+
+    await waitFor(() => {
+      expect(container.querySelector('.b-unplaced')?.textContent).toMatch(
+        /1 sin ubicar, fuera del mapa/,
+      )
+    })
+  })
+
+  test('says nothing about unplaced places when everything is drawn', async () => {
+    const { container } = render(<Dashboard orders={[order({ instancePubkey: 'k3' })]} />)
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(1)
+    })
+    expect(container.querySelector('.b-unplaced')).toBeNull()
   })
 
   test('states the grace period on screen rather than hiding it in a constant', () => {
