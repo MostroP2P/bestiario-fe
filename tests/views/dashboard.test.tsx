@@ -246,3 +246,91 @@ describe('Dashboard · when nothing can be verified', () => {
     })
   })
 })
+
+describe('Dashboard · a window figure is not a now figure', () => {
+  const metricsOfWindow = (report: string, window: string) => {
+    const event = fixtures.find((e) => dOf(e) === `${report}:${window}`)!
+    return (
+      JSON.parse(event.content) as {
+        payload: { metrics: { name: string; value: number }[] }
+      }
+    ).payload.metrics
+  }
+  const figure = (report: string, window: string, name: string) =>
+    metricsOfWindow(report, window).find((m) => m.name === name)!.value
+  const asCount = (value: number) =>
+    new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)
+
+  const disputesKpi = (container: Element) =>
+    [...container.querySelectorAll('.b-kpi')].find((kpi) =>
+      kpi.querySelector('.b-eyebrow')?.textContent?.startsWith('DISPUTAS'),
+    )
+
+  test('the disputes tile counts the window, not the standing book', async () => {
+    // Arrange — `open_now` is the same in every window; `opened` is not.
+    const opened = figure('disputes', '30d', 'disputes.opened')
+    const openNow = figure('disputes', '30d', 'disputes.open_now')
+    expect(opened).not.toBe(openNow)
+
+    // Act
+    const { container } = render(<Dashboard />)
+
+    // Assert
+    await waitFor(() => {
+      expect(disputesKpi(container)?.querySelector('strong')?.textContent).toBe(
+        asCount(opened),
+      )
+    })
+    expect(disputesKpi(container)?.querySelector('strong')?.textContent).not.toBe(
+      asCount(openNow),
+    )
+  })
+
+  test('and moves when the window does, which a now figure would not', async () => {
+    // Arrange
+    const { container, getByRole } = render(<Dashboard />)
+    await waitFor(() => {
+      expect(disputesKpi(container)?.querySelector('strong')).not.toBeNull()
+    })
+    const before = disputesKpi(container)?.querySelector('strong')?.textContent
+
+    // Act
+    getByRole('button', { name: '24 H' }).click()
+
+    // Assert
+    await waitFor(() => {
+      expect(disputesKpi(container)?.querySelector('strong')?.textContent).toBe(
+        asCount(figure('disputes', '24h', 'disputes.opened')),
+      )
+    })
+    expect(disputesKpi(container)?.querySelector('strong')?.textContent).not.toBe(before)
+  })
+
+  test('the standing book is counted where it says it is about now', async () => {
+    const openNow = figure('disputes', '30d', 'disputes.open_now')
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('.b-dispute-list li')).toHaveLength(openNow)
+    })
+    const heading = [...container.querySelectorAll('.b-feed-head')].find((h) =>
+      h.textContent?.includes('DISPUTAS'),
+    )
+    expect(heading?.textContent).toContain('AHORA')
+  })
+
+  test('no tile in the window row repeats the standing book', async () => {
+    // The bug this replaced: one heading answering two questions, and the
+    // same 41 in the tile and in the panel beside it.
+    const openNow = figure('disputes', '30d', 'disputes.open_now')
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('.b-kpi strong')).toHaveLength(4)
+    })
+    const tiles = [...container.querySelectorAll('.b-kpi strong')].map(
+      (n) => n.textContent,
+    )
+    expect(tiles).not.toContain(asCount(openNow))
+  })
+})

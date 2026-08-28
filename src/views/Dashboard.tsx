@@ -344,21 +344,30 @@ export function Dashboard() {
                   }`}
                 />
                 <Kpi
-                  label="VOLUMEN LIQUIDADO"
+                  label={`VOLUMEN · ${WINDOW_LABELS[window_]}`}
                   value={formatMetric(lookup(volume, 'volume.sats')).text}
                   sub={`ticket p50 ${formatMetric(lookup(volume, 'volume.ticket_p50')).text}`}
                 />
+                {/* Every figure in this row is of the chosen window. The
+                    open book is about *now* and is a different question, so
+                    it lives in its own panel and is labelled there. Putting
+                    it here made one heading answer two. */}
                 <Kpi
-                  label="DISPUTAS ABIERTAS"
-                  value={formatMetric(lookup(disputes, 'disputes.open_now')).text}
-                  sub={`${formatMetric(lookup(disputes, 'disputes.opened')).text} abiertas · ${
-                    formatMetric(lookup(disputes, 'disputes.resolved')).text
-                  } resueltas`}
+                  label={`DISPUTAS · ${WINDOW_LABELS[window_]}`}
+                  value={formatMetric(lookup(disputes, 'disputes.opened')).text}
+                  sub={`${formatMetric(lookup(disputes, 'disputes.resolved')).text} resueltas · ${
+                    formatMetric(lookup(disputes, 'disputes.rate')).text
+                  } de las órdenes`}
                 />
+                {/* Both of these are about now, and the label says so.
+                    `open_now` is pending orders still live, not "open
+                    disputes" and not orders opened in the window. */}
                 <Kpi
-                  label="EN CURSO AHORA"
+                  label="AHORA MISMO"
                   value={formatMetric(lookup(orders, 'orders.in_progress_now')).text}
-                  sub={`${formatMetric(lookup(orders, 'orders.open_now')).text} abiertas`}
+                  sub={`en curso · ${
+                    formatMetric(lookup(orders, 'orders.open_now')).text
+                  } pendientes de tomar`}
                 />
               </>
             )}
@@ -425,7 +434,7 @@ export function Dashboard() {
 
             <div>
               <h2 class="b-eyebrow b-feed-head">
-                <span>DISPUTAS ABIERTAS</span>
+                <span>DISPUTAS ABIERTAS AHORA</span>
                 <span class="b-feed-live">{loading ? '' : openBook.length}</span>
               </h2>
               <OpenDisputes
