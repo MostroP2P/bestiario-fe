@@ -1,0 +1,34 @@
+{
+  "tags": [
+    [
+      "d",
+      "market:90d"
+    ],
+    [
+      "s",
+      "20260828T221918Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario market structure report over the last 90 days"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"market.orders\",\"unit\":\"count\",\"value\":3733},{\"kind\":\"observed\",\"name\":\"market.buy_orders_share\",\"unit\":\"ratio\",\"value\":0.3961960889365122},{\"kind\":\"observed\",\"name\":\"market.buy_volume_share\",\"unit\":\"ratio\",\"value\":0.4577159836121877},{\"kind\":\"observed\",\"name\":\"market.premium_avg\",\"unit\":\"ratio\",\"value\":0.01},{\"kind\":\"observed\",\"name\":\"market.premium_p50\",\"unit\":\"ratio\",\"value\":0.01},{\"kind\":\"observed\",\"name\":\"market.premium_p50_buy\",\"unit\":\"ratio\",\"value\":0.0},{\"kind\":\"observed\",\"name\":\"market.premium_p50_sell\",\"unit\":\"ratio\",\"value\":0.02},{\"kind\":\"observed\",\"name\":\"market.premium_spread\",\"unit\":\"ratio\",\"value\":0.02},{\"kind\":\"observed\",\"name\":\"market.market_price_share\",\"unit\":\"ratio\",\"value\":0.671845700508974},{\"kind\":\"observed\",\"name\":\"market.range_share\",\"unit\":\"ratio\",\"value\":0.016072863648540048},{\"kind\":\"observed\",\"name\":\"market.range_width_avg\",\"unit\":\"ratio\",\"value\":0.7419851984727938},{\"kind\":\"observed\",\"name\":\"market.fiat_top3_by_orders\",\"unit\":\"text\",\"value\":\"USD 949, MXN 586, VES 571\"},{\"kind\":\"observed\",\"name\":\"market.fiat_top3_orders_share\",\"unit\":\"ratio\",\"value\":0.5641575140637557},{\"kind\":\"observed\",\"name\":\"market.fiat_hhi_orders\",\"unit\":\"ratio\",\"value\":0.14065836740091997},{\"kind\":\"observed\",\"name\":\"market.fiat_top3_by_volume\",\"unit\":\"text\",\"value\":\"MXN 17424770 sats, USD 8859626 sats, EUR 3420171 sats\"},{\"kind\":\"observed\",\"name\":\"market.fiat_top3_volume_share\",\"unit\":\"ratio\",\"value\":0.7248299113810839},{\"kind\":\"observed\",\"name\":\"market.fiat_hhi_volume\",\"unit\":\"ratio\",\"value\":0.24970079975605727},{\"kind\":\"observed\",\"name\":\"market.method_top3_by_orders\",\"unit\":\"text\",\"value\":\"Pago Móvil 557, SPEI 445, Transferencia bancaria 286\"},{\"kind\":\"observed\",\"name\":\"market.method_top3_by_volume\",\"unit\":\"text\",\"value\":\"SPEI 15028799 sats, Retiro Cajero BBVA 4575634 sats, Retiro sin tarjeta @alfredolimon 4243923 sats\"},{\"kind\":\"observed\",\"name\":\"market.new_fiats\",\"unit\":\"text\",\"value\":\"AED, BDT, DOP, ETB, GTQ, HNL, MYR, NGN, +5 more\"},{\"kind\":\"observed\",\"name\":\"market.new_methods\",\"unit\":\"text\",\"value\":\" B,  Bizum,  Guayaquil,  Pacífico,  PayPal,  Produbanco,  Wise,  do not take this order, +590 more\"}],\"range\":{\"from\":\"2026-05-30T22:18:42+00:00\",\"until\":\"2026-08-28T22:18:42+00:00\"}}}",
+  "sig": "3f23548982ddee1908254d2a1a3016d5219e1c818e5d1b22603aacd163fa2ec6e50826ae35d22dda8d8388d80c31d7a371f7e423dc170e3725d0c2c76d1c6fdd",
+  "id": "ee781c3e825f4eae647bdbae34a03dc278ea51d3ce028fa927deb85d70b0bdd2",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787955558,
+  "kind": 30666
+}

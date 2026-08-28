@@ -1,10 +1,4 @@
 {
-  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"opened\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.initiated\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.in_progress\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.seller_refunded\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.settled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.released\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"initiator.buyer\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"initiator.seller\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolved\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"outcome.seller_refunded\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.settled\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.released\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolution_p50\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"resolution_p90\",\"unit\":\"seconds\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"weekly\",\"rows\":[[\"2026-W32\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-W33\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-W34\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-W35\",35,3,1,25,6,0,0.37142857142857144,0.6285714285714286,0.16129032258064516,34,0.8235294117647058,0.17647058823529413,0.0,5430,34999],[\"2026-W36\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]]}}",
-  "created_at": 1787935865,
-  "id": "5d36d1468f995bfe2ba81539b39cda9b91057becf995167ba0f305a4ea66fe64",
-  "kind": 30666,
-  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
-  "sig": "7b9718ac6d5aff6a34341fdad91fac6d9356ba80085c94b1458e988080edf6646410af8b3b1831aa92134fbe6e85f8c2a96e2b9a2b94d30d920aec2365ab7c07",
   "tags": [
     [
       "d",
@@ -12,7 +6,7 @@
     ],
     [
       "s",
-      "20260828T165105Z"
+      "20260828T221918Z"
     ],
     [
       "t",
@@ -39,5 +33,11 @@
       "schema_version",
       "1"
     ]
-  ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"opened\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.initiated\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.in_progress\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.seller_refunded\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.settled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.released\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"initiator.buyer\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"initiator.seller\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolved\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"outcome.seller_refunded\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.settled\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.released\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolution_p50\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"resolution_p90\",\"unit\":\"seconds\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"weekly\",\"rows\":[[\"2026-W32\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-W33\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-W34\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-W35\",15,0,2,10,3,0,0.4,0.6,0.19736842105263158,15,0.8,0.2,0.0,2402,31217],[\"2026-W36\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]]}}",
+  "sig": "09722d7fc401808a0e48a66b59ed677f6bb78d1c67021b3c73c330d458a4d6bb8f205441353a2f40b59345f03fc57b3b751a46af0ca38a40db02284cc921bc96",
+  "id": "0bb70af91cc238d6c1df6248b2d3018d278cafb2f8c2f6d41a1779ff02245e5a",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787955558,
+  "kind": 30666
 }

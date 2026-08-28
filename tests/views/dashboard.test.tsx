@@ -186,7 +186,8 @@ describe('Dashboard · real figures', () => {
     await waitFor(() => {
       const note = container.querySelector('.b-map-gap')?.textContent ?? ''
       expect(note).toMatch(/ilustrativas/)
-      expect(note).toMatch(/instances/)
+      // Names the document whose absence is the reason.
+      expect(note).toMatch(/orders:…:i:<pubkey>/)
     })
   })
 
@@ -207,11 +208,16 @@ describe('Dashboard · real figures', () => {
   })
 
   test('reports the archive extent the index states', async () => {
+    // Read out of the index rather than named here: the archive moves.
+    const index = JSON.parse(fixtures.find((e) => dOf(e) === 'index')!.content) as {
+      coverage: { first_event_at: string; last_event_at: string }
+    }
     const { container } = render(<Dashboard />)
 
     await waitFor(() => {
-      expect(container.textContent).toContain('2026-08-27')
+      expect(container.textContent).toContain(index.coverage.first_event_at.slice(0, 10))
     })
+    expect(container.textContent).toContain(index.coverage.last_event_at.slice(0, 10))
   })
 })
 

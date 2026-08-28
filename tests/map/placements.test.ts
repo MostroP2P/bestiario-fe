@@ -3,7 +3,12 @@ import { readFileSync } from 'node:fs'
 import { geoContains } from 'd3-geo'
 import type { Topology } from 'topojson-specification'
 import { buildAtlas } from '~/model/atlas'
-import { placeAnchors, placeCurrencies, placeInstances } from '~/map/placements'
+import {
+  placeAnchors,
+  placeCurrencies,
+  placeInstances,
+  placeMostros,
+} from '~/map/placements'
 
 const atlas = buildAtlas(
   JSON.parse(readFileSync('public/geo/countries-110m.json', 'utf8')) as Topology,
@@ -132,5 +137,71 @@ describe('placeAnchors', () => {
 
   test('asks for none and gets none', () => {
     expect(placeAnchors(atlas, 5, 0).size).toBe(0)
+  })
+})
+
+describe('placeMostros', () => {
+  const AR = { pubkey: 'a'.repeat(64), name: 'Mostro 🇦🇷' }
+  const PLAIN = { pubkey: 'b'.repeat(64), name: 'Mostro' }
+
+  test('puts an instance whose name names a country inside it', () => {
+    // Act
+    const placed = placeMostros([AR], atlas, 4)
+
+    // Assert
+    expect(geoContains(atlas.byAlpha2.get('AR')!, placed.get(AR.pubkey)!.point)).toBe(
+      true,
+    )
+    expect(placed.get(AR.pubkey)!.approximate).toBe(false)
+  })
+
+  test('scatters an instance whose name names none, and says the point is a guess', () => {
+    // A real instance with real orders: leaving it off understates the
+    // network more than placing it loosely overstates it.
+    const placed = placeMostros([PLAIN], atlas, 4)
+
+    expect(placed.get(PLAIN.pubkey)).toBeDefined()
+    expect(placed.get(PLAIN.pubkey)!.approximate).toBe(true)
+  })
+
+  test('puts every scattered instance on land', () => {
+    const placed = placeMostros([PLAIN], atlas, 12)
+    const point = placed.get(PLAIN.pubkey)!.point
+
+    expect(atlas.features.some((feature) => geoContains(feature, point))).toBe(true)
+  })
+
+  test('does not move between renders of one visit', () => {
+    expect([...placeMostros([AR, PLAIN], atlas, 8)]).toEqual([
+      ...placeMostros([AR, PLAIN], atlas, 8),
+    ])
+  })
+
+  test('does not depend on the order the documents arrived in', () => {
+    expect([...placeMostros([AR, PLAIN], atlas, 8)]).toEqual([
+      ...placeMostros([PLAIN, AR], atlas, 8),
+    ])
+  })
+
+  test('does not move the currencies when an instance appears', () => {
+    const before = placeCurrencies(['ARS', 'VES'], atlas, 9)
+    placeMostros([AR, PLAIN], atlas, 9)
+    const after = placeCurrencies(['ARS', 'VES'], atlas, 9)
+
+    expect([...before]).toEqual([...after])
+  })
+
+  test('places nothing for no instances', () => {
+    expect(placeMostros([], atlas, 4).size).toBe(0)
+  })
+})
+
+describe('placeMostros · an atlas that can draw nothing', () => {
+  test('places no instance rather than inventing a point', () => {
+    const empty = { byAlpha2: new Map(), features: [] }
+
+    expect(
+      placeMostros([{ pubkey: 'c'.repeat(64), name: 'Mostro' }], empty, 1).size,
+    ).toBe(0)
   })
 })

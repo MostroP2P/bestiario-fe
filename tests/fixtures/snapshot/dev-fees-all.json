@@ -1,10 +1,4 @@
 {
-  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"dev_fees.total_sats\",\"unit\":\"sats\",\"value\":13129},{\"kind\":\"observed\",\"name\":\"dev_fees.paid\",\"unit\":\"count\",\"value\":60},{\"kind\":\"observed\",\"name\":\"dev_fees.coverage\",\"unit\":\"ratio\",\"value\":0.9821428571428571},{\"kind\":\"observed\",\"name\":\"dev_fees.latency_p50\",\"unit\":\"seconds\",\"value\":26},{\"kind\":\"observed\",\"name\":\"dev_fees.latency_p90\",\"unit\":\"seconds\",\"value\":52},{\"kind\":\"observed\",\"name\":\"dev_fees.duplicates\",\"unit\":\"count\",\"value\":0},{\"kind\":\"observed\",\"name\":\"dev_fees.orphans\",\"unit\":\"count\",\"value\":0},{\"error\":\"±27445 sats (worst case: ±1 sat per fee × 1/(fee×pct)); pct assumed 0.30; lower bound: 56 of 60 fees inverted; 4 fees with no fee in force\",\"kind\":\"inferred\",\"name\":\"dev_fees.implied_volume\",\"unit\":\"sats\",\"value\":6422278},{\"kind\":\"observed\",\"name\":\"dev_fees.with_fee_volume\",\"unit\":\"sats\",\"value\":7298050},{\"error\":\"implied / observed − 1 over the 54 fees whose order is known and settled; positive means the real dev fee share is above the assumed; ±0.0037 from the rounding of those fees\",\"kind\":\"inferred\",\"name\":\"dev_fees.implied_vs_observed\",\"unit\":\"ratio\",\"value\":-0.1050929212037921}],\"range\":{\"from\":\"2026-08-27T13:36:23+00:00\",\"until\":\"2026-08-28T16:36:34+00:00\"}}}",
-  "created_at": 1787935865,
-  "id": "c99a06280214056c9cd98c68c4575a80cb82b1ebc588f57df1c5570a2be7aa0f",
-  "kind": 30666,
-  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
-  "sig": "788249614fb14a47d7c4c5ff91b6fb8786acb7e96eb574d44f786dd3414219fecbf97214a62a5cfbeab20c3eb53520faf043c1fb063a5752a5128edf0ad0bf7a",
   "tags": [
     [
       "d",
@@ -12,7 +6,7 @@
     ],
     [
       "s",
-      "20260828T165105Z"
+      "20260828T221918Z"
     ],
     [
       "t",
@@ -30,5 +24,11 @@
       "schema_version",
       "1"
     ]
-  ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"dev_fees.total_sats\",\"unit\":\"sats\",\"value\":126},{\"kind\":\"observed\",\"name\":\"dev_fees.paid\",\"unit\":\"count\",\"value\":3},{\"kind\":\"observed\",\"name\":\"dev_fees.coverage\",\"unit\":\"ratio\",\"value\":1.0},{\"kind\":\"observed\",\"name\":\"dev_fees.latency_p50\",\"unit\":\"seconds\",\"value\":19},{\"kind\":\"observed\",\"name\":\"dev_fees.latency_p90\",\"unit\":\"seconds\",\"value\":48},{\"kind\":\"observed\",\"name\":\"dev_fees.duplicates\",\"unit\":\"count\",\"value\":0},{\"kind\":\"observed\",\"name\":\"dev_fees.orphans\",\"unit\":\"count\",\"value\":0},{\"error\":\"±1000 sats (worst case: ±1 sat per fee × 1/(fee×pct)); pct assumed 0.30\",\"kind\":\"inferred\",\"name\":\"dev_fees.implied_volume\",\"unit\":\"sats\",\"value\":42000},{\"kind\":\"observed\",\"name\":\"dev_fees.with_fee_volume\",\"unit\":\"sats\",\"value\":41970},{\"error\":\"implied / observed − 1 over the 3 fees whose order is known and settled; positive means the real dev fee share is above the assumed; ±0.0238 from the rounding of those fees\",\"kind\":\"inferred\",\"name\":\"dev_fees.implied_vs_observed\",\"unit\":\"ratio\",\"value\":0.0007147962830593713}],\"range\":{\"from\":\"2026-08-28T18:52:07+00:00\",\"until\":\"2026-08-28T22:18:42+00:00\"}}}",
+  "sig": "f9681cfca93dd86f768dd02e3406486bdabfd4116e952a20b10b95f813aa591000b7709e3026601fe9f2e30fd5e3be5902a7e9773dc38978666192e6d95152c8",
+  "id": "f99d57bfe05b747ffcd62b85c8a09a87e0c478a64e6e27d835d15c93832cf334",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787955558,
+  "kind": 30666
 }

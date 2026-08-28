@@ -146,13 +146,16 @@ describe('documents', () => {
   })
 
   test('marks a document the index does not name as unavailable', async () => {
-    // `instances:30d` is in the grammar and is not published today.
+    // `summary` has no series family, so this address is in the grammar and
+    // can never be published. A miss is not the same as a relay's silence.
     const store = createStore(fakeRelays(fixtures), PUBLISHER_PUBKEY)
     await store.start()
 
-    await store.need(['instances:30d'])
+    await store.need(['series:summary:daily:2026-08'])
 
-    expect(store.documents.value.get('instances:30d')).toEqual({ status: 'unavailable' })
+    expect(store.documents.value.get('series:summary:daily:2026-08')).toEqual({
+      status: 'unavailable',
+    })
   })
 
   test('marks a document signed by another key as unverified, and renders no figure', async () => {

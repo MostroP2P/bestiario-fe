@@ -6,7 +6,7 @@
     ],
     [
       "s",
-      "20260828T165105Z"
+      "20260828T221918Z"
     ],
     [
       "t",
@@ -25,10 +25,10 @@
       "1"
     ]
   ],
-  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"orders.created\",\"unit\":\"count\",\"value\":6787},{\"kind\":\"observed\",\"name\":\"orders.completed\",\"unit\":\"count\",\"value\":1152},{\"kind\":\"observed\",\"name\":\"orders.canceled\",\"unit\":\"count\",\"value\":5520},{\"kind\":\"observed\",\"name\":\"orders.completion_rate\",\"unit\":\"ratio\",\"value\":0.17266187050359713},{\"kind\":\"observed\",\"name\":\"orders.abandonment_rate\",\"unit\":\"ratio\",\"value\":0.8118461765139237},{\"kind\":\"observed\",\"name\":\"orders.created_delta\",\"unit\":\"ratio\",\"value\":3.5642232683254877},{\"kind\":\"observed\",\"name\":\"orders.completed_delta\",\"unit\":\"ratio\",\"value\":21.153846153846153},{\"kind\":\"observed\",\"name\":\"orders.open_now\",\"unit\":\"count\",\"value\":79},{\"kind\":\"observed\",\"name\":\"orders.in_progress_now\",\"unit\":\"count\",\"value\":41}],\"range\":{\"from\":\"2026-05-30T16:36:34+00:00\",\"until\":\"2026-08-28T16:36:34+00:00\"}}}",
-  "sig": "019c0b46d921ef9abd224e6e31ba262c4e7ec83642350931bedaa507967e90a334d25fc931718afa4fabdfcb104f1f7b811959536616921a6f1e5ca674579a54",
-  "id": "d9baf4088a6f658ae92474530cc7a3bc001af99994c7d7dd812a72c740fbf8bd",
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"orders.created\",\"unit\":\"count\",\"value\":3733},{\"kind\":\"observed\",\"name\":\"orders.completed\",\"unit\":\"count\",\"value\":441},{\"kind\":\"observed\",\"name\":\"orders.canceled\",\"unit\":\"count\",\"value\":3242},{\"kind\":\"observed\",\"name\":\"orders.completion_rate\",\"unit\":\"ratio\",\"value\":0.11973934292696171},{\"kind\":\"observed\",\"name\":\"orders.abandonment_rate\",\"unit\":\"ratio\",\"value\":0.8663273506563086},{\"kind\":\"observed\",\"name\":\"orders.created_delta\",\"unit\":\"ratio\",\"value\":1.508736559139785},{\"kind\":\"observed\",\"name\":\"orders.completed_delta\",\"unit\":\"ratio\",\"value\":7.480769230769231},{\"kind\":\"observed\",\"name\":\"orders.open_now\",\"unit\":\"count\",\"value\":37},{\"kind\":\"observed\",\"name\":\"orders.in_progress_now\",\"unit\":\"count\",\"value\":19}],\"range\":{\"from\":\"2026-05-30T22:18:42+00:00\",\"until\":\"2026-08-28T22:18:42+00:00\"}}}",
+  "sig": "2ba9ee87e180c6dbbc0353a4cc06c151e0bea65564135e2f3a4c3888a3aee1b1c40b65be38a9f7b6fad49286ef4ab852e52cbab80707a7139c8f33cb86d96d86",
+  "id": "d35635e545859842ab50b998dfb6f13c30c7509ee8c5f679020668cb53907664",
   "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
-  "created_at": 1787935865,
+  "created_at": 1787955558,
   "kind": 30666
 }

@@ -1,0 +1,34 @@
+{
+  "tags": [
+    [
+      "d",
+      "summary:30d"
+    ],
+    [
+      "s",
+      "20260828T221918Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario network summary report over the last 30 days"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"summary.created\",\"unit\":\"count\",\"value\":3080},{\"kind\":\"observed\",\"name\":\"summary.completed\",\"unit\":\"count\",\"value\":422},{\"kind\":\"observed\",\"name\":\"summary.completion_rate\",\"unit\":\"ratio\",\"value\":0.13922797756516},{\"kind\":\"observed\",\"name\":\"summary.volume_sats\",\"unit\":\"sats\",\"value\":40017882},{\"kind\":\"observed\",\"name\":\"summary.active_instances\",\"unit\":\"count\",\"value\":1},{\"kind\":\"observed\",\"name\":\"summary.top_fiat\",\"unit\":\"text\",\"value\":\"USD (713), MXN (579), VES (470)\"},{\"kind\":\"observed\",\"name\":\"summary.top_methods\",\"unit\":\"text\",\"value\":\"Pago Móvil (456), SPEI (441), Transferencia bancaria (241)\"},{\"kind\":\"observed\",\"name\":\"summary.open_disputes\",\"unit\":\"count\",\"value\":41}],\"range\":{\"from\":\"2026-07-29T22:18:42+00:00\",\"until\":\"2026-08-28T22:18:42+00:00\"}}}",
+  "sig": "bf51c3d91959e3989f49e9cb8f64f1e680c8b7fd204ae76c5beddd137e5d09dee3448cfba4a75381337d5a19d7c1078b2707c52407c052465219dccbaa0d1c44",
+  "id": "5c5ecd33356d318647cb669999ca2ddd1aa2bddad162c8dc9cf8103abec8ae79",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787955558,
+  "kind": 30666
+}

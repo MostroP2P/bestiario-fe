@@ -1,0 +1,34 @@
+{
+  "tags": [
+    [
+      "d",
+      "market:7d"
+    ],
+    [
+      "s",
+      "20260828T221918Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario market structure report over the last 7 days"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"market.orders\",\"unit\":\"count\",\"value\":682},{\"kind\":\"observed\",\"name\":\"market.buy_orders_share\",\"unit\":\"ratio\",\"value\":0.38269794721407624},{\"kind\":\"observed\",\"name\":\"market.buy_volume_share\",\"unit\":\"ratio\",\"value\":0.43009531286132086},{\"kind\":\"observed\",\"name\":\"market.premium_avg\",\"unit\":\"ratio\",\"value\":0.008645833333333333},{\"kind\":\"observed\",\"name\":\"market.premium_p50\",\"unit\":\"ratio\",\"value\":0.01},{\"kind\":\"observed\",\"name\":\"market.premium_p50_buy\",\"unit\":\"ratio\",\"value\":-0.03},{\"kind\":\"observed\",\"name\":\"market.premium_p50_sell\",\"unit\":\"ratio\",\"value\":0.03},{\"kind\":\"observed\",\"name\":\"market.premium_spread\",\"unit\":\"ratio\",\"value\":0.06},{\"kind\":\"observed\",\"name\":\"market.market_price_share\",\"unit\":\"ratio\",\"value\":0.6085043988269795},{\"kind\":\"observed\",\"name\":\"market.range_share\",\"unit\":\"ratio\",\"value\":0.06744868035190615},{\"kind\":\"observed\",\"name\":\"market.range_width_avg\",\"unit\":\"ratio\",\"value\":0.754141665013954},{\"kind\":\"observed\",\"name\":\"market.fiat_top3_by_orders\",\"unit\":\"text\",\"value\":\"USD 155, MXN 151, ARS 92\"},{\"kind\":\"observed\",\"name\":\"market.fiat_top3_orders_share\",\"unit\":\"ratio\",\"value\":0.5835777126099706},{\"kind\":\"observed\",\"name\":\"market.fiat_hhi_orders\",\"unit\":\"ratio\",\"value\":0.15063939938597012},{\"kind\":\"observed\",\"name\":\"market.fiat_top3_by_volume\",\"unit\":\"text\",\"value\":\"MXN 3616473 sats, USD 1170680 sats, ARS 768817 sats\"},{\"kind\":\"observed\",\"name\":\"market.fiat_top3_volume_share\",\"unit\":\"ratio\",\"value\":0.8065237029392838},{\"kind\":\"observed\",\"name\":\"market.fiat_hhi_volume\",\"unit\":\"ratio\",\"value\":0.3248104010472258},{\"kind\":\"observed\",\"name\":\"market.method_top3_by_orders\",\"unit\":\"text\",\"value\":\"SPEI 115, Pago Móvil 88, CVU 74\"},{\"kind\":\"observed\",\"name\":\"market.method_top3_by_volume\",\"unit\":\"text\",\"value\":\"SPEI 3445751 sats, Retiro sin tarjeta @alfredolimon 1774786 sats, retiro sin tarjeta @nantulec 1046685 sats\"},{\"kind\":\"observed\",\"name\":\"market.new_fiats\",\"unit\":\"missing\",\"value\":null},{\"kind\":\"observed\",\"name\":\"market.new_methods\",\"unit\":\"text\",\"value\":\"21-2: testing only, @badlimon, ACH, ACTUALIZA MOSTRO A LA ULTIMA VERSION 1.3.3, Actualiza tu app porque no me llegan tus mensajes, AstroPay, Astropay TED, BANCO PICHINCHA 🏦, +94 more\"}],\"range\":{\"from\":\"2026-08-21T22:18:42+00:00\",\"until\":\"2026-08-28T22:18:42+00:00\"}}}",
+  "sig": "4987976f6a4bd0f77040c2d1520b9c5aa14af4e9dfdf541f113b5fd43a6d70bfb8eff434a6236da60a04a891cf2ea10950116826e799581c22a6792927f0bd68",
+  "id": "7e18c9d909da561e54f92c76d100711b3e63080b1e6811a253e1243a0bf68031",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787955558,
+  "kind": 30666
+}

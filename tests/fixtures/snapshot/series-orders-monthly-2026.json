@@ -6,7 +6,7 @@
     ],
     [
       "s",
-      "20260828T165105Z"
+      "20260828T221918Z"
     ],
     [
       "t",
@@ -34,10 +34,10 @@
       "1"
     ]
   ],
-  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"created\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completed\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"canceled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completion_rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"abandonment_rate\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-01-01T00:00:00+00:00\",\"until\":\"2027-01-01T00:00:00+00:00\"},\"resolution\":\"monthly\",\"rows\":[[\"2026-01\",null,null,null,null,null],[\"2026-02\",null,null,null,null,null],[\"2026-03\",null,null,null,null,null],[\"2026-04\",null,null,null,null,null],[\"2026-05\",null,null,null,null,null],[\"2026-06\",null,null,null,null,null],[\"2026-07\",null,null,null,null,null],[\"2026-08\",6051,1128,4809,0.18999494694290045,0.7930920509006776],[\"2026-09\",null,null,null,null,null],[\"2026-10\",null,null,null,null,null],[\"2026-11\",null,null,null,null,null],[\"2026-12\",null,null,null,null,null]]}}",
-  "sig": "4cb0005d06777026a03bf16e78c1dd2ed539bdb2fb91f3b44cef43bc7a98015d3034d593de12acca18977efb5e8ce791f087c987bdbcbb123794e8b56ff827d1",
-  "id": "117e79def1de117683c0a4859d644bbad4da22b34a61c86532b59e41e0fe3279",
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"created\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completed\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"canceled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completion_rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"abandonment_rate\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-01-01T00:00:00+00:00\",\"until\":\"2027-01-01T00:00:00+00:00\"},\"resolution\":\"monthly\",\"rows\":[[\"2026-01\",null,null,null,null,null],[\"2026-02\",null,null,null,null,null],[\"2026-03\",null,null,null,null,null],[\"2026-04\",null,null,null,null,null],[\"2026-05\",null,null,null,null,null],[\"2026-06\",null,null,null,null,null],[\"2026-07\",null,null,null,null,null],[\"2026-08\",3049,421,2579,0.14033333333333334,0.8432272876352903],[\"2026-09\",null,null,null,null,null],[\"2026-10\",null,null,null,null,null],[\"2026-11\",null,null,null,null,null],[\"2026-12\",null,null,null,null,null]]}}",
+  "sig": "88082780dab79b2fe9aeaeb117865b7f7ef27c706667602d5f2eac3caafd999ffc8d0acb7a00fda37c657ee0be076cdea5d79f5788e7a09e07720fbb09bf1a09",
+  "id": "7c4860b9ac0973843142b32a63886268bb324e3306fed44ad7c4a92bb0f4f8d9",
   "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
-  "created_at": 1787935865,
+  "created_at": 1787955558,
   "kind": 30666
 }

@@ -1,0 +1,34 @@
+{
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).pubkey\",\"unit\":\"text\",\"value\":\"82fa8cb978b43c79b2156585bac2c011176a21d2aead6d9f7c575c005be88390\"},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).name\",\"unit\":\"text\",\"value\":\"Mostro\"},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).mostro_version\",\"unit\":\"text\",\"value\":\"0.18.5\"},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).protocol_version\",\"unit\":\"text\",\"value\":\"2\"},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).fee\",\"unit\":\"ratio\",\"value\":0.01},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).min_order\",\"unit\":\"sats\",\"value\":500},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).max_order\",\"unit\":\"sats\",\"value\":500000},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).fiat\",\"unit\":\"missing\",\"value\":null},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).ln_networks\",\"unit\":\"text\",\"value\":\"mainnet\"},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).bond\",\"unit\":\"text\",\"value\":\"enabled\"},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).first_seen\",\"unit\":\"text\",\"value\":\"2026-01-10T18:49:59+00:00\"},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).last_seen\",\"unit\":\"text\",\"value\":\"2026-08-28T22:18:42+00:00\"},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).silent_for\",\"unit\":\"seconds\",\"value\":36},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).silent\",\"unit\":\"text\",\"value\":\"no\"},{\"kind\":\"observed\",\"name\":\"instances.Mostro (82fa8cb9).created\",\"unit\":\"count\",\"value\":3080}],\"range\":{\"from\":\"2026-07-29T22:18:42+00:00\",\"until\":\"2026-08-28T22:18:42+00:00\"}}}",
+  "created_at": 1787955558,
+  "id": "ea814db414bbf29b6e06e586a30ad0c8794a4941188ab0eb5bb9b08286db91b8",
+  "kind": 30666,
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "sig": "f82b3bf4f9e6c7b132d22aa8625b384df82b8aab75ccd47e03ee6601a0b94dcc72e6da32127ff45e54fa92c107465ed6e95d53b5b77e9bfe24e764c480a43de4",
+  "tags": [
+    [
+      "d",
+      "instances:30d"
+    ],
+    [
+      "s",
+      "20260828T221918Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario instances report over the last 30 days"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ]
+}

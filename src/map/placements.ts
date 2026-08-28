@@ -87,3 +87,52 @@ export function placeAnchors(
   }
   return placed
 }
+
+export type MostroPlacement = {
+  readonly point: LonLat
+  /**
+   * True when the instance's name named no place and the point is a
+   * scattering rather than a location. The map says so; nothing published
+   * carries an instance's coordinates.
+   */
+  readonly approximate: boolean
+}
+
+/** Every country the atlas can draw, for scattering an instance that names none. */
+function anywhere(atlas: Atlas, rng: () => number): LonLat | null {
+  const codes = [...atlas.byAlpha2.keys()].sort()
+  if (codes.length === 0) return null
+  const pick = codes[Math.floor(rng() * codes.length)]!
+  return pointFor({ kind: 'country', alpha2: pick, via: 'name' }, atlas, rng)
+}
+
+/**
+ * pubkey → where to draw the instance, and whether that is a claim.
+ *
+ * An instance publishes a name and no coordinates. A name that carries a flag
+ * or a country is a location; a name like "Mostro" is not, and the instance
+ * is scattered and flagged as approximate rather than left off the map — it
+ * is a real instance with real orders, and hiding it would understate the
+ * network more than placing it loosely overstates it.
+ */
+export function placeMostros(
+  instances: readonly InstanceRef[],
+  atlas: Atlas,
+  seed: number,
+): Map<string, MostroPlacement> {
+  // Its own stream, so an instance appearing does not move the currencies.
+  const rng = seededRng(seed ^ 0x7a3f19c5)
+  const placed = new Map<string, MostroPlacement>()
+  for (const instance of [...instances].sort((a, b) =>
+    a.pubkey.localeCompare(b.pubkey),
+  )) {
+    const claimed = pointFor(resolvePlacement(instance.name), atlas, rng)
+    if (claimed) {
+      placed.set(instance.pubkey, { point: claimed, approximate: false })
+      continue
+    }
+    const scattered = anywhere(atlas, rng)
+    if (scattered) placed.set(instance.pubkey, { point: scattered, approximate: true })
+  }
+  return placed
+}

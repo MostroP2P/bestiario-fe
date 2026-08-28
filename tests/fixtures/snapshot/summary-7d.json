@@ -1,0 +1,34 @@
+{
+  "tags": [
+    [
+      "d",
+      "summary:7d"
+    ],
+    [
+      "s",
+      "20260828T221918Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario network summary report over the last 7 days"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"summary.created\",\"unit\":\"count\",\"value\":682},{\"kind\":\"observed\",\"name\":\"summary.completed\",\"unit\":\"count\",\"value\":96},{\"kind\":\"observed\",\"name\":\"summary.completion_rate\",\"unit\":\"ratio\",\"value\":0.15},{\"kind\":\"observed\",\"name\":\"summary.volume_sats\",\"unit\":\"sats\",\"value\":6888787},{\"kind\":\"observed\",\"name\":\"summary.active_instances\",\"unit\":\"count\",\"value\":1},{\"kind\":\"observed\",\"name\":\"summary.top_fiat\",\"unit\":\"text\",\"value\":\"USD (155), MXN (151), ARS (92)\"},{\"kind\":\"observed\",\"name\":\"summary.top_methods\",\"unit\":\"text\",\"value\":\"SPEI (115), Pago Móvil (88), CVU (74)\"},{\"kind\":\"observed\",\"name\":\"summary.open_disputes\",\"unit\":\"count\",\"value\":41}],\"range\":{\"from\":\"2026-08-21T22:18:42+00:00\",\"until\":\"2026-08-28T22:18:42+00:00\"}}}",
+  "sig": "9f181dfe78d4f79f8a29b569a1aad04f5f2274c928dd185fe3d8f56a922c426fe8c9af0521cfe22639eed12faae94a8acc061f51410de167cac2c6a1cb5faed3",
+  "id": "431d7ccfd533f21ae46e87b4468f13171acea0362304699a112ccd4fd8d54d65",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787955558,
+  "kind": 30666
+}

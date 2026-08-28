@@ -1,10 +1,10 @@
 {
-  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"total_sats\",\"unit\":\"sats\"},{\"kind\":\"observed\",\"name\":\"paid\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"coverage\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"latency_p50\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"latency_p90\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"duplicates\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"orphans\",\"unit\":\"count\"},{\"error\":\"±147445 sats (worst case: ±1 sat per fee × 1/(fee×pct)); pct assumed 0.30; lower bound: 272 of 1132 fees inverted; 860 fees with no fee in force\",\"kind\":\"inferred\",\"name\":\"implied_volume\",\"unit\":\"sats\"},{\"kind\":\"observed\",\"name\":\"with_fee_volume\",\"unit\":\"sats\"},{\"error\":\"implied / observed − 1 over the 266 fees whose order is known and settled; positive means the real dev fee share is above the assumed; ±0.0042 from the rounding of those fees\",\"kind\":\"inferred\",\"name\":\"implied_vs_observed\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"weekly\",\"rows\":[[\"2026-W32\",null,null,null,null,null,null,null,null,null,null],[\"2026-W33\",null,null,null,null,null,null,null,null,null,null],[\"2026-W34\",null,null,null,null,null,null,null,null,null,null],[\"2026-W35\",34074,199,0.9753086419753086,6,51,0,0,8273389,17759822,-0.08393594846397512],[\"2026-W36\",null,null,null,null,null,null,null,null,null,null]]}}",
-  "created_at": 1787935865,
-  "id": "019b4cb9f4650280f85689cbd6fea1df91c25b7e96f0ad25230e3f7d75f36ae0",
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"total_sats\",\"unit\":\"sats\"},{\"kind\":\"observed\",\"name\":\"paid\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"coverage\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"latency_p50\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"latency_p90\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"duplicates\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"orphans\",\"unit\":\"count\"},{\"error\":\"±1667 sats (worst case: ±1 sat per fee × 1/(fee×pct)); pct assumed 0.30; lower bound: 5 of 428 fees inverted; 423 fees with no fee in force\",\"kind\":\"inferred\",\"name\":\"implied_volume\",\"unit\":\"sats\"},{\"kind\":\"observed\",\"name\":\"with_fee_volume\",\"unit\":\"sats\"},{\"error\":\"implied / observed − 1 over the 5 fees whose order is known and settled; positive means the real dev fee share is above the assumed; ±0.0067 from the rounding of those fees\",\"kind\":\"inferred\",\"name\":\"implied_vs_observed\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"weekly\",\"rows\":[[\"2026-W32\",null,null,null,null,null,null,null,null,null,null],[\"2026-W33\",null,null,null,null,null,null,null,null,null,null],[\"2026-W34\",null,null,null,null,null,null,null,null,null,null],[\"2026-W35\",13765,69,1.0,25,55,0,0,249000,4589066,0.0007797239616407214],[\"2026-W36\",null,null,null,null,null,null,null,null,null,null]]}}",
+  "created_at": 1787955558,
+  "id": "5aaea907b8160ceb49bce6d9c5eb63acfffd50c54027a9de93670ab96e714f59",
   "kind": 30666,
   "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
-  "sig": "20e7d10b3811d6b8b1364d803451727a7691ce7eabe1cced704d037f54f523589cb780c8b54ba9f4a69a71187303f0c417afe9babc6635b670884be3bbd2ebb8",
+  "sig": "cb2a2df1d8852b8af38b46cf4da0efe4cb3264c502b0ace6203992376c3424703e2dc0bc5b90b89e4539be20155aa0f275d7083c44b9604335579ae0f5641378",
   "tags": [
     [
       "d",
@@ -12,7 +12,7 @@
     ],
     [
       "s",
-      "20260828T165105Z"
+      "20260828T221918Z"
     ],
     [
       "t",

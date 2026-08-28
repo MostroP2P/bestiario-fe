@@ -1,0 +1,34 @@
+{
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"compare.Mostro (82fa8cb9).completed\",\"unit\":\"count\",\"value\":24},{\"kind\":\"observed\",\"name\":\"compare.Mostro (82fa8cb9).volume_sats\",\"unit\":\"sats\",\"value\":1559296},{\"kind\":\"observed\",\"name\":\"compare.Mostro (82fa8cb9).completion_rate\",\"unit\":\"ratio\",\"value\":0.26373626373626374},{\"kind\":\"observed\",\"name\":\"compare.Mostro (82fa8cb9).fee\",\"unit\":\"ratio\",\"value\":0.01},{\"kind\":\"observed\",\"name\":\"compare.Mostro (82fa8cb9).dev_fees_sats\",\"unit\":\"sats\",\"value\":4675},{\"kind\":\"observed\",\"name\":\"compare.Mostro (82fa8cb9).dispute_rate\",\"unit\":\"ratio\",\"value\":0.14285714285714285},{\"kind\":\"observed\",\"name\":\"compare.Mostro (82fa8cb9).version\",\"unit\":\"text\",\"value\":\"0.18.5\"}],\"range\":{\"from\":\"2026-08-27T22:18:42+00:00\",\"until\":\"2026-08-28T22:18:42+00:00\"}}}",
+  "created_at": 1787955558,
+  "id": "4849669d8ef82e1fa4139a637fbf961d63eb61af9bf998f8d3cc196d5b7f30f2",
+  "kind": 30666,
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "sig": "e85991910ba8bde6fbf8859573ce0c2ec960955c8d2fabf2fd36401125c31fa733e485d70eed950af6a2b8005986769cd87502cfaf19c6bb399e67eba1b27c26",
+  "tags": [
+    [
+      "d",
+      "compare:24h"
+    ],
+    [
+      "s",
+      "20260828T221918Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario instance comparison report over the last 24 hours"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ]
+}

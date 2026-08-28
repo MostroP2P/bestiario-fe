@@ -6,7 +6,7 @@
     ],
     [
       "s",
-      "20260828T165105Z"
+      "20260828T221918Z"
     ],
     [
       "t",
@@ -34,10 +34,10 @@
       "1"
     ]
   ],
-  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"created\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completed\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"canceled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completion_rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"abandonment_rate\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"weekly\",\"rows\":[[\"2026-W32\",null,null,null,null,null],[\"2026-W33\",null,null,null,null,null],[\"2026-W34\",null,null,null,null,null],[\"2026-W35\",1065,202,769,0.20803295571575695,0.7220657276995305],[\"2026-W36\",null,null,null,null,null]]}}",
-  "sig": "81853dd794fc93449511772790bc8f87a69695fac048f39e8b28a30e31146da403cd18745c7365fbc2419c3bdc92bb2d72898f7c765451260cacbb2d8c7bbe1d",
-  "id": "4ef543d7daaaa49adb6cd920e680e1ed23bdf7d2d88fe56205b5cd0d02b9b564",
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"created\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completed\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"canceled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completion_rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"abandonment_rate\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"weekly\",\"rows\":[[\"2026-W32\",null,null,null,null,null],[\"2026-W33\",null,null,null,null,null],[\"2026-W34\",null,null,null,null,null],[\"2026-W35\",463,70,351,0.166270783847981,0.755939524838013],[\"2026-W36\",null,null,null,null,null]]}}",
+  "sig": "649d938775e78e1d9bee00435a03c3215f99a7efdb75875d0b09da53eb9bb0b12bfcc8c0db1f6435cdc26509ced3c3412e6f82d58d5fed80153b1e1609db699e",
+  "id": "494a5dc521050b5f55d44285f8c84eba25433e714f51b1b300703b25752cbfe9",
   "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
-  "created_at": 1787935865,
+  "created_at": 1787955558,
   "kind": 30666
 }

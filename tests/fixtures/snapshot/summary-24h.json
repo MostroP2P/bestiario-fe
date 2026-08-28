@@ -1,0 +1,34 @@
+{
+  "tags": [
+    [
+      "d",
+      "summary:24h"
+    ],
+    [
+      "s",
+      "20260828T221918Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario network summary report over the last 24 hours"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"summary.created\",\"unit\":\"count\",\"value\":125},{\"kind\":\"observed\",\"name\":\"summary.completed\",\"unit\":\"count\",\"value\":24},{\"kind\":\"observed\",\"name\":\"summary.completion_rate\",\"unit\":\"ratio\",\"value\":0.26373626373626374},{\"kind\":\"observed\",\"name\":\"summary.volume_sats\",\"unit\":\"sats\",\"value\":1559296},{\"kind\":\"observed\",\"name\":\"summary.active_instances\",\"unit\":\"count\",\"value\":1},{\"kind\":\"observed\",\"name\":\"summary.top_fiat\",\"unit\":\"text\",\"value\":\"MXN (42), USD (27), VES (17)\"},{\"kind\":\"observed\",\"name\":\"summary.top_methods\",\"unit\":\"text\",\"value\":\"SPEI (30), Pago Móvil (17), Retiro sin tarjeta @alfredolimon (14)\"},{\"kind\":\"observed\",\"name\":\"summary.open_disputes\",\"unit\":\"count\",\"value\":41}],\"range\":{\"from\":\"2026-08-27T22:18:42+00:00\",\"until\":\"2026-08-28T22:18:42+00:00\"}}}",
+  "sig": "afc339a06f3f1c658b7625e8c269f3b3b2c47076c7ee1c7517de213e666e9de3dcc6c0076495ccfb0d59ab09b4b5c3eb3a208fdcda5c207342cc542ab1b83cea",
+  "id": "b4b4e0cb0d91beee3aa2c0839c4ecb13bf9d29efbb396fc45fb872a57bbc097b",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787955558,
+  "kind": 30666
+}

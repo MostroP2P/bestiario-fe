@@ -44,6 +44,17 @@ function tampered(event: Event, content: string): Event {
   return { ...event, content }
 }
 
+/** Moves the first figure in the document, whatever it happens to be. */
+function bumpFirstFigure(content: string): string {
+  const altered = content.replace(
+    /"value":(\d+)/,
+    (_, digits: string) => `"value":${Number(digits) + 1}`,
+  )
+  if (altered === content)
+    throw new Error('the fixture carries no numeric figure to move')
+  return altered
+}
+
 describe('verifySigned', () => {
   test('accepts a real event from the publisher', () => {
     expect(verifySigned(ordersEvent, PUBLISHER_PUBKEY)).toEqual({
@@ -66,10 +77,7 @@ describe('verifySigned', () => {
   test('refuses an event whose content was changed under its signature', () => {
     // Arrange — the figure a reader would see, moved. The id and sig are
     // the originals, which is exactly what an altered event looks like.
-    const altered = tampered(
-      ordersEvent,
-      ordersEvent.content.replace('"value":250', '"value":99999'),
-    )
+    const altered = tampered(ordersEvent, bumpFirstFigure(ordersEvent.content))
     expect(altered.content).not.toBe(ordersEvent.content)
 
     expect(verifySigned(altered, PUBLISHER_PUBKEY)).toEqual({
@@ -83,10 +91,7 @@ describe('verifySigned', () => {
     // Object spread copies symbol properties, so verifying the original
     // first and then a tampered copy is the shape that would slip through.
     expect(verifySigned(ordersEvent, PUBLISHER_PUBKEY).ok).toBe(true)
-    const altered = tampered(
-      ordersEvent,
-      ordersEvent.content.replace('"value":250', '"value":1'),
-    )
+    const altered = tampered(ordersEvent, bumpFirstFigure(ordersEvent.content))
 
     expect(verifySigned(altered, PUBLISHER_PUBKEY)).toEqual({
       ok: false,

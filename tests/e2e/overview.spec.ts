@@ -68,28 +68,33 @@ test.describe('absence', () => {
     await serveRelay(page, events)
   })
 
-  test('renders a figure the publisher could not measure as absence, not as zero', async ({
+  test('never renders an em dash without saying which absence it is', async ({
     page,
   }) => {
-    // Arrange — the reference currency is `missing` on this archive: no
-    // completed order had a usable rate.
+    // The rule, not one figure: which figures are absent depends on the
+    // archive, and the archive moves. What must hold on every render is that
+    // a dash a reader can see is a dash a screen reader can read.
     await page.goto('/')
-    const row = page.locator('.b-pair', { hasText: 'volumen en USD' })
+    await expect(page.locator('.b-kpi strong').first()).not.toBeEmpty()
 
-    // Act / Assert
-    await expect(row).toBeVisible()
-    await expect(row.locator('.b-figure[data-absent="true"]')).toBeVisible()
-    await expect(row).toContainText('—')
-    await expect(row).not.toContainText('0 sats')
+    const absent = page.locator('.b-figure[data-absent="true"]')
+    for (let i = 0; i < (await absent.count()); i++) {
+      const figure = absent.nth(i)
+      await expect(figure).toContainText('—')
+      await expect(figure.locator('.b-visually-hidden')).not.toBeEmpty()
+    }
   })
 
-  test('says which absence it is, for a reader who cannot see the dash', async ({
-    page,
-  }) => {
+  test('never renders a figure as a zero it was not given', async ({ page }) => {
+    // A dash and a zero mean different things, and the one thing this map
+    // must never do is turn the first into the second.
     await page.goto('/')
-    const row = page.locator('.b-pair', { hasText: 'volumen en USD' })
+    await expect(page.locator('.b-kpi strong').first()).not.toBeEmpty()
 
-    await expect(row.locator('.b-visually-hidden')).toHaveText('no medido')
+    const absent = page.locator('.b-figure[data-absent="true"]')
+    for (let i = 0; i < (await absent.count()); i++) {
+      await expect(absent.nth(i)).not.toHaveText(/^0/)
+    }
   })
 })
 

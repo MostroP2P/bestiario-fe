@@ -1,10 +1,4 @@
 {
-  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"opened\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.initiated\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.in_progress\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.seller_refunded\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.settled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.released\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"initiator.buyer\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"initiator.seller\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolved\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"outcome.seller_refunded\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.settled\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.released\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolution_p50\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"resolution_p90\",\"unit\":\"seconds\"}],\"period\":{\"from\":\"2026-01-01T00:00:00+00:00\",\"until\":\"2027-01-01T00:00:00+00:00\"},\"resolution\":\"monthly\",\"rows\":[[\"2026-01\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-02\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-03\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-04\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-05\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-06\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-07\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08\",173,3,37,112,21,0,0.3815028901734104,0.6184971098265897,0.1476109215017065,133,0.8421052631578947,0.15789473684210525,0.0,1172,21215],[\"2026-09\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-10\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-11\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-12\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]]}}",
-  "created_at": 1787935865,
-  "id": "45520b46ea1e291cbca98b77f02d6cf819fecbdd01e538f76bffbc62b0b9bab0",
-  "kind": 30666,
-  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
-  "sig": "bb5f5cbdc5723e74d96dc9de8be63044c4b4f923689693b2877d7182972d62a181540b1625ba6775f07f62d038611c701d5ee257c2e70b4fc245c3e733238942",
   "tags": [
     [
       "d",
@@ -12,7 +6,7 @@
     ],
     [
       "s",
-      "20260828T165105Z"
+      "20260828T221918Z"
     ],
     [
       "t",
@@ -39,5 +33,11 @@
       "schema_version",
       "1"
     ]
-  ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T221918Z\",\"generated_at\":\"2026-08-28T22:19:18+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"opened\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.initiated\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.in_progress\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.seller_refunded\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.settled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.released\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"initiator.buyer\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"initiator.seller\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolved\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"outcome.seller_refunded\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.settled\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.released\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolution_p50\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"resolution_p90\",\"unit\":\"seconds\"}],\"period\":{\"from\":\"2026-01-01T00:00:00+00:00\",\"until\":\"2027-01-01T00:00:00+00:00\"},\"resolution\":\"monthly\",\"rows\":[[\"2026-01\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-02\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-03\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-04\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-05\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-06\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-07\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08\",95,0,36,51,8,0,0.4842105263157895,0.5157894736842106,0.21541950113378686,59,0.864406779661017,0.13559322033898305,0.0,10,15436],[\"2026-09\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-10\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-11\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-12\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]]}}",
+  "sig": "48b9f9ae81d4d47ffe6c14fb15a6fc561319233292ebddc1cedfbd61c40b6153623d5c57bff7615521c2d071a71544944f8a2b295bfa469314c607dc445a4415",
+  "id": "0f506adffbbb7852eb8bfc5199431898ca0d71b045811ede2b586adb4683542c",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787955558,
+  "kind": 30666
 }

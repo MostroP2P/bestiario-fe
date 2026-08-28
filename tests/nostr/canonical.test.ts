@@ -3,7 +3,13 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { canonicalPayload, renderFloat } from '~/nostr/canonical'
 import { sha256Hex } from '~/nostr/hash'
 import { PUBLISHER_PUBKEY } from '~/config'
-import type { Envelope, IndexDoc, Payload } from '~/nostr/documents'
+import type {
+  Envelope,
+  IndexDoc,
+  Payload,
+  SeriesPayload,
+  WindowPayload,
+} from '~/nostr/documents'
 
 const DIR = 'tests/fixtures/snapshot'
 
@@ -100,12 +106,33 @@ describe('canonicalPayload', () => {
   })
 
   test('writes a metric fiat value as an object and a row cell as a bare float', () => {
-    const window = canonicalPayload(payloadOf('volume:all'))
-    const series = canonicalPayload(payloadOf('series:volume:daily:2026-08'))
+    // Arrange — the two shapes share a unit name, and treating them alike is
+    // what made three of the thirty-two fail a first reconstruction. Both are
+    // read out of the documents rather than named here, so this survives a
+    // regeneration.
+    const window = payloadOf('volume:all') as WindowPayload
+    const fiatMetric = window.metrics.find(
+      (metric) => metric.unit === 'fiat' && metric.value !== null,
+    )
+    const series = payloadOf('series:volume:daily:2026-08') as SeriesPayload
+    const column = series.columns.findIndex((c) => c.unit === 'fiat')
+    const cell = series.rows.map((row) => row[column]).find((v) => typeof v === 'number')
 
-    expect(window).toContain('{"amount":422550.0,"code":"ARS"}')
-    expect(series).toContain('114400.0')
-    expect(series).not.toContain('{"amount":114400.0')
+    // Act
+    const windowText = canonicalPayload(window)
+    const seriesText = canonicalPayload(series)
+
+    // Assert
+    expect(fiatMetric, 'no fiat metric in the fixture').toBeDefined()
+    const fiat = fiatMetric!.value as { amount: number; code: string }
+    expect(windowText).toContain(
+      `{"amount":${renderFloat(fiat.amount)},"code":"${fiat.code}"}`,
+    )
+
+    if (cell !== undefined) {
+      expect(seriesText).toContain(renderFloat(cell))
+      expect(seriesText).not.toContain(`{"amount":${renderFloat(cell)}`)
+    }
   })
 
   test('omits an absent error rather than writing null', () => {
@@ -115,9 +142,18 @@ describe('canonicalPayload', () => {
   })
 
   test('keeps an error that is present', () => {
-    const text = canonicalPayload(payloadOf('volume:all'))
+    // Some figure in the corpus is inferred and says what it rests on;
+    // whichever it is, its text has to survive into the hashed bytes.
+    const entry = index.documents.find((doc) => {
+      const payload = payloadOf(doc.d)
+      return 'metrics' in payload && payload.metrics.some((m) => m.error !== undefined)
+    })
+    expect(entry, 'no document in the fixture carries an error').toBeDefined()
 
-    expect(text).toContain('"error":"no rate used;')
+    const payload = payloadOf(entry!.d) as WindowPayload
+    const error = payload.metrics.find((m) => m.error !== undefined)!.error!
+
+    expect(canonicalPayload(payload)).toContain(`"error":${JSON.stringify(error)}`)
   })
 })
 

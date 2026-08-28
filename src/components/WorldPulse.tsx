@@ -255,7 +255,7 @@ export function WorldPulse(props: WorldPulseProps) {
           const r = instance.r
           const named = instance.label.length > 0
           return (
-            <g key={instance.pubkey}>
+            <g key={instance.pubkey} data-instance={instance.pubkey}>
               {named ? (
                 <>
                   <circle
@@ -300,7 +300,7 @@ export function WorldPulse(props: WorldPulseProps) {
         {nodes.currencies.map((currency) => {
           const r = currency.r
           return (
-            <g key={currency.code}>
+            <g key={currency.code} data-code={currency.code}>
               <circle
                 cx={currency.xy[0]}
                 cy={currency.xy[1]}

@@ -18,8 +18,11 @@ import {
 import { WorldPulse } from '~/components/WorldPulse'
 import { useAtlas } from '~/map/useAtlas'
 import { useMeasuredSize, usePrefersReducedMotion } from '~/map/hooks'
-import { placeAnchors, placeCurrencies } from '~/map/placements'
+import { placeAnchors, placeCurrencies, placeMostros } from '~/map/placements'
 import { ANCHOR_COUNT, flowLines } from '~/map/flows'
+import { networkLines, tradedCurrencies } from '~/map/network'
+import { currencyOrders, instanceRows } from '~/model/instances'
+import { printAddress } from '~/nostr/address'
 import { createProjection } from '~/map/projection'
 import { buildScene, MAX_BOW_OF_HEIGHT, type Scene } from '~/map/scene'
 import { sessionSeed } from '~/model/rng'
@@ -57,12 +60,18 @@ export function Dashboard() {
     return () => clearInterval(id)
   }, [])
 
+  // Two passes: the base documents, then one scoped orders document per
+  // instance the first pass named. The store fetches each set in one round
+  // trip and serves anything already cached.
+  const [scoped, setScoped] = useState<readonly string[]>([])
   const needed = useMemo(
-    () =>
-      (['orders', 'volume', 'disputes', 'dev-fees', 'instances'] as const).map((report) =>
-        windowAddress(report, window_),
+    () => [
+      ...(['orders', 'volume', 'disputes', 'dev-fees', 'instances'] as const).map(
+        (report) => windowAddress(report, window_),
       ),
-    [window_],
+      ...scoped,
+    ],
+    [window_, scoped],
   )
   const { boot, documents, relays } = useStore(needed)
 
@@ -70,7 +79,50 @@ export function Dashboard() {
   const volume = metricsOf(payloadOf(documents, windowAddress('volume', window_)))
   const disputes = metricsOf(payloadOf(documents, windowAddress('disputes', window_)))
   const fees = metricsOf(payloadOf(documents, windowAddress('dev-fees', window_)))
-  const instancesState = documents.get(windowAddress('instances', window_))
+
+  const instances = useMemo(
+    () =>
+      instanceRows(metricsOf(payloadOf(documents, windowAddress('instances', window_)))),
+    [documents, window_],
+  )
+
+  // An instance is addressed by its pubkey, which is a row of its block and
+  // never its label.
+  const scopedWanted = useMemo(
+    () =>
+      instances.map((instance) =>
+        printAddress({
+          kind: 'window',
+          report: 'orders',
+          window: window_,
+          scope: { instance: instance.pubkey },
+        }),
+      ),
+    [instances, window_],
+  )
+  const scopedKey = scopedWanted.join(' ')
+  useEffect(() => {
+    setScoped(scopedKey ? scopedKey.split(' ') : [])
+  }, [scopedKey])
+
+  /** What each instance traded, when the publisher says. */
+  const trades = useMemo(
+    () =>
+      instances.flatMap((instance) => {
+        const address = printAddress({
+          kind: 'window',
+          report: 'orders',
+          window: window_,
+          scope: { instance: instance.pubkey },
+        })
+        const currencies = currencyOrders(metricsOf(payloadOf(documents, address)))
+        return currencies.length > 0 ? [{ pubkey: instance.pubkey, currencies }] : []
+      }),
+    [instances, documents, window_],
+  )
+
+  /** The cross is published: every line stands for a figure that was signed. */
+  const measuredRoutes = trades.length > 0
 
   const loading = boot.status === 'loading' || orders.length === 0
   const currencies = useMemo(() => fiatRows(volume), [volume])
@@ -90,11 +142,13 @@ export function Dashboard() {
 
   const marketWeights = useMemo(
     () =>
-      currencies.map((row) => ({
-        code: row.code,
-        weight: Number(row.figures.get('orders')?.value ?? 0),
-      })),
-    [currencies],
+      measuredRoutes
+        ? tradedCurrencies(trades)
+        : currencies.map((row) => ({
+            code: row.code,
+            weight: Number(row.figures.get('orders')?.value ?? 0),
+          })),
+    [measuredRoutes, trades, currencies],
   )
 
   const placed = useMemo(
@@ -109,33 +163,63 @@ export function Dashboard() {
     [atlasState, marketWeights, seed],
   )
 
-  const anchors = useMemo(
+  const mostros = useMemo(
     () =>
-      atlasState.status === 'ready'
-        ? placeAnchors(atlasState.atlas, seed, ANCHOR_COUNT)
+      atlasState.status === 'ready' && measuredRoutes
+        ? placeMostros(instances, atlasState.atlas, seed)
         : null,
-    [atlasState, seed],
+    [atlasState, measuredRoutes, instances, seed],
   )
 
-  // Routes: how many a market gets is measured — its share of the busiest —
-  // and where each one goes is not. See map/flows.ts.
-  const flows = useMemo(() => flowLines(marketWeights, ANCHOR_COUNT), [marketWeights])
+  const anchors = useMemo(
+    () =>
+      atlasState.status === 'ready' && !measuredRoutes
+        ? placeAnchors(atlasState.atlas, seed, ANCHOR_COUNT)
+        : null,
+    [atlasState, measuredRoutes, seed],
+  )
+
+  // Real routes when the cross is published; the illustrative fan otherwise.
+  const flows = useMemo(
+    () =>
+      measuredRoutes ? networkLines(trades) : flowLines(marketWeights, ANCHOR_COUNT),
+    [measuredRoutes, trades, marketWeights],
+  )
+
+  const instanceName = useMemo(
+    () => new Map(instances.map((i) => [i.pubkey, i.name])),
+    [instances],
+  )
+  const approximate = useMemo(
+    () => [...(mostros?.values() ?? [])].filter((p) => p.approximate).length,
+    [mostros],
+  )
 
   const scene = useMemo(() => {
-    if (!projection || !placed || !anchors || atlasState.status !== 'ready')
-      return EMPTY_SCENE
+    if (!projection || !placed || atlasState.status !== 'ready') return EMPTY_SCENE
+    if (!mostros && !anchors) return EMPTY_SCENE
     return buildScene({
       lines: flows,
       currencies: marketWeights,
       currencyAt: (code) => placed.get(code) ?? null,
-      instanceAt: (id) => anchors.get(id) ?? null,
-      // An anchor has no name. Nothing published names an instance, and an
-      // empty label is what keeps this from inventing one.
-      instanceLabel: () => '',
+      instanceAt: (id) => mostros?.get(id)?.point ?? anchors?.get(id) ?? null,
+      // A real instance is named; an anchor is not, and an empty label is
+      // what keeps the map from inventing one.
+      instanceLabel: (pubkey) => instanceName.get(pubkey) ?? '',
       project: projection.project,
       maxBow: mapHeight * MAX_BOW_OF_HEIGHT,
     })
-  }, [projection, placed, anchors, atlasState, marketWeights, flows, mapHeight])
+  }, [
+    projection,
+    placed,
+    mostros,
+    anchors,
+    atlasState,
+    marketWeights,
+    flows,
+    instanceName,
+    mapHeight,
+  ])
 
   const mapReady = atlasState.status === 'ready' && projection !== null && !loading
 
@@ -210,10 +294,18 @@ export function Dashboard() {
                 Cada punto es una moneda con órdenes en la ventana elegida, en su país. Su
                 tamaño y cuántas rutas salen de ella son su volumen de órdenes.
               </p>
-              {instancesState?.status === 'unavailable' && (
+              {measuredRoutes ? (
+                approximate > 0 && (
+                  <p class="b-map-gap">
+                    {approximate} de {instances.length} instancias no nombran un país, así
+                    que su punto es una dispersión y no una ubicación. Las rutas sí son
+                    medidas: cada una es una moneda que esa instancia operó.
+                  </p>
+                )
+              ) : (
                 <p class="b-map-gap">
-                  Las rutas son ilustrativas: van a anclajes sin nombre, no a mostros.
-                  bestiario todavía no publica el documento <code>instances</code>, y sin
+                  Las rutas son ilustrativas: van a anclajes sin nombre, no a mostros. El
+                  daemon todavía no publicó <code>orders:…:i:&lt;pubkey&gt;</code>, y sin
                   él nada dice qué instancia opera qué moneda. Lo medido es la moneda, su
                   país y sus órdenes.
                 </p>
