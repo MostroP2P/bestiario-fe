@@ -1,0 +1,43 @@
+{
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"total_sats\",\"unit\":\"sats\"},{\"kind\":\"observed\",\"name\":\"paid\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"coverage\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"latency_p50\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"latency_p90\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"duplicates\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"orphans\",\"unit\":\"count\"},{\"error\":\"±147445 sats (worst case: ±1 sat per fee × 1/(fee×pct)); pct assumed 0.30; lower bound: 272 of 1132 fees inverted; 860 fees with no fee in force\",\"kind\":\"inferred\",\"name\":\"implied_volume\",\"unit\":\"sats\"},{\"kind\":\"observed\",\"name\":\"with_fee_volume\",\"unit\":\"sats\"},{\"error\":\"implied / observed − 1 over the 266 fees whose order is known and settled; positive means the real dev fee share is above the assumed; ±0.0042 from the rounding of those fees\",\"kind\":\"inferred\",\"name\":\"implied_vs_observed\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"daily\",\"rows\":[[\"2026-08-01\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-02\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-03\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-04\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-05\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-06\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-07\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-08\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-09\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-10\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-11\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-12\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-13\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-14\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-15\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-16\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-17\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-18\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-19\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-20\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-21\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-22\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-23\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-24\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-25\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-26\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-27\",7848,31,1.0,21,57,0,0,3956889,4667142,-0.04263572474690369],[\"2026-08-28\",6057,34,0.9696969696969697,28,45,0,0,2612611,3204261,-0.18123243046078574],[\"2026-08-29\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-30\",null,null,null,null,null,null,null,null,null,null],[\"2026-08-31\",null,null,null,null,null,null,null,null,null,null]]}}",
+  "created_at": 1787935865,
+  "id": "9489c4f0746508c5984f447f1d31ce4bd1638302f2a5e259eda2a4306c625492",
+  "kind": 30666,
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "sig": "9610b3b63f337dc947c66b9bdf512b39a6b9e366f27a39e80b9e578230fe7c358a8fb75d0ec98bf4596c799628f710e1fea7ad02b6a52f85f71d5e53a7892bb1",
+  "tags": [
+    [
+      "d",
+      "series:dev-fees:daily:2026-08"
+    ],
+    [
+      "s",
+      "20260828T165105Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario dev fees series, daily buckets, month 2026-08"
+    ],
+    [
+      "resolution",
+      "daily"
+    ],
+    [
+      "period",
+      "2026-08-01T00:00:00+00:00",
+      "2026-09-01T00:00:00+00:00"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"total_sats\",\"unit\":\"sats\"},{\"kind\":\"observed\",\"name\":\"paid\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"coverage\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"latency_p50\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"latency_p90\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"duplicates\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"orphans\",\"unit\":\"count\"},{\"error\":\"±147445 sats (worst case: ±1 sat per fee × 1/(fee×pct)); pct assumed 0.30; lower bound: 272 of 1132 fees inverted; 860 fees with no fee in force\",\"kind\":\"inferred\",\"name\":\"implied_volume\",\"unit\":\"sats\"},{\"kind\":\"observed\",\"name\":\"with_fee_volume\",\"unit\":\"sats\"},{\"error\":\"implied / observed − 1 over the 266 fees whose order is known and settled; positive means the real dev fee share is above the assumed; ±0.0042 from the rounding of those fees\",\"kind\":\"inferred\",\"name\":\"implied_vs_observed\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"weekly\",\"rows\":[[\"2026-W32\",null,null,null,null,null,null,null,null,null,null],[\"2026-W33\",null,null,null,null,null,null,null,null,null,null],[\"2026-W34\",null,null,null,null,null,null,null,null,null,null],[\"2026-W35\",34074,199,0.9753086419753086,6,51,0,0,8273389,17759822,-0.08393594846397512],[\"2026-W36\",null,null,null,null,null,null,null,null,null,null]]}}",
+  "created_at": 1787935865,
+  "id": "019b4cb9f4650280f85689cbd6fea1df91c25b7e96f0ad25230e3f7d75f36ae0",
+  "kind": 30666,
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "sig": "20e7d10b3811d6b8b1364d803451727a7691ce7eabe1cced704d037f54f523589cb780c8b54ba9f4a69a71187303f0c417afe9babc6635b670884be3bbd2ebb8",
+  "tags": [
+    [
+      "d",
+      "series:dev-fees:weekly:2026-08"
+    ],
+    [
+      "s",
+      "20260828T165105Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario dev fees series, weekly buckets, month 2026-08"
+    ],
+    [
+      "resolution",
+      "weekly"
+    ],
+    [
+      "period",
+      "2026-08-01T00:00:00+00:00",
+      "2026-09-01T00:00:00+00:00"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "tags": [
+    [
+      "d",
+      "series:orders:daily:2026-08"
+    ],
+    [
+      "s",
+      "20260828T165105Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario orders series, daily buckets, month 2026-08"
+    ],
+    [
+      "resolution",
+      "daily"
+    ],
+    [
+      "period",
+      "2026-08-01T00:00:00+00:00",
+      "2026-09-01T00:00:00+00:00"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"created\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completed\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"canceled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completion_rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"abandonment_rate\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"daily\",\"rows\":[[\"2026-08-01\",null,null,null,null,null],[\"2026-08-02\",null,null,null,null,null],[\"2026-08-03\",null,null,null,null,null],[\"2026-08-04\",null,null,null,null,null],[\"2026-08-05\",null,null,null,null,null],[\"2026-08-06\",null,null,null,null,null],[\"2026-08-07\",null,null,null,null,null],[\"2026-08-08\",null,null,null,null,null],[\"2026-08-09\",null,null,null,null,null],[\"2026-08-10\",null,null,null,null,null],[\"2026-08-11\",null,null,null,null,null],[\"2026-08-12\",null,null,null,null,null],[\"2026-08-13\",null,null,null,null,null],[\"2026-08-14\",null,null,null,null,null],[\"2026-08-15\",null,null,null,null,null],[\"2026-08-16\",null,null,null,null,null],[\"2026-08-17\",null,null,null,null,null],[\"2026-08-18\",null,null,null,null,null],[\"2026-08-19\",null,null,null,null,null],[\"2026-08-20\",null,null,null,null,null],[\"2026-08-21\",null,null,null,null,null],[\"2026-08-22\",null,null,null,null,null],[\"2026-08-23\",null,null,null,null,null],[\"2026-08-24\",null,null,null,null,null],[\"2026-08-25\",null,null,null,null,null],[\"2026-08-26\",null,null,null,null,null],[\"2026-08-27\",185,31,132,0.1901840490797546,0.6864864864864865],[\"2026-08-28\",178,34,105,0.2446043165467626,0.4550561797752809],[\"2026-08-29\",null,null,null,null,null],[\"2026-08-30\",null,null,null,null,null],[\"2026-08-31\",null,null,null,null,null]]}}",
+  "sig": "8f0888dd4e3a19479e327b013e1c758d7c98ef631904bcfbf94019cbc267e546741d49cbc20f3c03ef63ed58e99e0ee8ff6388f51e07a54c24ad6e4fd217c8c6",
+  "id": "b712dac5c67037a8430eb2afaa5a909315ac9e78df4aabf82ba3039168519352",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787935865,
+  "kind": 30666
+}

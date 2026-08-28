@@ -1,0 +1,34 @@
+{
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"publisher\":{\"name\":\"bestiario\",\"version\":\"0.1.0\"},\"coverage\":{\"first_event_at\":\"2026-08-27T13:36:23+00:00\",\"last_event_at\":\"2026-08-28T16:36:34+00:00\"},\"resolutions\":{\"daily\":{\"from\":\"2026-08\",\"until\":\"2026-08\"},\"monthly\":{\"from\":\"2026\",\"until\":\"2026\"},\"weekly\":{\"from\":\"2026-08\",\"until\":\"2026-08\"}},\"documents\":[{\"d\":\"orders:24h\",\"hash\":\"b51cca267578898e7ed4fddee5eee9e07e73fda56ef76a4fd69dc24c2c142288\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"orders:7d\",\"hash\":\"a9aaca2af9eec4075f245026be394bb29d2e3de7e759446213172c826fd919e1\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"orders:30d\",\"hash\":\"70b311b4095810a5926af5154cbd88802fd95312a18435b039516946ac387020\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"orders:90d\",\"hash\":\"eebb5f93d18f1500c78bba0755c6639c38a2f6b5a4eafe59909457551c2af255\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"orders:all\",\"hash\":\"4eb467e2f95af6e1e21a4d11d22658fa53546a038669145c90bc1bfeba1ec096\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:orders:daily:2026-08\",\"hash\":\"d044aaecb07c5c9b88e02b8131708e196002d4cdd0859fae1ca00007a3551586\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:orders:weekly:2026-08\",\"hash\":\"561fe24c078520e8f1861d47a8ab40d2abb253c36b5d67cc3c5c13e06540de68\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:orders:monthly:2026\",\"hash\":\"8dc50421059051ebd8a9bb7ba37946453f5cee84e1e64769f43035c0ee15dd15\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"volume:24h\",\"hash\":\"82dc2974dfef3059c16a2a7a5a3db9160208cdea603c9b5917f3ce7047543af2\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"volume:7d\",\"hash\":\"d8fc503535a6250625ad0c5d35b4abbcc9bc81da402714af2a0b89a464175010\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"volume:30d\",\"hash\":\"398e0e298c9c619636bf961593e767f5b65fd3b5c7ee596740414d4530222c99\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"volume:90d\",\"hash\":\"3fc9d82b77ac0e83e94dc5a484b8fe46cd4453b070e5ebd30578d019e981026b\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"volume:all\",\"hash\":\"dd9921d7223368872423afd4b10a33068e2154fbd93a8f6d6ef9d148a091e610\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:volume:daily:2026-08\",\"hash\":\"4c53a75cdaed019911351033bb162372b1babff06f0bd2618f28d8655d1979c4\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:volume:weekly:2026-08\",\"hash\":\"6e69ec3dcddc5eca8fb123c3aa0284d6ed67b4459628a90a0144e183db8b59dc\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:volume:monthly:2026\",\"hash\":\"28d3a65332eec442ce46dd32eb0f6839f6222de98e2d0fba608f851f188b252a\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"disputes:24h\",\"hash\":\"820e5220690af35a2ec4ef8dcfc16fb6662723b5a3738177f02ad46e59966c37\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"disputes:7d\",\"hash\":\"4705b739194d28daf64ecc4df21faa5a6377edcbce83dbd288813336c00099f5\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"disputes:30d\",\"hash\":\"cabf5773382ae22e43470649abc93f430d46c70f71da4bf5048dc1ca4caad144\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"disputes:90d\",\"hash\":\"86727a1df9d4508ab6265cc5fd49e094c79f9a62a2ddb0506c59f506d21fa84d\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"disputes:all\",\"hash\":\"0caee1401c543d8a6e3a664a1d665e92a7eb4f14f71bca30192c6551e047f395\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:disputes:daily:2026-08\",\"hash\":\"049e96c8aa060a84707fd1d31f3db15af252f297c4e77af1a8da78fe1ad8542b\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:disputes:weekly:2026-08\",\"hash\":\"070f3dd48177bdc4faf40de649fa474f568acb25ca31dd165e7e8cb6a3a96361\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:disputes:monthly:2026\",\"hash\":\"060a85c28ea63ba550f35ff5287e24dac68053c7cf3fa3ef2367f42a3acc0ac5\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"dev-fees:24h\",\"hash\":\"889b270261c0881178cbbf13aa47fba48d6ad270ee363d34cba17e6d44b5d1dc\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"dev-fees:7d\",\"hash\":\"575d0f94071400bf7e9a0cd75697f81c0fafe2fc68c69fae87708f1cbceac97c\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"dev-fees:30d\",\"hash\":\"81865f77313de5ea070159ff6c103c7b5fc49c55140b089305decd8bc2f8c9f2\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"dev-fees:90d\",\"hash\":\"e8ca801ac5684fde06ffbe5e1e354aa1403d5d0150bdbc50d9d92d43c30b9d92\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"dev-fees:all\",\"hash\":\"cab71de2c70c396b27a8d70513f001d381bde6aa0e1787bcb3f7eeb4f859ec99\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:dev-fees:daily:2026-08\",\"hash\":\"96ea180f374424d70f051ed2b37a840167258cabc518ee6f751fdf4f0a568b6d\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:dev-fees:weekly:2026-08\",\"hash\":\"f78c9cf2763e32b5e5c2e9f5387ded73078ab7599347691550b93a1ecf872f94\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"},{\"d\":\"series:dev-fees:monthly:2026\",\"hash\":\"aa870f17f8928b889f6a1ae6027906437b10eef1c61fdeb03c4d50af83ee547c\",\"revision\":1,\"updated_at\":\"2026-08-28T16:51:05+00:00\"}]}",
+  "created_at": 1787935865,
+  "id": "59140acd4fdea423ff5fee1d2bf12643cfcc60f0594e68223b6610ba5e473bec",
+  "kind": 30666,
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "sig": "defbffc78b2caf6dfab4d8b7d94b651ec6d5023331aa95c664186d2e71504cc9579f633da2737a1f466793a06c231ed779b849911c1f7d99b22348fa0ceba80c",
+  "tags": [
+    [
+      "d",
+      "index"
+    ],
+    [
+      "s",
+      "20260828T165105Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario index: the documents of the current snapshot"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ]
+}

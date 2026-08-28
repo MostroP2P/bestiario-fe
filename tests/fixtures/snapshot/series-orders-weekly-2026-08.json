@@ -1,0 +1,43 @@
+{
+  "tags": [
+    [
+      "d",
+      "series:orders:weekly:2026-08"
+    ],
+    [
+      "s",
+      "20260828T165105Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario orders series, weekly buckets, month 2026-08"
+    ],
+    [
+      "resolution",
+      "weekly"
+    ],
+    [
+      "period",
+      "2026-08-01T00:00:00+00:00",
+      "2026-09-01T00:00:00+00:00"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"created\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completed\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"canceled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"completion_rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"abandonment_rate\",\"unit\":\"ratio\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"weekly\",\"rows\":[[\"2026-W32\",null,null,null,null,null],[\"2026-W33\",null,null,null,null,null],[\"2026-W34\",null,null,null,null,null],[\"2026-W35\",1065,202,769,0.20803295571575695,0.7220657276995305],[\"2026-W36\",null,null,null,null,null]]}}",
+  "sig": "81853dd794fc93449511772790bc8f87a69695fac048f39e8b28a30e31146da403cd18745c7365fbc2419c3bdc92bb2d72898f7c765451260cacbb2d8c7bbe1d",
+  "id": "4ef543d7daaaa49adb6cd920e680e1ed23bdf7d2d88fe56205b5cd0d02b9b564",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787935865,
+  "kind": 30666
+}

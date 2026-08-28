@@ -99,7 +99,10 @@ export function buildScene(input: SceneInput): Scene {
     currencyXy.set(fiat, spine[0]!)
     instanceXy.set(instancePubkey, spine[spine.length - 1]!)
     currencyLines.set(fiat, (currencyLines.get(fiat) ?? 0) + group.length)
-    instanceLines.set(instancePubkey, (instanceLines.get(instancePubkey) ?? 0) + group.length)
+    instanceLines.set(
+      instancePubkey,
+      (instanceLines.get(instancePubkey) ?? 0) + group.length,
+    )
   }
 
   return {

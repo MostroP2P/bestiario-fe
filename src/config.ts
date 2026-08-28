@@ -8,7 +8,9 @@
  */
 
 /** Publisher pubkey (hex), SPEC 3. The only place in the source naming one. */
-export const PUBLISHER_PUBKEY: string = import.meta.env.VITE_PUBLISHER_PUBKEY ?? ''
+export const PUBLISHER_PUBKEY: string =
+  import.meta.env.VITE_PUBLISHER_PUBKEY ??
+  '000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f'
 
 /** bestiario's addressable statistics events, PUB §2. */
 export const BESTIARIO_KIND = 30666

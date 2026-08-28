@@ -1,0 +1,43 @@
+{
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"columns\":[{\"name\":\"date\",\"unit\":\"date\"},{\"kind\":\"observed\",\"name\":\"opened\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.initiated\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.in_progress\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.seller_refunded\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.settled\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"status.released\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"initiator.buyer\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"initiator.seller\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"rate\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolved\",\"unit\":\"count\"},{\"kind\":\"observed\",\"name\":\"outcome.seller_refunded\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.settled\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"outcome.released\",\"unit\":\"ratio\"},{\"kind\":\"observed\",\"name\":\"resolution_p50\",\"unit\":\"seconds\"},{\"kind\":\"observed\",\"name\":\"resolution_p90\",\"unit\":\"seconds\"}],\"period\":{\"from\":\"2026-08-01T00:00:00+00:00\",\"until\":\"2026-09-01T00:00:00+00:00\"},\"resolution\":\"daily\",\"rows\":[[\"2026-08-01\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-02\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-03\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-04\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-05\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-06\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-07\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-08\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-09\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-10\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-11\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-12\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-13\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-14\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-15\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-16\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-17\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-18\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-19\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-20\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-21\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-22\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-23\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-24\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-25\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-26\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-27\",5,1,1,2,1,0,0.4,0.6,0.15151515151515152,3,0.6666666666666666,0.3333333333333333,0.0,4814,4863],[\"2026-08-28\",4,1,0,1,2,0,0.5,0.5,0.09302325581395349,3,0.3333333333333333,0.6666666666666666,0.0,2012,5437],[\"2026-08-29\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-30\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[\"2026-08-31\",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]]}}",
+  "created_at": 1787935865,
+  "id": "85670e47fc4acf05f6a8390bab3e414e45e24ce96475ec6dddd3c0d936e9c85f",
+  "kind": 30666,
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "sig": "9e8b7bf7c9b3af3c09ec334eac54b669a6908e5141a9bd447588e6d1b043d7f941b47686965b6bc775a0d0fcc351b550d66f0e0bbc784031ba91a464148f518f",
+  "tags": [
+    [
+      "d",
+      "series:disputes:daily:2026-08"
+    ],
+    [
+      "s",
+      "20260828T165105Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario disputes series, daily buckets, month 2026-08"
+    ],
+    [
+      "resolution",
+      "daily"
+    ],
+    [
+      "period",
+      "2026-08-01T00:00:00+00:00",
+      "2026-09-01T00:00:00+00:00"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ]
+}

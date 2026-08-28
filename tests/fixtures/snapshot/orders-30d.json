@@ -1,0 +1,34 @@
+{
+  "tags": [
+    [
+      "d",
+      "orders:30d"
+    ],
+    [
+      "s",
+      "20260828T165105Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario orders report over the last 30 days"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"orders.created\",\"unit\":\"count\",\"value\":6118},{\"kind\":\"observed\",\"name\":\"orders.completed\",\"unit\":\"count\",\"value\":1132},{\"kind\":\"observed\",\"name\":\"orders.canceled\",\"unit\":\"count\",\"value\":4872},{\"kind\":\"observed\",\"name\":\"orders.completion_rate\",\"unit\":\"ratio\",\"value\":0.18854097268487674},{\"kind\":\"observed\",\"name\":\"orders.abandonment_rate\",\"unit\":\"ratio\",\"value\":0.7947041516835567},{\"kind\":\"observed\",\"name\":\"orders.created_delta\",\"unit\":\"ratio\",\"value\":15.994444444444444},{\"kind\":\"observed\",\"name\":\"orders.completed_delta\",\"unit\":\"ratio\",\"value\":65.58823529411765},{\"kind\":\"observed\",\"name\":\"orders.open_now\",\"unit\":\"count\",\"value\":79},{\"kind\":\"observed\",\"name\":\"orders.in_progress_now\",\"unit\":\"count\",\"value\":41}],\"range\":{\"from\":\"2026-07-29T16:36:34+00:00\",\"until\":\"2026-08-28T16:36:34+00:00\"}}}",
+  "sig": "84c43d3b289799dee49c23824d2af79d772314b8874df0c2992afddb486eb7fac2f82222f8e6ad9437b51419ec3a9b68f36d0c2202a383cc9bee7541d9911329",
+  "id": "c08e34f177aa0f8b249becdc1057d9b83adf7bf7a3ea7b3a4f5749d986edbf86",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787935865,
+  "kind": 30666
+}

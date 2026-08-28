@@ -1,0 +1,34 @@
+{
+  "tags": [
+    [
+      "d",
+      "orders:all"
+    ],
+    [
+      "s",
+      "20260828T165105Z"
+    ],
+    [
+      "t",
+      "bestiario"
+    ],
+    [
+      "alt",
+      "bestiario orders report over the last whole archive"
+    ],
+    [
+      "revision",
+      "1"
+    ],
+    [
+      "schema_version",
+      "1"
+    ]
+  ],
+  "content": "{\"schema_version\":1,\"snapshot_id\":\"20260828T165105Z\",\"generated_at\":\"2026-08-28T16:51:05+00:00\",\"revision\":1,\"payload\":{\"metrics\":[{\"kind\":\"observed\",\"name\":\"orders.created\",\"unit\":\"count\",\"value\":261},{\"kind\":\"observed\",\"name\":\"orders.completed\",\"unit\":\"count\",\"value\":60},{\"kind\":\"observed\",\"name\":\"orders.canceled\",\"unit\":\"count\",\"value\":184},{\"kind\":\"observed\",\"name\":\"orders.completion_rate\",\"unit\":\"ratio\",\"value\":0.2459016393442623},{\"kind\":\"observed\",\"name\":\"orders.abandonment_rate\",\"unit\":\"ratio\",\"value\":0.44061302681992337},{\"kind\":\"observed\",\"name\":\"orders.created_delta\",\"unit\":\"ratio\",\"value\":-0.09375},{\"kind\":\"observed\",\"name\":\"orders.completed_delta\",\"unit\":\"ratio\",\"value\":0.7647058823529411},{\"kind\":\"observed\",\"name\":\"orders.open_now\",\"unit\":\"count\",\"value\":79},{\"kind\":\"observed\",\"name\":\"orders.in_progress_now\",\"unit\":\"count\",\"value\":41}],\"range\":{\"from\":\"2026-08-27T13:36:23+00:00\",\"until\":\"2026-08-28T16:36:34+00:00\"}}}",
+  "sig": "d2b531c261620a2ca978087140a446d8477036f80226bbda4d609c2fadde16f4ec995e7a80b1dbe87ffcf157c0b85bc5108624c9955ddba057d740b29e98bed5",
+  "id": "17afda05419cf8d5594cc508313e703d3fb146304ebdca851f624dd68ab9bba3",
+  "pubkey": "000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f",
+  "created_at": 1787935865,
+  "kind": 30666
+}
