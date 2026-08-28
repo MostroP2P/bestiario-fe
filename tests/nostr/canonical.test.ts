@@ -141,3 +141,17 @@ describe('renderFloat', () => {
     expect(renderFloat(-0.09375)).toBe('-0.09375')
   })
 })
+
+describe('canonicalPayload · a row wider than its columns', () => {
+  test('does not throw, so one odd document cannot take the page down', () => {
+    const payload = {
+      period: { from: 'a', until: 'b' },
+      resolution: 'daily',
+      columns: [{ name: 'date', unit: 'date' as const }],
+      rows: [['2026-08-01', 5]],
+    }
+
+    expect(() => canonicalPayload(payload)).not.toThrow()
+    expect(canonicalPayload(payload)).toContain('["2026-08-01",5]')
+  })
+})

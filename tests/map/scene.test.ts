@@ -94,8 +94,8 @@ describe('buildScene', () => {
     const scene = buildScene({ ...base, lines })
 
     expect(scene.currencies).toEqual([
-      { code: 'ARS', xy: [-64, -34], lines: 2 },
-      { code: 'VES', xy: [-66, 8], lines: 1 },
+      { code: 'ARS', xy: [-64, -34], lines: 2, weight: 2 },
+      { code: 'VES', xy: [-66, 8], lines: 1, weight: 1 },
     ])
     expect(scene.instances.map((i) => [i.pubkey, i.lines])).toEqual([
       ['node-ar', 2],
@@ -144,5 +144,44 @@ describe('buildScene', () => {
       instances: [],
       unplaced: { currencies: 0, instances: 0 },
     })
+  })
+})
+
+describe('buildScene · currencies with no drawable counterparty', () => {
+  test('draws a currency the network trades even when no line reaches it', () => {
+    // Arrange — nothing published names an instance, so there is no line to
+    // draw; the market exists all the same.
+    const scene = buildScene({ ...base, lines: [], currencies: [{ code: 'ARS', weight: 9 }] })
+
+    // Assert
+    expect(scene.arcs).toEqual([])
+    expect(scene.currencies).toEqual([{ code: 'ARS', xy: [-64, -34], lines: 0, weight: 9 }])
+  })
+
+  test('sizes it by what the network published, not by its lines', () => {
+    const scene = buildScene({
+      ...base,
+      lines: [line()],
+      currencies: [{ code: 'ARS', weight: 40 }],
+    })
+
+    expect(scene.currencies[0]).toMatchObject({ lines: 1, weight: 40 })
+  })
+
+  test('counts a currency it cannot place, rather than dropping it quietly', () => {
+    const scene = buildScene({ ...base, lines: [], currencies: [{ code: 'XXX', weight: 3 }] })
+
+    expect(scene.currencies).toEqual([])
+    expect(scene.unplaced.currencies).toBe(1)
+  })
+
+  test('does not draw a currency twice when a line already reached it', () => {
+    const scene = buildScene({
+      ...base,
+      lines: [line()],
+      currencies: [{ code: 'ARS', weight: 9 }],
+    })
+
+    expect(scene.currencies).toHaveLength(1)
   })
 })

@@ -1,11 +1,34 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
 import { cleanup, render, waitFor } from '@testing-library/preact'
-import { readFileSync } from 'node:fs'
-import { Dashboard } from '~/views/Dashboard'
-import { clearAtlasCache } from '~/map/useAtlas'
-import type { LiveOrder } from '~/model/live-lines'
+import { readFileSync, readdirSync } from 'node:fs'
+import type { Event, Filter } from 'nostr-tools'
 
-const TOPOLOGY = JSON.parse(readFileSync('public/geo/countries-110m.json', 'utf8')) as unknown
+const DIR = 'tests/fixtures/snapshot'
+const fixtures: Event[] = readdirSync(DIR)
+  .filter((file) => file !== 'manifest.json')
+  .map((file) => JSON.parse(readFileSync(`${DIR}/${file}`, 'utf8')) as Event)
+const dOf = (event: Event) => event.tags.find((tag) => tag[0] === 'd')?.[1] ?? ''
+
+/** What the fake pool will serve. Swapped per test before rendering. */
+let served: Event[] = fixtures
+
+vi.mock('~/nostr/pool', () => ({
+  openRelays: () => ({
+    query: (filter: Filter) => {
+      const wanted = filter['#d']
+      return Promise.resolve(served.filter((e) => !wanted || wanted.includes(dOf(e))))
+    },
+    subscribe: () => () => {},
+    states: () => [{ url: 'wss://relay.mostro.network', status: 'live', newestAt: 1 }],
+    close: () => {},
+  }),
+}))
+
+const { Dashboard } = await import('~/views/Dashboard')
+const { resetStore } = await import('~/store/useStore')
+const { clearCache } = await import('~/store/cache')
+const topology = JSON.parse(readFileSync('public/geo/countries-110m.json', 'utf8')) as unknown
+const { clearAtlasCache } = await import('~/map/useAtlas')
 
 beforeAll(() => {
   globalThis.ResizeObserver = class {
@@ -32,10 +55,13 @@ beforeAll(() => {
 })
 
 beforeEach(() => {
+  served = fixtures
+  resetStore()
+  clearCache()
   clearAtlasCache()
   vi.stubGlobal(
     'fetch',
-    vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(TOPOLOGY) })),
+    vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(topology) })),
   )
 })
 
@@ -44,195 +70,127 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-function order(over: Partial<LiveOrder> = {}): LiveOrder {
-  return {
-    id: 'o1',
-    fiat: 'ARS',
-    status: 'pending',
-    instancePubkey: 'k3',
-    updatedAt: Date.now(),
-    ...over,
-  }
-}
-
-describe('Dashboard', () => {
-  test('says plainly when the figures around the map are only samples', () => {
-    const { getByRole } = render(<Dashboard sample />)
-
-    expect(getByRole('status').textContent).toMatch(/DATOS DE EJEMPLO/)
-  })
-
-  test('makes no such claim when it is not showing samples', () => {
-    const { queryByRole } = render(<Dashboard />)
-
-    expect(queryByRole('status')).toBeNull()
-  })
-
-  test('draws the section navigation with the overview current', () => {
-    const { getByRole } = render(<Dashboard />)
-
-    const nav = getByRole('navigation', { name: 'Secciones' })
-    expect(nav.querySelector('[aria-current="page"]')?.textContent).toBe('RESUMEN')
-  })
-
-  test('draws a line on the map for each order it is given', async () => {
-    // Arrange — three orders on one route, one on another.
-    const orders = [
-      order({ id: 'a' }),
-      order({ id: 'b' }),
-      order({ id: 'c' }),
-      order({ id: 'd', fiat: 'VES', instancePubkey: 'k4' }),
-    ]
-
-    // Act
-    const { container } = render(<Dashboard orders={orders} />)
-
-    // Assert — the atlas has to arrive before anything is drawn.
-    await waitFor(() => {
-      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(4)
-    })
-  })
-
-  test('counts the markets and the mostros those lines touch', async () => {
-    const orders = [order({ id: 'a' }), order({ id: 'b', fiat: 'VES', instancePubkey: 'k4' })]
-
-    const { container } = render(<Dashboard orders={orders} />)
-
-    await waitFor(() => {
-      expect(container.querySelector('.b-map-count strong')?.textContent).toBe('2')
-    })
-    expect(container.querySelector('.b-map-count small')?.textContent).toBe('en 2 mostros')
-  })
-
-  test('shows the same counts in the grid as it draws on the map', async () => {
-    const orders = [order({ id: 'a' }), order({ id: 'b' }), order({ id: 'c' })]
-
-    const { container } = render(<Dashboard orders={orders} />)
-
-    await waitFor(() => {
-      const cells = [...container.querySelectorAll('.b-cell')].map((c) => c.textContent)
-      // satoshi.br x ARS is the only pair with lines on it, and it has three.
-      expect(cells.filter((t) => t === '3')).toHaveLength(1)
-    })
-  })
-
-  test('draws no lines when no orders are active', async () => {
-    const { container } = render(<Dashboard orders={[]} />)
-
-    await waitFor(() => {
-      expect(container.querySelector('svg[role="img"]')).not.toBeNull()
-    })
-    expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(0)
-    expect(container.querySelector('.b-map-count strong')?.textContent).toBe('0')
-  })
-
-  test('drops a settled order once its grace period has passed', async () => {
-    const stale = order({ id: 'old', status: 'success', updatedAt: Date.now() - 60 * 60 * 1000 })
-
-    const { container } = render(<Dashboard orders={[stale, order({ id: 'live' })]} />)
-
-    await waitFor(() => {
-      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(1)
-    })
-  })
-
-  test('counts only what the map actually draws', async () => {
-    // Arrange - k1 is mostro.network, whose name places it nowhere, so its
-    // orders cannot be drawn and must not be counted either.
-    const orders = [
-      order({ id: 'drawn', instancePubkey: 'k3' }),
-      order({ id: 'undrawable', fiat: 'COP', instancePubkey: 'k1' }),
-    ]
-
-    // Act
-    const { container } = render(<Dashboard orders={orders} />)
-
-    // Assert
-    await waitFor(() => {
-      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(1)
-    })
-    expect(container.querySelector('.b-map-count strong')?.textContent).toBe('1')
-    expect(container.querySelector('.b-map-count small')?.textContent).toBe('en 1 mostros')
-  })
-
-  test('says how many places it could not draw rather than hiding them', async () => {
-    const orders = [
-      order({ id: 'drawn', instancePubkey: 'k3' }),
-      order({ id: 'undrawable', instancePubkey: 'k1' }),
-    ]
-
-    const { container } = render(<Dashboard orders={orders} />)
-
-    await waitFor(() => {
-      expect(container.querySelector('.b-unplaced')?.textContent).toMatch(
-        /1 sin ubicar, fuera del mapa/,
-      )
-    })
-  })
-
-  test('says nothing about unplaced places when everything is drawn', async () => {
-    const { container } = render(<Dashboard orders={[order({ instancePubkey: 'k3' })]} />)
-
-    await waitFor(() => {
-      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(1)
-    })
-    expect(container.querySelector('.b-unplaced')).toBeNull()
-  })
-
-  test('lists everything the map draws in the legend, including what lost its label', async () => {
-    // Arrange - two routes, so two currencies and two mostros are drawn.
-    const orders = [
-      order({ id: 'a', instancePubkey: 'k3' }),
-      order({ id: 'b', instancePubkey: 'k3' }),
-      order({ id: 'c', fiat: 'VES', instancePubkey: 'k4' }),
-    ]
-
-    // Act
-    const { container } = render(<Dashboard orders={orders} />)
-
-    // Assert
-    await waitFor(() => {
-      expect(container.querySelectorAll('.b-legend-row')).toHaveLength(4)
-    })
-    const rows = [...container.querySelectorAll('.b-legend-row')].map(
-      (r) => `${r.querySelector('dt')?.textContent} ${r.querySelector('dd')?.textContent}`,
-    )
-    expect(rows).toEqual(['ARS 2', 'VES 1', 'satoshi.br 2', 'nodo.mx 1'])
-  })
-
-  test('has no legend when there is nothing on the map', async () => {
-    const { container } = render(<Dashboard orders={[]} />)
-
-    await waitFor(() => {
-      expect(container.querySelector('svg[role="img"]')).not.toBeNull()
-    })
-    expect(container.querySelector('.b-legend')).toBeNull()
-  })
-
-  test('states the grace period on screen rather than hiding it in a constant', () => {
+describe('Dashboard · before the figures arrive', () => {
+  test('renders the shell with skeletons rather than a spinner', () => {
     const { container } = render(<Dashboard />)
 
-    expect(container.querySelector('.b-map-caption p')?.textContent).toMatch(
-      /10 minutos después de completarse/,
-    )
+    expect(container.querySelectorAll('.b-skeleton').length).toBeGreaterThan(0)
+    expect(container.querySelector('.b-skeleton-map')).not.toBeNull()
+  })
+
+  test('says once what is loading, and hides the decorative boxes', () => {
+    const { getByRole, container } = render(<Dashboard />)
+
+    expect(getByRole('status').textContent).toMatch(/Cargando las cifras de la red/)
+    for (const skeleton of container.querySelectorAll('.b-kpi[aria-hidden]')) {
+      expect(skeleton.getAttribute('aria-hidden')).toBe('true')
+    }
+  })
+
+  test('shows no figure it has not verified', () => {
+    const { container } = render(<Dashboard />)
+
+    expect(container.querySelector('.b-kpi strong')).toBeNull()
   })
 })
 
-describe('Dashboard · geometry that will not load', () => {
-  test('says so instead of rendering an empty panel', async () => {
-    // Arrange
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() => Promise.resolve({ ok: false, status: 503, statusText: 'Unavailable' })),
-    )
+describe('Dashboard · real figures', () => {
+  test('shows the orders the publisher signed for the window', async () => {
+    // Arrange / Act
+    const { container } = render(<Dashboard />)
+
+    // Assert — orders:30d, from the live archive, verified against its hash.
+    await waitFor(() => {
+      const values = [...container.querySelectorAll('.b-kpi strong')].map((n) => n.textContent)
+      expect(values.length).toBe(4)
+      expect(values[0]).toMatch(/\d/)
+    })
+  })
+
+  test('lists every currency the network traded, from volume.fiat', async () => {
+    // Arrange — read the expected set out of the very document the view
+    // renders, so this asserts the grouping and not a snapshot of the market.
+    const event = fixtures.find((e) => dOf(e) === 'volume:30d')!
+    const payload = (JSON.parse(event.content) as { payload: { metrics: { name: string }[] } })
+      .payload
+    const expected = [
+      ...new Set(
+        payload.metrics
+          .map((m) => /^volume\.fiat\.([A-Z]{3})\./.exec(m.name)?.[1])
+          .filter((code): code is string => code !== undefined),
+      ),
+    ].sort()
 
     // Act
     const { container } = render(<Dashboard />)
 
     // Assert
     await waitFor(() => {
-      const state = container.querySelector('.b-map-state[data-failed="true"]')
-      expect(state?.textContent).toMatch(/SIN GEOMETRÍA · 503 Unavailable/)
+      const codes = [...container.querySelectorAll('.b-table tbody th')].map((n) => n.textContent)
+      expect(codes).toEqual(expected)
+    })
+    expect(expected.length).toBeGreaterThan(5)
+  })
+
+  test('draws a market on the map for each currency it can place', async () => {
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      const nodes = container.querySelectorAll('[data-layer="currencies"] > g')
+      expect(nodes.length).toBeGreaterThan(0)
+    })
+  })
+
+  test('rebuilds the open dispute book from the indexed family', async () => {
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('.b-dispute-list li').length).toBeGreaterThan(10)
+    })
+  })
+
+  test('says the instance routes are missing rather than drawing them anyway', async () => {
+    // Nothing published names an instance, so the map cannot draw a route
+    // and says so instead of implying the network has none.
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(container.querySelector('.b-map-gap')?.textContent).toMatch(/instances/)
+    })
+    expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(0)
+  })
+
+  test('reports the archive extent the index states', async () => {
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(container.textContent).toContain('2026-08-27')
+    })
+  })
+})
+
+describe('Dashboard · when nothing can be verified', () => {
+  test('shows the failure and no figure at all', async () => {
+    // Arrange — every relay silent.
+    served = []
+
+    // Act
+    const { getByRole, container } = render(<Dashboard />)
+
+    // Assert
+    await waitFor(() => {
+      expect(getByRole('alert').textContent).toMatch(/Sin cifras verificadas/)
+    })
+    expect(container.querySelector('.b-kpi strong')).toBeNull()
+  })
+
+  test('says which relays it asked, even having failed', async () => {
+    served = []
+
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(container.textContent).toContain('relay.mostro.network')
     })
   })
 })

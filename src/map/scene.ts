@@ -27,7 +27,14 @@ export type SceneArc = {
 
 export type Scene = {
   readonly arcs: SceneArc[]
-  readonly currencies: { code: string; xy: Point; lines: number }[]
+  /**
+   * `lines` is how many arcs rest on the currency; `weight` is what the
+   * network published about it — orders in the window — and is what sizes
+   * the node. The two differ whenever a currency is traded but the map
+   * cannot draw the instance trading it, which is the state of the wire
+   * until bestiario publishes `instances`.
+   */
+  readonly currencies: { code: string; xy: Point; lines: number; weight: number }[]
   readonly instances: { pubkey: string; label: string; xy: Point; lines: number }[]
   /** How many distinct places the map could not honestly draw. */
   readonly unplaced: { currencies: number; instances: number }
@@ -35,6 +42,13 @@ export type Scene = {
 
 export type SceneInput = {
   readonly lines: readonly Line[]
+  /**
+   * Currencies to draw whether or not a line reaches them, with what the
+   * network published about each. A currency with orders and no drawable
+   * counterparty is still a market, and leaving it off the map would
+   * understate the network rather than admit what is missing.
+   */
+  readonly currencies?: readonly { readonly code: string; readonly weight: number }[]
   readonly currencyAt: (code: string) => LonLat | null
   readonly instanceAt: (pubkey: string) => LonLat | null
   readonly instanceLabel: (pubkey: string) => string
@@ -105,12 +119,28 @@ export function buildScene(input: SceneInput): Scene {
     )
   }
 
+  // Currencies with published activity but no drawable line still belong on
+  // the map; their point comes from the same projection.
+  const weights = new Map((input.currencies ?? []).map((c) => [c.code, c.weight]))
+  for (const { code } of input.currencies ?? []) {
+    if (currencyXy.has(code)) continue
+    const at = input.currencyAt(code)
+    if (!at) {
+      unplacedCurrencies.add(code)
+      continue
+    }
+    const xy = input.project(at)
+    if (xy) currencyXy.set(code, xy)
+    else unplacedCurrencies.add(code)
+  }
+
   return {
     arcs,
     currencies: [...currencyXy].map(([code, xy]) => ({
       code,
       xy,
       lines: currencyLines.get(code) ?? 0,
+      weight: weights.get(code) ?? currencyLines.get(code) ?? 0,
     })),
     instances: [...instanceXy].map(([pubkey, xy]) => ({
       pubkey,

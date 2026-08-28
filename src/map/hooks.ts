@@ -5,20 +5,28 @@
 import { useEffect, useState } from 'preact/hooks'
 import type { RefObject } from 'preact'
 
-export function useMeasuredWidth(ref: RefObject<HTMLElement>): number {
-  const [width, setWidth] = useState(0)
+export type Size = { readonly width: number; readonly height: number }
+
+/**
+ * The element's own box. The map is sized by CSS so it grows with the
+ * viewport, and the projection is fitted to whatever that turns out to be
+ * rather than to a number this file guessed.
+ */
+export function useMeasuredSize(ref: RefObject<HTMLElement>): Size {
+  const [size, setSize] = useState<Size>({ width: 0, height: 0 })
 
   useEffect(() => {
     const node = ref.current
     if (!node) return
     const observer = new ResizeObserver(([entry]) => {
-      if (entry) setWidth(entry.contentRect.width)
+      if (!entry) return
+      setSize({ width: entry.contentRect.width, height: entry.contentRect.height })
     })
     observer.observe(node)
     return () => observer.disconnect()
   }, [ref])
 
-  return width
+  return size
 }
 
 /** SPEC 13: reduced motion is honoured, and honoured when it changes. */

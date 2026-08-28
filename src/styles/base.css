@@ -37,11 +37,21 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  background: #1a1a1c;
+  /* The panel is the page: edge to edge, no letterbox around it. */
+  background: var(--panel);
   color: var(--ink);
   font-family: var(--sans);
+}
+
+#app {
+  min-height: 100%;
 }
 
 .b-mono {
@@ -58,43 +68,27 @@ body {
 /* ── shell ─────────────────────────────────────────────────────────── */
 
 .b-page {
-  padding: 40px 48px 96px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  min-height: 100vh;
 }
 
+/* The artboard was 1240px wide; the site is however wide the screen is. The
+   rail keeps its measure and the panel takes the rest, so a wide screen
+   gets a wider map and a wider table rather than a wider margin. */
 .b-shell {
+  flex: 1;
   width: 100%;
-  max-width: 1240px;
   background: var(--panel);
   color: var(--ink);
   display: grid;
-  grid-template-columns: 214px 1fr;
+  grid-template-columns: 214px minmax(0, 1fr);
 }
 
 @media (max-width: 900px) {
-  .b-page {
-    padding: 20px 16px 48px;
-  }
   .b-shell {
     grid-template-columns: 1fr;
   }
-}
-
-/* ── sample-data banner ────────────────────────────────────────────── */
-
-.b-sample {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 14px;
-  border: 1px solid var(--warn);
-  color: var(--warn);
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  max-width: 1240px;
 }
 
 /* ── rail ──────────────────────────────────────────────────────────── */
@@ -102,7 +96,7 @@ body {
 .b-rail {
   background: var(--rail);
   border-right: 1px solid var(--rule);
-  padding: 20px 0;
+  padding: 20px 0 28px;
 }
 
 .b-brand {
@@ -136,59 +130,6 @@ body {
   border-top: 1px solid var(--rule);
 }
 
-.b-instance {
-  padding: 10px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  border-left: 2px solid transparent;
-}
-
-.b-instance[data-selected='true'] {
-  border-left-color: var(--accent);
-}
-
-.b-instance-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.b-instance-name {
-  font-size: 12.5px;
-  font-weight: 600;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--ink-soft);
-}
-
-.b-instance[data-selected='true'] .b-instance-name {
-  color: var(--ink-bright);
-}
-
-.b-instance-up {
-  font-family: var(--mono);
-  font-size: 9px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  padding-left: 8px;
-  color: var(--ink-dim);
-}
-
-.b-spark {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 14px;
-}
-
-.b-spark span {
-  flex: 1;
-  background: var(--spark);
-}
-
 .b-relays {
   margin: 10px 18px 0;
   display: flex;
@@ -215,9 +156,6 @@ body {
 .b-relay-dot[data-state='ok'] {
   background: var(--accent);
 }
-.b-relay-dot[data-state='slow'] {
-  background: var(--warn);
-}
 .b-relay-dot[data-state='down'] {
   background: var(--danger);
 }
@@ -235,31 +173,11 @@ body {
   flex-shrink: 0;
 }
 
-.b-backfill {
-  margin: 16px 18px 0;
-  border-top: 1px solid var(--rule);
-  padding-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
 .b-backfill-row {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
   color: var(--ink-soft);
-}
-
-.b-meter {
-  height: 4px;
-  background: var(--hairline);
-}
-
-.b-meter span {
-  display: block;
-  height: 4px;
-  background: var(--accent);
 }
 
 /* ── header ────────────────────────────────────────────────────────── */
@@ -340,6 +258,9 @@ body {
 .b-map {
   position: relative;
   border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+  /* Grows with the viewport: the artboard's 408px was one screen's answer. */
+  height: clamp(320px, 42vh, 640px);
 }
 
 .b-map-caption {
@@ -385,10 +306,11 @@ body {
 }
 
 .b-map-state {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 408px;
   background: var(--panel);
   font-family: var(--mono);
   font-size: 9px;
@@ -404,7 +326,7 @@ body {
 
 .b-kpis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   border-bottom: 1px solid var(--rule);
 }
 
@@ -439,7 +361,8 @@ body {
 
 .b-lower {
   display: grid;
-  grid-template-columns: 1fr 330px;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 24vw, 420px);
+  flex: 1;
 }
 
 @media (max-width: 900px) {
@@ -696,4 +619,226 @@ body {
 .b-legend-mark[data-kind='instance'] {
   background: #e8ff3a;
   transform: rotate(45deg);
+}
+
+/* ── skeletons ─────────────────────────────────────────────────────── */
+
+.b-skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--hairline) 0%,
+    #16303e 40%,
+    #1b3d4e 50%,
+    #16303e 60%,
+    var(--hairline) 100%
+  );
+  background-size: 300% 100%;
+  animation: b-shimmer 1.9s ease-in-out infinite;
+}
+
+@keyframes b-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+.b-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+}
+
+.b-skeleton-row > .b-skeleton {
+  flex: none;
+}
+
+.b-skeleton-map {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--sphere, #08151d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* An ellipse the size the projected globe will be, so nothing jumps when
+   the geometry lands. */
+.b-skeleton-globe {
+  width: min(78%, 900px);
+  height: 82%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, #10222d 0%, #0a1720 70%, transparent 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.b-skeleton-globe::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(43, 217, 255, 0.09) 48%,
+    rgba(43, 217, 255, 0.16) 52%,
+    transparent 70%
+  );
+  background-size: 250% 100%;
+  animation: b-shimmer 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b-skeleton,
+  .b-skeleton-globe::after {
+    animation: none;
+    background-position: 50% 0;
+  }
+}
+
+/* ── rail blocks ───────────────────────────────────────────────────── */
+
+.b-rail-block {
+  padding: 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.b-rail-key {
+  margin: 0;
+  font-size: 9px;
+  color: var(--ink-soft);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.b-rail-note {
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--ink-dim);
+}
+
+.b-relay-dot[data-state='wait'] {
+  background: var(--ink-dim);
+}
+.b-relay-dot[data-state='silent'] {
+  background: var(--warn);
+}
+
+/* ── tables ────────────────────────────────────────────────────────── */
+
+.b-table {
+  padding: 0 22px 18px;
+  overflow-x: auto;
+}
+
+.b-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.b-table th,
+.b-table td {
+  text-align: right;
+  padding: 7px 8px;
+  white-space: nowrap;
+}
+
+.b-table thead th {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+  font-weight: 400;
+  border-bottom: 1px solid var(--rule);
+}
+
+.b-table tbody th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.b-table tbody td {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.b-table td[data-absent='true'] {
+  color: var(--ink-dimmer);
+}
+
+.b-empty {
+  margin: 0;
+  padding: 14px 22px 20px;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.b-dispute-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.b-dispute-age {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--ink-dim);
+  flex-shrink: 0;
+}
+
+.b-asof {
+  margin: 0;
+  padding: 10px 20px 16px;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--hairline);
+}
+
+.b-fatal {
+  margin: 0;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--danger);
+  background: #1a0d0c;
+  color: var(--danger);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.b-map-gap {
+  margin: 6px 0 0 !important;
+  font-size: 11.5px !important;
+  color: var(--warn) !important;
+  line-height: 1.4;
+}
+
+.b-map-gap code {
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
+
+.b-footnote {
+  margin: 0;
+  padding: 14px 22px 18px;
+  border-top: 1px solid var(--rule);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  background: var(--rail);
 }

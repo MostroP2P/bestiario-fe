@@ -94,19 +94,41 @@ describe('WorldPulse', () => {
     expect(container.querySelectorAll('[data-layer="instances"] > g')).toHaveLength(1)
   })
 
-  test('sizes a currency by how many lines rest on it', () => {
-    const one = draw([line()])
-    const small = one.container
+  test('sizes a currency against the busiest one on the same map', () => {
+    // Arrange — one route carries nine orders and the other one, in the same
+    // scene. The scale is relative: an absolute one lets the leader's glow
+    // swallow a continent when the network is busy.
+    const lines = [
+      ...Array.from({ length: 9 }, (_, i) => line({ orderId: `a${i}` })),
+      line({ orderId: 'b', fiat: 'VES', instancePubkey: 'node-ve' }),
+    ]
+
+    // Act
+    const { container } = draw(lines)
+    const radii = [...container.querySelectorAll('[data-layer="currencies"] circle[stroke-opacity]')]
+      .map((c) => Number(c.getAttribute('r')))
+
+    // Assert
+    expect(radii).toHaveLength(2)
+    expect(Math.max(...radii)).toBeGreaterThan(Math.min(...radii))
+  })
+
+  test('gives the busiest market the same size whatever the network volume', () => {
+    // A map of a quiet day and a map of a busy one read alike; the figures
+    // themselves are in the table, where they can be compared without
+    // measuring a circle.
+    const quiet = draw([line()])
+    const quietR = quiet.container
       .querySelector('[data-layer="currencies"] circle[stroke-opacity]')
       ?.getAttribute('r')
     cleanup()
 
-    const many = draw(Array.from({ length: 9 }, (_, i) => line({ orderId: `o${i}` })))
-    const large = many.container
+    const busy = draw(Array.from({ length: 40 }, (_, i) => line({ orderId: `o${i}` })))
+    const busyR = busy.container
       .querySelector('[data-layer="currencies"] circle[stroke-opacity]')
       ?.getAttribute('r')
 
-    expect(Number(large)).toBeGreaterThan(Number(small))
+    expect(busyR).toBe(quietR)
   })
 
   test('draws one traveller per arc', () => {

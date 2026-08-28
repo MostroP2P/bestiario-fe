@@ -55,9 +55,24 @@ function arcStyle(arc: SceneArc) {
     : { stroke: PALETTE.arcSettling, opacity: 0.24, width: 0.9, dash: '3 4' }
 }
 
-/** Node radius grows with the lines resting on it, from the design's scale. */
-function radiusFor(lines: number, base: number, factor: number): number {
-  return base + Math.sqrt(lines) * factor
+/**
+ * A node's radius, from its share of the busiest node rather than from its
+ * raw count.
+ *
+ * An absolute scale is unusable on this data: the busiest market carries
+ * hundreds of orders and the quietest one, and a square root of the count
+ * alone gives the leader a glow that swallows a continent. Scaling against
+ * the peak keeps the map readable whatever the network's volume, and the
+ * figures themselves are in the table below, where a reader can compare them
+ * without measuring a circle.
+ */
+const MIN_RADIUS = 2.4
+const MAX_RADIUS = 11
+
+function radiusFor(weight: number, peak: number): number {
+  if (peak <= 0) return MIN_RADIUS
+  const share = Math.sqrt(Math.max(0, weight) / peak)
+  return MIN_RADIUS + share * (MAX_RADIUS - MIN_RADIUS)
 }
 
 export function WorldPulse(props: WorldPulseProps) {
@@ -65,15 +80,17 @@ export function WorldPulse(props: WorldPulseProps) {
   const travellers = useRef<(SVGCircleElement | null)[]>([])
 
   const nodes = useMemo(() => {
+    const instancePeak = Math.max(1, ...scene.instances.map((i) => i.lines))
+    const currencyPeak = Math.max(1, ...scene.currencies.map((c) => c.weight))
     const instances = scene.instances.map((i) => ({
       ...i,
       key: `i:${i.pubkey}`,
-      r: radiusFor(i.lines, 2.6, 1.4),
+      r: radiusFor(i.lines, instancePeak),
     }))
     const currencies = scene.currencies.map((c) => ({
       ...c,
       key: `c:${c.code}`,
-      r: radiusFor(c.lines, 2.2, 1.5),
+      r: radiusFor(c.weight, currencyPeak),
     }))
 
     // Busiest first: when two labels cannot both fit, the one carrying more
@@ -158,7 +175,7 @@ export function WorldPulse(props: WorldPulseProps) {
     >
       <defs>
         <radialGradient id="wp-glow-currency">
-          <stop offset="0%" stop-color={PALETTE.currency} stop-opacity="0.5" />
+          <stop offset="0%" stop-color={PALETTE.currency} stop-opacity="0.42" />
           <stop offset="100%" stop-color={PALETTE.currency} stop-opacity="0" />
         </radialGradient>
         <radialGradient id="wp-glow-instance">
@@ -211,7 +228,7 @@ export function WorldPulse(props: WorldPulseProps) {
               <circle
                 cx={instance.xy[0]}
                 cy={instance.xy[1]}
-                r={r * 4.5}
+                r={r * 3.2}
                 fill="url(#wp-glow-instance)"
               />
               <rect
@@ -238,7 +255,7 @@ export function WorldPulse(props: WorldPulseProps) {
               <circle
                 cx={currency.xy[0]}
                 cy={currency.xy[1]}
-                r={r * 5}
+                r={r * 3.4}
                 fill="url(#wp-glow-currency)"
               />
               <circle
