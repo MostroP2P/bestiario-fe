@@ -28,7 +28,7 @@ export type WorldPulseProps = {
 }
 
 /** Seconds for a traveller to cross its line and come back. */
-const ROUND_TRIP_S = 5.2
+const ROUND_TRIP_S = 10.4
 
 /**
  * A horizontal step wider than this fraction of the map is the antimeridian
