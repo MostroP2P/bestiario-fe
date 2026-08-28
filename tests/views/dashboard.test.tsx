@@ -179,6 +179,36 @@ describe('Dashboard', () => {
     expect(container.querySelector('.b-unplaced')).toBeNull()
   })
 
+  test('lists everything the map draws in the legend, including what lost its label', async () => {
+    // Arrange - two routes, so two currencies and two mostros are drawn.
+    const orders = [
+      order({ id: 'a', instancePubkey: 'k3' }),
+      order({ id: 'b', instancePubkey: 'k3' }),
+      order({ id: 'c', fiat: 'VES', instancePubkey: 'k4' }),
+    ]
+
+    // Act
+    const { container } = render(<Dashboard orders={orders} />)
+
+    // Assert
+    await waitFor(() => {
+      expect(container.querySelectorAll('.b-legend-row')).toHaveLength(4)
+    })
+    const rows = [...container.querySelectorAll('.b-legend-row')].map(
+      (r) => `${r.querySelector('dt')?.textContent} ${r.querySelector('dd')?.textContent}`,
+    )
+    expect(rows).toEqual(['ARS 2', 'VES 1', 'satoshi.br 2', 'nodo.mx 1'])
+  })
+
+  test('has no legend when there is nothing on the map', async () => {
+    const { container } = render(<Dashboard orders={[]} />)
+
+    await waitFor(() => {
+      expect(container.querySelector('svg[role="img"]')).not.toBeNull()
+    })
+    expect(container.querySelector('.b-legend')).toBeNull()
+  })
+
   test('states the grace period on screen rather than hiding it in a constant', () => {
     const { container } = render(<Dashboard />)
 

@@ -3,7 +3,7 @@ import type { Feature, Geometry } from 'geojson'
 import { PALETTE } from '~/map/palette'
 import { toPathData } from '~/map/geometry'
 import type { MapProjection } from '~/map/projection'
-import { layoutLabels, type Label } from '~/map/labels'
+import { selectLabels, type Label, type Marker } from '~/map/labels'
 import type { Scene, SceneArc } from '~/map/scene'
 
 /**
@@ -75,12 +75,39 @@ export function WorldPulse(props: WorldPulseProps) {
       key: `c:${c.code}`,
       r: radiusFor(c.lines, 2.2, 1.5),
     }))
+
+    // Busiest first: when two labels cannot both fit, the one carrying more
+    // flow keeps it and the other is left to the legend.
     const labels: Label[] = [
-      ...instances.map((n) => ({ key: n.key, x: n.xy[0] + n.r + 5, y: n.xy[1] + 3, text: n.label })),
-      ...currencies.map((n) => ({ key: n.key, x: n.xy[0] + n.r + 5, y: n.xy[1] + 3, text: n.code })),
+      ...instances.map((n) => ({
+        key: n.key,
+        lines: n.lines,
+        x: n.xy[0] + n.r + 5,
+        y: n.xy[1] + 3,
+        text: n.label,
+      })),
+      ...currencies.map((n) => ({
+        key: n.key,
+        lines: n.lines,
+        x: n.xy[0] + n.r + 5,
+        y: n.xy[1] + 3,
+        text: n.code,
+      })),
     ]
-    const placed = new Map(layoutLabels(labels).map((l) => [l.key, l]))
-    return { instances, currencies, labelFor: (key: string) => placed.get(key) }
+      .sort((a, b) => b.lines - a.lines || a.key.localeCompare(b.key))
+      .map(({ key, x, y, text }) => ({ key, x, y, text }))
+
+    // Every marker on the map, so a label is never drawn over a node that is
+    // not its own. The glow around a node is decoration and is not an
+    // obstacle; the mark itself is.
+    const markers: Marker[] = [
+      // An instance's mark is a square turned on its corner, so it reaches
+      // further than its radius by the diagonal.
+      ...instances.map((n) => ({ key: n.key, x: n.xy[0], y: n.xy[1], r: n.r * Math.SQRT2 })),
+      ...currencies.map((n) => ({ key: n.key, x: n.xy[0], y: n.xy[1], r: n.r })),
+    ]
+
+    return { instances, currencies, shown: selectLabels(labels, markers) }
   }, [scene])
 
   // The travellers ping-pong: out along the line and back. A Mostro trade is a
@@ -179,7 +206,6 @@ export function WorldPulse(props: WorldPulseProps) {
       <g data-layer="instances">
         {nodes.instances.map((instance) => {
           const r = instance.r
-          const label = nodes.labelFor(instance.key)
           return (
             <g key={instance.pubkey}>
               <circle
@@ -196,7 +222,9 @@ export function WorldPulse(props: WorldPulseProps) {
                 fill={PALETTE.instance}
                 transform={`rotate(45 ${instance.xy[0]} ${instance.xy[1]})`}
               />
-              <NodeLabel node={instance.xy} r={r} label={label} text={instance.label} />
+              {nodes.shown.has(instance.key) && (
+                <NodeLabel node={instance.xy} r={r} text={instance.label} />
+              )}
             </g>
           )
         })}
@@ -205,7 +233,6 @@ export function WorldPulse(props: WorldPulseProps) {
       <g data-layer="currencies">
         {nodes.currencies.map((currency) => {
           const r = currency.r
-          const label = nodes.labelFor(currency.key)
           return (
             <g key={currency.code}>
               <circle
@@ -229,7 +256,9 @@ export function WorldPulse(props: WorldPulseProps) {
                 r={r * 0.45}
                 fill={PALETTE.currency}
               />
-              <NodeLabel node={currency.xy} r={r} label={label} text={currency.code} />
+              {nodes.shown.has(currency.key) && (
+                <NodeLabel node={currency.xy} r={r} text={currency.code} />
+              )}
             </g>
           )
         })}
@@ -257,41 +286,30 @@ export function WorldPulse(props: WorldPulseProps) {
 }
 
 /**
- * A node's label, at the position the layout gave it. When the layout had to
- * push it clear of another, a hairline connects it back to its node so the
- * reader is never guessing which dot it belongs to.
+ * A node's label, beside the node it names.
+ *
+ * Drawn with a dark halo behind it. Selection keeps labels off each other and
+ * off the markers, but a node's glow reaches much further than its mark, and
+ * pale text over a bright glow is unreadable however well it is placed. The
+ * halo is the cartographer's answer and costs one stroke.
  */
-function NodeLabel(props: {
-  node: readonly [number, number]
-  r: number
-  label: Label | undefined
-  text: string
-}) {
-  const x = props.label?.x ?? props.node[0] + props.r + 5
-  const y = props.label?.y ?? props.node[1] + 3
-  const nudged = Math.abs(y - (props.node[1] + 3)) > 2
-
+function NodeLabel(props: { node: readonly [number, number]; r: number; text: string }) {
   return (
-    <>
-      {nudged && (
-        <path
-          d={`M${(props.node[0] + props.r).toFixed(1)},${props.node[1].toFixed(1)}L${(x - 2).toFixed(1)},${(y - 3).toFixed(1)}`}
-          stroke={PALETTE.label}
-          stroke-width="0.5"
-          stroke-opacity="0.35"
-          fill="none"
-        />
-      )}
-      <text
-        x={x}
-        y={y}
-        fill={PALETTE.label}
-        font-size="8.5"
-        letter-spacing="0.06em"
-        style={{ fontFamily: "'Martian Mono', ui-monospace, monospace" }}
-      >
-        {props.text}
-      </text>
-    </>
+    <text
+      x={props.node[0] + props.r + 5}
+      y={props.node[1] + 3}
+      fill={PALETTE.label}
+      stroke={PALETTE.background}
+      stroke-width="2.4"
+      stroke-linejoin="round"
+      font-size="8.5"
+      letter-spacing="0.06em"
+      style={{
+        fontFamily: "'Martian Mono', ui-monospace, monospace",
+        paintOrder: 'stroke fill',
+      }}
+    >
+      {props.text}
+    </text>
   )
 }

@@ -148,6 +148,16 @@ export function Dashboard(props: DashboardProps) {
 
   const unplaced = scene.unplaced.currencies + scene.unplaced.instances
 
+  const byLines = <T extends { lines: number }>(a: T, b: T) => b.lines - a.lines
+  const legendCurrencies = useMemo(
+    () => [...scene.currencies].sort((a, b) => byLines(a, b) || a.code.localeCompare(b.code)),
+    [scene],
+  )
+  const legendInstances = useMemo(
+    () => [...scene.instances].sort((a, b) => byLines(a, b) || a.label.localeCompare(b.label)),
+    [scene],
+  )
+
   return (
     <div class="b-page">
       {props.sample && (
@@ -230,9 +240,37 @@ export function Dashboard(props: DashboardProps) {
               <strong>{scene.currencies.length}</strong>
               <small>en {scene.instances.length} mostros</small>
               {unplaced > 0 && (
-                <small class="b-unplaced">
-                  {unplaced} sin ubicar, fuera del mapa
-                </small>
+                <small class="b-unplaced">{unplaced} sin ubicar, fuera del mapa</small>
+              )}
+
+              {/* The map keeps the design's whole globe, so a label that will
+                  not fit is dropped from it rather than drawn on top of
+                  another. Everything the map draws is listed here, whether or
+                  not it kept its label. */}
+              {scene.arcs.length > 0 && (
+                <dl class="b-legend">
+                  {legendCurrencies.map((c) => (
+                    <div key={c.code} class="b-legend-row">
+                      <dt>
+                        <i class="b-legend-mark" data-kind="currency" />
+                        {c.code}
+                      </dt>
+                      <dd>{c.lines}</dd>
+                    </div>
+                  ))}
+                  {legendCurrencies.length > 0 && legendInstances.length > 0 && (
+                    <div class="b-legend-rule" />
+                  )}
+                  {legendInstances.map((i) => (
+                    <div key={i.pubkey} class="b-legend-row">
+                      <dt>
+                        <i class="b-legend-mark" data-kind="instance" />
+                        {i.label}
+                      </dt>
+                      <dd>{i.lines}</dd>
+                    </div>
+                  ))}
+                </dl>
               )}
             </div>
           </section>

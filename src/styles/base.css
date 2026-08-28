@@ -637,3 +637,63 @@ body {
   font-size: 9px;
   letter-spacing: 0.06em;
 }
+
+/* The legend beside the map. Every currency and every mostro the map draws is
+   here, including the ones whose label would not fit on the globe. */
+.b-legend {
+  margin: 10px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 116px;
+}
+
+.b-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-muted);
+}
+
+.b-legend-rule {
+  height: 1px;
+  background: var(--hairline);
+  margin: 3px 0;
+}
+
+.b-legend-row dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.b-legend-row dd {
+  margin: 0;
+  color: var(--ink-bright);
+  flex-shrink: 0;
+}
+
+.b-legend-mark {
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+}
+
+.b-legend-mark[data-kind='currency'] {
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.b-legend-mark[data-kind='instance'] {
+  background: #e8ff3a;
+  transform: rotate(45deg);
+}

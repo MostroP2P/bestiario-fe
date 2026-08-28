@@ -1,79 +1,101 @@
 import { describe, expect, test } from 'vitest'
-import { layoutLabels, type Label } from '~/map/labels'
+import { selectLabels, type Label } from '~/map/labels'
 
 function label(key: string, x: number, y: number, text = 'ARS'): Label {
   return { key, x, y, text }
 }
 
-describe('layoutLabels', () => {
-  test('leaves labels that do not collide exactly where they were', () => {
+describe('selectLabels', () => {
+  test('keeps every label when none of them collide', () => {
     // Arrange
     const labels = [label('a', 0, 0), label('b', 0, 100), label('c', 500, 0)]
 
     // Act
-    const laid = layoutLabels(labels)
+    const kept = selectLabels(labels)
 
     // Assert
-    expect(laid).toEqual(labels)
+    expect([...kept].sort()).toEqual(['a', 'b', 'c'])
   })
 
-  test('pushes a colliding label down until it clears', () => {
-    const laid = layoutLabels([label('a', 0, 0), label('b', 0, 2)], 10)
+  test('drops the second of two labels on top of each other', () => {
+    const kept = selectLabels([label('a', 0, 0), label('b', 0, 2)])
 
-    expect(laid.map((l) => l.y)).toEqual([0, 10])
+    expect([...kept]).toEqual(['a'])
   })
 
-  test('leaves a label alone when it only collides vertically', () => {
-    // Far enough to the right that the two never share horizontal space.
-    const laid = layoutLabels([label('a', 0, 0), label('b', 400, 2)], 10)
+  test('keeps priority order, so the busiest node keeps its label', () => {
+    // The caller sorts by importance; the first one through wins.
+    const kept = selectLabels([label('busy', 0, 2), label('quiet', 0, 0)])
 
-    expect(laid.map((l) => l.y)).toEqual([0, 2])
+    expect([...kept]).toEqual(['busy'])
   })
 
-  test('cascades, so pushing past one label does not land on the next', () => {
-    const laid = layoutLabels(
-      [label('a', 0, 0), label('b', 0, 1), label('c', 0, 2)],
-      10,
-    )
+  test('keeps two labels that share a row but not a column', () => {
+    const kept = selectLabels([label('a', 0, 0), label('b', 400, 2)])
 
-    expect(laid.map((l) => l.y)).toEqual([0, 10, 20])
+    expect([...kept].sort()).toEqual(['a', 'b'])
   })
 
-  test('keeps every label rather than dropping the ones in the way', () => {
-    const labels = Array.from({ length: 8 }, (_, i) => label(`k${i}`, 0, i))
+  test('keeps two labels in the same column but far apart', () => {
+    const kept = selectLabels([label('a', 0, 0), label('b', 0, 40)])
 
-    expect(layoutLabels(labels)).toHaveLength(8)
-  })
-
-  test('never moves a label sideways, so it stays beside its node', () => {
-    const laid = layoutLabels([label('a', 0, 0), label('b', 0, 1)], 10)
-
-    expect(laid.map((l) => l.x)).toEqual([0, 0])
-  })
-
-  test('returns labels in the order it was given them', () => {
-    const laid = layoutLabels([label('z', 0, 50), label('a', 0, 0)], 10)
-
-    expect(laid.map((l) => l.key)).toEqual(['z', 'a'])
+    expect([...kept].sort()).toEqual(['a', 'b'])
   })
 
   test('accounts for how wide a label is, not just where it starts', () => {
-    // A long name reaches far enough right to collide with a distant short one.
-    const laid = layoutLabels(
-      [label('long', 0, 0, 'mostro.network'), label('short', 60, 2, 'ARS')],
-      10,
-    )
+    // A long name reaches right far enough to cover a short one beside it.
+    const kept = selectLabels([
+      label('long', 0, 0, 'mostro.network'),
+      label('short', 60, 2, 'ARS'),
+    ])
 
-    expect(laid[1]!.y).toBe(10)
+    expect([...kept]).toEqual(['long'])
   })
 
-  test('is stable for labels sharing a position', () => {
-    const labels = [label('b', 0, 0), label('a', 0, 0)]
+  test('keeps a third label that clears both of the first two', () => {
+    const kept = selectLabels([label('a', 0, 0), label('b', 0, 2), label('c', 0, 40)])
 
-    expect(layoutLabels(labels, 10)).toEqual(layoutLabels([...labels].reverse(), 10).reverse())
+    expect([...kept].sort()).toEqual(['a', 'c'])
   })
 
-  test('handles an empty map', () => {
-    expect(layoutLabels([])).toEqual([])
+  test('handles a map with nothing on it', () => {
+    expect(selectLabels([])).toEqual(new Set())
+  })
+})
+
+describe('selectLabels · markers', () => {
+  test('drops a label that would sit on another node marker', () => {
+    // Arrange - a marker squarely where the label would be drawn.
+    const labels = [label('a', 0, 0, 'andes.pe')]
+    const markers = [{ key: 'other', x: 20, y: 0, r: 8 }]
+
+    // Act
+    const kept = selectLabels(labels, markers)
+
+    // Assert
+    expect([...kept]).toEqual([])
+  })
+
+  test('lets a label sit beside its own marker, which is where it belongs', () => {
+    const labels = [label('a', 0, 0, 'ARS')]
+    const markers = [{ key: 'a', x: 2, y: 0, r: 8 }]
+
+    expect([...selectLabels(labels, markers)]).toEqual(['a'])
+  })
+
+  test('keeps a label whose marker is nowhere near it', () => {
+    const labels = [label('a', 0, 0, 'ARS')]
+    const markers = [{ key: 'other', x: 400, y: 400, r: 8 }]
+
+    expect([...selectLabels(labels, markers)]).toEqual(['a'])
+  })
+
+  test('separates two labels that would otherwise read as one string', () => {
+    // "COP" ends exactly where "VES" begins: adjacent, not overlapping, and
+    // unreadable all the same.
+    const cop = label('cop', 0, 0, 'COP')
+    const ves = label('ves', 3 * 5.9, 0, 'VES')
+
+    expect([...selectLabels([cop, ves])]).toEqual(['cop'])
   })
 })
