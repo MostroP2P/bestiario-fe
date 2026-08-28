@@ -35,21 +35,31 @@ export function OpenDisputes({
 
   return (
     <>
-      <ul class="b-dispute-list">
-        {entries.map((entry) => {
-          const id = formatMetric(entry.figures.get('id'))
-          const age = formatMetric(entry.figures.get('age'))
-          return (
-            <li key={entry.index} class="b-feed-item">
-              <span class="b-feed-time">{entry.index}</span>
-              <span class="b-feed-text b-mono" title={id.text}>
-                {id.text.slice(0, 8)}…
-              </span>
-              <span class="b-dispute-age">{age.text}</span>
-            </li>
-          )
-        })}
-      </ul>
+      {/* The scroll lives on the wrapper, not on the list: a region a pointer
+          can scroll and a keyboard cannot is unreachable, and a `role` on the
+          list itself would take its items out of it. */}
+      <div
+        class="b-dispute-scroll"
+        tabIndex={0}
+        role="group"
+        aria-label="Disputas abiertas"
+      >
+        <ul class="b-dispute-list">
+          {entries.map((entry) => {
+            const id = formatMetric(entry.figures.get('id'))
+            const age = formatMetric(entry.figures.get('age'))
+            return (
+              <li key={entry.index} class="b-feed-item">
+                <span class="b-feed-time">{entry.index}</span>
+                <span class="b-feed-text b-mono" title={id.text}>
+                  {id.text.slice(0, 8)}…
+                </span>
+                <span class="b-dispute-age">{age.text}</span>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
       {asOf && (
         <p class="b-asof">
           Edades medidas por el publicador al calcular la instantánea, no ahora.

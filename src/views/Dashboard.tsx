@@ -2,12 +2,19 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { DEFAULT_RELAYS, PUBLISHER_PUBKEY } from '~/config'
 import { WINDOWS, windowAddress, type Span } from '~/nostr/address'
 import { fiatRows, indexedFamily, lookup, metricsOf } from '~/model/metrics'
+import type { Metric } from '~/nostr/documents'
 import { formatMetric } from '~/model/format'
+import { Figure } from '~/components/Figure'
 import { payloadOf, useStore } from '~/store/useStore'
 import { TrustRail } from '~/components/TrustRail'
 import { FiatTable } from '~/components/FiatTable'
 import { OpenDisputes } from '~/components/OpenDisputes'
-import { LoadingAnnouncement, Skeleton, SkeletonKpi, SkeletonMap } from '~/components/Skeleton'
+import {
+  LoadingAnnouncement,
+  Skeleton,
+  SkeletonKpi,
+  SkeletonMap,
+} from '~/components/Skeleton'
 import { WorldPulse } from '~/components/WorldPulse'
 import { useAtlas } from '~/map/useAtlas'
 import { useMeasuredSize, usePrefersReducedMotion } from '~/map/hooks'
@@ -115,7 +122,8 @@ export function Dashboard() {
   const flows = useMemo(() => flowLines(marketWeights, ANCHOR_COUNT), [marketWeights])
 
   const scene = useMemo(() => {
-    if (!projection || !placed || !anchors || atlasState.status !== 'ready') return EMPTY_SCENE
+    if (!projection || !placed || !anchors || atlasState.status !== 'ready')
+      return EMPTY_SCENE
     return buildScene({
       lines: flows,
       currencies: marketWeights,
@@ -177,11 +185,7 @@ export function Dashboard() {
             </div>
           </div>
 
-          <section
-            class="b-map"
-            aria-labelledby="map-heading"
-            ref={mapRef}
-          >
+          <section class="b-map" aria-labelledby="map-heading" ref={mapRef}>
             {!mapReady && <SkeletonMap />}
             {atlasState.status === 'failed' && (
               <p class="b-map-state" data-failed="true">
@@ -277,24 +281,31 @@ export function Dashboard() {
                 <Pairs
                   heading="ÓRDENES"
                   loading={loading}
-                  pairs={[
-                    ['canceladas', formatMetric(lookup(orders, 'orders.canceled')).text],
-                    ['tasa de abandono', formatMetric(lookup(orders, 'orders.abandonment_rate')).text],
-                    ['ticket medio', formatMetric(lookup(volume, 'volume.ticket_avg')).text],
-                    ['mayor orden', formatMetric(lookup(volume, 'volume.largest')).text],
+                  rows={[
+                    ['canceladas', lookup(orders, 'orders.canceled')],
+                    ['tasa de abandono', lookup(orders, 'orders.abandonment_rate')],
+                    ['ticket medio', lookup(volume, 'volume.ticket_avg')],
+                    ['mayor orden', lookup(volume, 'volume.largest')],
                   ]}
                 />
                 <Pairs
                   heading="DISPUTAS · DEV FEES"
                   loading={loading}
-                  pairs={[
-                    ['tasa de disputa', formatMetric(lookup(disputes, 'disputes.rate')).text],
+                  rows={[
+                    ['tasa de disputa', lookup(disputes, 'disputes.rate')],
                     [
                       'mediana de resolución',
-                      formatMetric(lookup(disputes, 'disputes.resolution_p50')).text,
+                      lookup(disputes, 'disputes.resolution_p50'),
                     ],
-                    ['dev fees', formatMetric(lookup(fees, 'dev_fees.total_sats')).text],
-                    ['cobertura', formatMetric(lookup(fees, 'dev_fees.coverage')).text],
+                    ['dev fees', lookup(fees, 'dev_fees.total_sats')],
+                    ['cobertura', lookup(fees, 'dev_fees.coverage')],
+                    // Inferred, and marked as such: it rests on an assumed fee
+                    // share the daemon was configured with, not on a measurement.
+                    ['volumen implícito', lookup(fees, 'dev_fees.implied_volume')],
+                    // Inferred and, on the current archive, missing: no completed
+                    // order had a rate snapshot close enough to price it. It
+                    // renders as absence, which is the honest answer.
+                    ['volumen en USD', lookup(volume, 'volume.in.USD.total')],
                   ]}
                 />
               </div>
@@ -344,7 +355,11 @@ export function Dashboard() {
   )
 }
 
-function Kpi(props: { readonly label: string; readonly value: string; readonly sub: string }) {
+function Kpi(props: {
+  readonly label: string
+  readonly value: string
+  readonly sub: string
+}) {
   return (
     <div class="b-kpi">
       <span class="b-eyebrow">{props.label}</span>
@@ -357,18 +372,20 @@ function Kpi(props: { readonly label: string; readonly value: string; readonly s
 function Pairs(props: {
   readonly heading: string
   readonly loading: boolean
-  readonly pairs: readonly (readonly [string, string])[]
+  readonly rows: readonly (readonly [string, Metric | undefined])[]
 }) {
   return (
     <div>
       <h2 class="b-eyebrow b-section-head">{props.heading}</h2>
-      {props.pairs.map(([label, value]) => (
+      {props.rows.map(([label, metric]) => (
         <p key={label} class="b-pair" style={{ margin: 0 }}>
           <span>{label}</span>
           {props.loading ? (
             <Skeleton width="64px" height="11px" />
           ) : (
-            <span>{value}</span>
+            <span>
+              <Figure metric={metric} />
+            </span>
           )}
         </p>
       ))}

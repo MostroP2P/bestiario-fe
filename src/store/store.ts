@@ -103,7 +103,8 @@ export function createStore(relays: Relays, publisher: string): Store {
     if (previous) {
       const before = new Map(previous.documents.map((entry) => [entry.d, entry.hash]))
       const changed = verified.value.documents.filter(
-        (entry) => before.get(entry.d) !== undefined && before.get(entry.d) !== entry.hash,
+        (entry) =>
+          before.get(entry.d) !== undefined && before.get(entry.d) !== entry.hash,
       )
       if (changed.length > 0) {
         void fetchDocuments(changed.map((entry) => entry.d))

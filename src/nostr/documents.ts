@@ -9,14 +9,7 @@
 
 /** The units a figure can carry. `missing` is absence with a reason. */
 export type Unit =
-  | 'count'
-  | 'sats'
-  | 'seconds'
-  | 'ratio'
-  | 'fiat'
-  | 'text'
-  | 'missing'
-  | 'date'
+  'count' | 'sats' | 'seconds' | 'ratio' | 'fiat' | 'text' | 'missing' | 'date'
 
 /** SPEC 5: observed is measured, inferred rests on an assumption. */
 export type MetricKind = 'observed' | 'inferred'

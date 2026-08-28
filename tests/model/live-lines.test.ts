@@ -40,9 +40,17 @@ describe('activeLines', () => {
   })
 
   test('draws a line from the currency to the instance that published the order', () => {
-    const lines = activeLines([order({ fiat: 'VES', instancePubkey: 'npub-ve' })], NOW, CFG)
+    const lines = activeLines(
+      [order({ fiat: 'VES', instancePubkey: 'npub-ve' })],
+      NOW,
+      CFG,
+    )
 
-    expect(lines[0]).toMatchObject({ fiat: 'VES', instancePubkey: 'npub-ve', phase: 'live' })
+    expect(lines[0]).toMatchObject({
+      fiat: 'VES',
+      instancePubkey: 'npub-ve',
+      phase: 'live',
+    })
   })
 
   test('keeps a successful order on the map inside the grace period', () => {
@@ -77,7 +85,10 @@ describe('activeLines', () => {
   })
 
   test('never expires a live order, however old it is', () => {
-    const stale = order({ status: 'in-progress', updatedAt: NOW - 30 * 24 * 60 * 60 * 1000 })
+    const stale = order({
+      status: 'in-progress',
+      updatedAt: NOW - 30 * 24 * 60 * 60 * 1000,
+    })
 
     expect(activeLines([stale], NOW, CFG)).toHaveLength(1)
   })

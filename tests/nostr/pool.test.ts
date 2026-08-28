@@ -14,7 +14,11 @@ vi.mock('nostr-tools/pool', () => ({
     querySync(_relays: string[], filter: Filter) {
       return behaviour.query(filter)
     }
-    subscribe(_relays: string[], filter: Filter, handlers: { onevent: (e: Event) => void }) {
+    subscribe(
+      _relays: string[],
+      filter: Filter,
+      handlers: { onevent: (e: Event) => void },
+    ) {
       behaviour.subscribeCalls.push({ filter, onevent: handlers.onevent })
       return {
         close: () => {
@@ -116,7 +120,10 @@ describe('openRelays', () => {
     const events = await relays.query({ kinds: [30666] })
 
     expect(events).toEqual([])
-    expect(relays.states()[0]).toMatchObject({ status: 'failed', error: 'socket hang up' })
+    expect(relays.states()[0]).toMatchObject({
+      status: 'failed',
+      error: 'socket hang up',
+    })
   })
 
   test('survives a rejection that is not an Error', async () => {

@@ -61,7 +61,9 @@ function renderString(value: string): string {
 }
 
 function isFiat(value: MetricValue): value is Fiat {
-  return typeof value === 'object' && value !== null && 'amount' in value && 'code' in value
+  return (
+    typeof value === 'object' && value !== null && 'amount' in value && 'code' in value
+  )
 }
 
 /** A metric's value. `fiat` is an object here; in a row it is a bare float. */

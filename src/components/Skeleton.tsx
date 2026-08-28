@@ -20,7 +20,11 @@ export type SkeletonProps = {
   readonly radius?: string
 }
 
-export function Skeleton({ width = '100%', height = '12px', radius = '2px' }: SkeletonProps) {
+export function Skeleton({
+  width = '100%',
+  height = '12px',
+  radius = '2px',
+}: SkeletonProps) {
   return <span class="b-skeleton" style={{ width, height, borderRadius: radius }} />
 }
 

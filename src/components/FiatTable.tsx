@@ -1,4 +1,4 @@
-import { formatMetric } from '~/model/format'
+import { Figure } from './Figure'
 import { SkeletonRow } from './Skeleton'
 import type { FiatRow } from '~/model/metrics'
 
@@ -22,7 +22,10 @@ export function FiatTable({
     return (
       <div class="b-table">
         {[0, 1, 2, 3, 4, 5].map((i) => (
-          <SkeletonRow key={i} widths={['52px', '92px', '54px', '78px', '64px', '64px']} />
+          <SkeletonRow
+            key={i}
+            widths={['52px', '92px', '54px', '78px', '64px', '64px']}
+          />
         ))}
       </div>
     )
@@ -33,9 +36,11 @@ export function FiatTable({
   }
 
   return (
-    <div class="b-table">
+    <div class="b-table" tabIndex={0} role="group" aria-label="Volumen por moneda">
       <table>
-        <caption class="b-visually-hidden">Volumen por moneda en la ventana elegida</caption>
+        <caption class="b-visually-hidden">
+          Volumen por moneda en la ventana elegida
+        </caption>
         <thead>
           <tr>
             <th scope="col">moneda</th>
@@ -50,15 +55,11 @@ export function FiatTable({
           {rows.map((row) => (
             <tr key={row.code}>
               <th scope="row">{row.code}</th>
-              {columns.map((column) => {
-                const formatted = formatMetric(row.figures.get(column))
-                return (
-                  <td key={column} data-absent={formatted.absent}>
-                    <span aria-hidden={formatted.absent}>{formatted.text}</span>
-                    {formatted.absent && <span class="b-visually-hidden">{formatted.label}</span>}
-                  </td>
-                )
-              })}
+              {columns.map((column) => (
+                <td key={column}>
+                  <Figure metric={row.figures.get(column)} />
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>

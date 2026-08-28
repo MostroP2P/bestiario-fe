@@ -33,7 +33,16 @@ const REGIONAL_CURRENCIES: Readonly<Record<string, RegionId>> = {
  * that has nothing to do with the order.
  */
 const NON_FIAT: ReadonlySet<string> = new Set([
-  'BTC', 'XBT', 'SAT', 'SATS', 'ETH', 'LTC', 'XMR', 'DAI', 'USDT', 'USDC',
+  'BTC',
+  'XBT',
+  'SAT',
+  'SATS',
+  'ETH',
+  'LTC',
+  'XMR',
+  'DAI',
+  'USDT',
+  'USDC',
 ])
 
 const UNKNOWN: Placement = { kind: 'unknown' }

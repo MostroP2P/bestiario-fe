@@ -91,11 +91,15 @@ export function TrustRail(props: TrustRailProps) {
           <>
             <div class="b-backfill-row">
               <span>desde</span>
-              <span class="b-mono">{ready.index.coverage.first_event_at.slice(0, 10)}</span>
+              <span class="b-mono">
+                {ready.index.coverage.first_event_at.slice(0, 10)}
+              </span>
             </div>
             <div class="b-backfill-row">
               <span>hasta</span>
-              <span class="b-mono">{ready.index.coverage.last_event_at.slice(0, 10)}</span>
+              <span class="b-mono">
+                {ready.index.coverage.last_event_at.slice(0, 10)}
+              </span>
             </div>
             <div class="b-backfill-row">
               <span>documentos</span>

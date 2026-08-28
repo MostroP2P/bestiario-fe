@@ -59,7 +59,9 @@ describe('resolvePlacement · country names', () => {
 
   test('prefers the longest matching name', () => {
     // "Dominica" is a substring of "República Dominicana" and must not win.
-    expect(resolvePlacement('mostro República Dominicana')).toMatchObject({ alpha2: 'DO' })
+    expect(resolvePlacement('mostro República Dominicana')).toMatchObject({
+      alpha2: 'DO',
+    })
   })
 
   test('does not match a country name embedded in a longer word', () => {
@@ -162,7 +164,10 @@ describe('resolvePlacement · domain suffixes', () => {
   })
 
   test('reads a ccTLD under a subdomain', () => {
-    expect(resolvePlacement('relay.mostro.mx')).toMatchObject({ alpha2: 'MX', via: 'tld' })
+    expect(resolvePlacement('relay.mostro.mx')).toMatchObject({
+      alpha2: 'MX',
+      via: 'tld',
+    })
   })
 
   test('reads a regional gTLD', () => {

@@ -135,7 +135,12 @@ export function WorldPulse(props: WorldPulseProps) {
     const markers: Marker[] = [
       // An instance's mark is a square turned on its corner, so it reaches
       // further than its radius by the diagonal.
-      ...instances.map((n) => ({ key: n.key, x: n.xy[0], y: n.xy[1], r: n.r * Math.SQRT2 })),
+      ...instances.map((n) => ({
+        key: n.key,
+        x: n.xy[0],
+        y: n.xy[1],
+        r: n.r * Math.SQRT2,
+      })),
       ...currencies.map((n) => ({ key: n.key, x: n.xy[0], y: n.xy[1], r: n.r })),
     ]
 
@@ -210,7 +215,12 @@ export function WorldPulse(props: WorldPulseProps) {
         stroke={PALETTE.sphereStroke}
         stroke-width="1"
       />
-      <path d={projection.graticule} fill="none" stroke={PALETTE.graticule} stroke-width="0.6" />
+      <path
+        d={projection.graticule}
+        fill="none"
+        stroke={PALETTE.graticule}
+        stroke-width="0.6"
+      />
       <g data-layer="land">
         {props.land.map((feature, i) => (
           <path

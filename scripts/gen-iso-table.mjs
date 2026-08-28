@@ -107,4 +107,5 @@ export const ATLAS_FEATURE_COUNT = ${geometries.length}
 
 console.error(`wrote ${OUT}: ${entries.length}/${geometries.length} features mapped`)
 if (unmatched.length) console.error(`unmapped atlas features: ${unmatched.join(', ')}`)
-if (idless.length) console.error(`atlas features with no ISO numeric id: ${idless.join(', ')}`)
+if (idless.length)
+  console.error(`atlas features with no ISO numeric id: ${idless.join(', ')}`)

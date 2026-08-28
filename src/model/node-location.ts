@@ -31,10 +31,7 @@ const INDICATOR_Z = 0x1f1ff
 
 /** Lowercase, accent-stripped, so `Perú` and `peru` are the same needle. */
 function fold(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 }
 
 function escapeRegExp(text: string): string {

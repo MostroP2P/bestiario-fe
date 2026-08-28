@@ -81,8 +81,8 @@ describe('WorldPulse', () => {
   test('marks a settling line by more than its colour', () => {
     const { container } = draw([line(), line({ orderId: 'o2', phase: 'settling' })])
 
-    const dashed = [...container.querySelectorAll('[data-layer="arcs"] path')].filter((p) =>
-      p.getAttribute('stroke-dasharray'),
+    const dashed = [...container.querySelectorAll('[data-layer="arcs"] path')].filter(
+      (p) => p.getAttribute('stroke-dasharray'),
     )
     expect(dashed).toHaveLength(1)
   })
@@ -105,8 +105,9 @@ describe('WorldPulse', () => {
 
     // Act
     const { container } = draw(lines)
-    const radii = [...container.querySelectorAll('[data-layer="currencies"] circle[stroke-opacity]')]
-      .map((c) => Number(c.getAttribute('r')))
+    const radii = [
+      ...container.querySelectorAll('[data-layer="currencies"] circle[stroke-opacity]'),
+    ].map((c) => Number(c.getAttribute('r')))
 
     // Assert
     expect(radii).toHaveLength(2)
@@ -165,7 +166,17 @@ describe('WorldPulse', () => {
           {
             type: 'Feature',
             properties: {},
-            geometry: { type: 'Polygon', coordinates: [[[0, 0], [10, 0], [10, 10], [0, 0]]] },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [
+                [
+                  [0, 0],
+                  [10, 0],
+                  [10, 10],
+                  [0, 0],
+                ],
+              ],
+            },
           },
         ]}
         projection={projection}
@@ -194,7 +205,15 @@ describe('describeScene', () => {
   test('says what it could not place rather than quietly omitting it', () => {
     const scene: Scene = {
       ...empty,
-      arcs: [{ orderId: 'a', fiat: 'ARS', instancePubkey: 'n', phase: 'live', points: [[0, 0]] }],
+      arcs: [
+        {
+          orderId: 'a',
+          fiat: 'ARS',
+          instancePubkey: 'n',
+          phase: 'live',
+          points: [[0, 0]],
+        },
+      ],
       unplaced: { currencies: 2, instances: 1 },
     }
 

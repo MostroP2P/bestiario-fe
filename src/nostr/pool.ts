@@ -62,7 +62,8 @@ export function openRelays(urls: readonly string[]): Relays {
         for (const event of events) sawEvent(event)
         if (events.length === 0) {
           for (const [url, state] of states) {
-            if (state.status === 'connecting') states.set(url, { ...state, status: 'silent' })
+            if (state.status === 'connecting')
+              states.set(url, { ...state, status: 'silent' })
           }
         }
         return events

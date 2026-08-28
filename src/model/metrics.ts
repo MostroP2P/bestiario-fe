@@ -13,7 +13,7 @@ import { isSeries } from '~/nostr/documents'
 
 export function metricsOf(payload: Payload | undefined): readonly Metric[] {
   if (!payload || isSeries(payload)) return []
-  return (payload).metrics
+  return payload.metrics
 }
 
 export function lookup(metrics: readonly Metric[], name: string): Metric | undefined {

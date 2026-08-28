@@ -1,0 +1,194 @@
+import { expect, test } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
+import { dOf, fixtures, serveRelay } from './relay'
+
+const events = fixtures()
+
+test.describe('the overview', () => {
+  test.beforeEach(async ({ page }) => {
+    await serveRelay(page, events)
+  })
+
+  test('renders the figures the publisher signed', async ({ page }) => {
+    // Arrange / Act
+    await page.goto('/')
+
+    // Assert — the KPI figures arrive, verified, into the shell.
+    const kpis = page.locator('.b-kpi strong')
+    await expect(kpis).toHaveCount(4)
+    await expect(kpis.first()).not.toBeEmpty()
+    await expect(page.locator('.b-stream')).toHaveText('VERIFICADO')
+  })
+
+  test('shows skeletons before them, never a spinner', async ({ page }) => {
+    // Arrange — the relay takes its time, which is the state a reader on a
+    // slow connection sees and the one the shell has to hold.
+    await serveRelay(page, events, 4000)
+
+    // Act
+    await page.goto('/')
+
+    // Assert — the shell is whole, the figures are skeletons, and nothing
+    // anywhere is a spinner.
+    await expect(page.locator('.b-skeleton-map')).toBeVisible()
+    await expect(page.locator('.b-skeleton').first()).toBeVisible()
+    await expect(page.getByRole('status')).toContainText('Cargando')
+    await expect(page.locator('.b-rail')).toBeVisible()
+    await expect(page.locator('.b-kpi strong')).toHaveCount(0)
+  })
+
+  test('switches documents when the window changes', async ({ page }) => {
+    // Arrange
+    await page.goto('/')
+    const orders = page.locator('.b-kpi strong').first()
+    await expect(orders).not.toBeEmpty()
+    const before = await orders.textContent()
+
+    // Act — 24 h is a different document, not a recomputation.
+    await page.getByRole('button', { name: '24 H' }).click()
+
+    // Assert
+    await expect(page.getByRole('button', { name: '24 H' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    await expect(orders).not.toHaveText(before ?? '')
+  })
+
+  test('draws a market on the map for every currency it can place', async ({ page }) => {
+    await page.goto('/')
+
+    await expect(page.locator('[data-layer="currencies"] > g').first()).toBeVisible()
+    await expect(page.locator('[data-layer="arcs"] path').first()).toBeVisible()
+  })
+})
+
+test.describe('absence', () => {
+  test.beforeEach(async ({ page }) => {
+    await serveRelay(page, events)
+  })
+
+  test('renders a figure the publisher could not measure as absence, not as zero', async ({
+    page,
+  }) => {
+    // Arrange — the reference currency is `missing` on this archive: no
+    // completed order had a usable rate.
+    await page.goto('/')
+    const row = page.locator('.b-pair', { hasText: 'volumen en USD' })
+
+    // Act / Assert
+    await expect(row).toBeVisible()
+    await expect(row.locator('.b-figure[data-absent="true"]')).toBeVisible()
+    await expect(row).toContainText('—')
+    await expect(row).not.toContainText('0 sats')
+  })
+
+  test('says which absence it is, for a reader who cannot see the dash', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    const row = page.locator('.b-pair', { hasText: 'volumen en USD' })
+
+    await expect(row.locator('.b-visually-hidden')).toHaveText('no medido')
+  })
+})
+
+test.describe('inferred figures', () => {
+  test.beforeEach(async ({ page }) => {
+    await serveRelay(page, events)
+  })
+
+  test('are distinguished by a marker and not by a colour alone', async ({ page }) => {
+    await page.goto('/')
+    const row = page.locator('.b-pair', { hasText: 'volumen implícito' })
+
+    await expect(row.locator('.b-inferred-mark')).toBeVisible()
+    await expect(row.locator('.b-inferred-mark')).toContainText('inf')
+  })
+
+  test('reach their assumption by keyboard, not only under a pointer', async ({
+    page,
+  }) => {
+    // Arrange
+    await page.goto('/')
+    const mark = page
+      .locator('.b-pair', { hasText: 'volumen implícito' })
+      .locator('.b-inferred-mark')
+    await expect(mark).toBeVisible()
+    const tooltip = mark.locator('.b-tooltip')
+    await expect(tooltip).toBeHidden()
+
+    // Act — focus, no pointer involved.
+    await mark.focus()
+
+    // Assert
+    await expect(tooltip).toBeVisible()
+    await expect(tooltip).not.toBeEmpty()
+  })
+
+  test('carry the assumption in their accessible name', async ({ page }) => {
+    await page.goto('/')
+    const mark = page
+      .locator('.b-pair', { hasText: 'volumen implícito' })
+      .locator('.b-inferred-mark')
+
+    await expect(mark).toHaveAttribute('aria-label', /^Cifra inferida\. .+/)
+  })
+})
+
+test.describe('what the site says about its own trust', () => {
+  test('names the publisher, the relays and the archive it read', async ({ page }) => {
+    await serveRelay(page, events)
+    await page.goto('/')
+
+    const rail = page.locator('.b-rail')
+    await expect(rail).toContainText('PUBLICADOR')
+    await expect(rail).toContainText('relay.mostro.network')
+    await expect(rail).toContainText('ARCHIVO')
+    await expect(rail).toContainText('INSTANTÁNEA')
+    // A signature proves who published, and nothing about correctness.
+    await expect(rail).toContainText('no que sean correctas')
+  })
+
+  test('shows the failure and no figure when nothing verifies', async ({ page }) => {
+    // Arrange — every relay silent.
+    await serveRelay(page, [])
+
+    // Act
+    await page.goto('/')
+
+    // Assert
+    await expect(page.getByRole('alert')).toContainText('Sin cifras verificadas')
+    await expect(page.locator('.b-kpi strong')).toHaveCount(0)
+  })
+
+  test('refuses an index signed by anybody else', async ({ page }) => {
+    // Arrange — the documents are genuine; the index is not this publisher's.
+    const index = events.find((event) => dOf(event) === 'index')!
+    const forged = { ...index, pubkey: 'f'.repeat(64) }
+    await serveRelay(page, [forged, ...events.filter((e) => dOf(e) !== 'index')])
+
+    // Act
+    await page.goto('/')
+
+    // Assert — fatal, and no figure at all.
+    await expect(page.getByRole('alert')).toContainText('Sin cifras verificadas')
+    await expect(page.locator('.b-kpi strong')).toHaveCount(0)
+  })
+})
+
+test.describe('accessibility', () => {
+  test('has no detectable WCAG A or AA violations', async ({ page }) => {
+    await serveRelay(page, events)
+    await page.goto('/')
+    await expect(page.locator('.b-kpi strong').first()).not.toBeEmpty()
+
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+      .analyze()
+
+    expect(results.violations.map((v) => `${v.id}: ${v.nodes.length} node(s)`)).toEqual(
+      [],
+    )
+  })
+})

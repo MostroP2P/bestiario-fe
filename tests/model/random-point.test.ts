@@ -26,7 +26,17 @@ const SQUARE: Feature<Polygon> = {
 const DEGENERATE: Feature<Polygon> = {
   type: 'Feature',
   properties: {},
-  geometry: { type: 'Polygon', coordinates: [[[0, 0], [0, 0], [0, 0], [0, 0]]] },
+  geometry: {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+      ],
+    ],
+  },
 }
 
 describe('randomPointInFeature', () => {

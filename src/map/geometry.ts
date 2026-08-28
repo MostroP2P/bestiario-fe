@@ -94,8 +94,7 @@ export function toPathData(points: readonly Point[], maxJump: number = Infinity)
 
   for (const point of points) {
     const [x, y] = point
-    const wrapped =
-      previous !== null && Math.abs(x - previous[0]) > maxJump
+    const wrapped = previous !== null && Math.abs(x - previous[0]) > maxJump
     path += `${previous === null || wrapped ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
     previous = point
   }

@@ -4,19 +4,85 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+# A deploy in flight is not cancelled: a half-published site is worse than a
+# late one. Concurrent runs on other refs are.
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
 
 jobs:
   check:
+    name: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
       - run: npm ci
-      - run: npm run format:check
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run test:coverage
-      - run: npm run build
+
+      - name: format
+        run: npm run format:check
+
+      - name: lint
+        run: npm run lint
+
+      - name: typecheck
+        run: npm run typecheck
+
+      # The thresholds of SPEC 12 are in the vitest config: 80% overall, and
+      # 100% for src/nostr and src/model, where a bug is silent.
+      - name: unit and integration tests
+        run: npm run test:coverage
+
+      - name: build
+        run: npm run build
+
+      # SPEC 11: 120 KB gzipped. A failure here does not deploy.
+      - name: bundle budget
+        run: npm run check:size
+
+      - name: install the browser
+        run: npx playwright install --with-deps chromium
+
+      # Against the built site and a fake relay, so a run says something about
+      # this commit and not about a relay's day.
+      - name: end to end
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      # The bytes that were tested are the bytes that get published.
+      - name: package the site
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

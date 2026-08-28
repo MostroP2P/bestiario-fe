@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
-import { finalizeEvent, generateSecretKey, getPublicKey, type Event } from 'nostr-tools/pure'
+import {
+  finalizeEvent,
+  generateSecretKey,
+  getPublicKey,
+  type Event,
+} from 'nostr-tools/pure'
 import { verifyDocument, verifyIndex, verifySigned } from '~/nostr/verify'
 import { PUBLISHER_PUBKEY } from '~/config'
 import type { IndexDoc } from '~/nostr/documents'
@@ -25,7 +30,12 @@ const ordersHash = index.documents.find((entry) => entry.d === 'orders:24h')!.ha
 function resignedByAnotherKey(event: Event): Event {
   const key = generateSecretKey()
   return finalizeEvent(
-    { kind: event.kind, created_at: event.created_at, tags: event.tags, content: event.content },
+    {
+      kind: event.kind,
+      created_at: event.created_at,
+      tags: event.tags,
+      content: event.content,
+    },
     key,
   )
 }
@@ -47,7 +57,10 @@ describe('verifySigned', () => {
     const impostor = resignedByAnotherKey(ordersEvent)
 
     // Act / Assert
-    expect(verifySigned(impostor, PUBLISHER_PUBKEY)).toEqual({ ok: false, reason: 'author' })
+    expect(verifySigned(impostor, PUBLISHER_PUBKEY)).toEqual({
+      ok: false,
+      reason: 'author',
+    })
   })
 
   test('refuses an event whose content was changed under its signature', () => {
@@ -70,7 +83,10 @@ describe('verifySigned', () => {
     // Object spread copies symbol properties, so verifying the original
     // first and then a tampered copy is the shape that would slip through.
     expect(verifySigned(ordersEvent, PUBLISHER_PUBKEY).ok).toBe(true)
-    const altered = tampered(ordersEvent, ordersEvent.content.replace('"value":250', '"value":1'))
+    const altered = tampered(
+      ordersEvent,
+      ordersEvent.content.replace('"value":250', '"value":1'),
+    )
 
     expect(verifySigned(altered, PUBLISHER_PUBKEY)).toEqual({
       ok: false,
@@ -79,7 +95,9 @@ describe('verifySigned', () => {
   })
 
   test('refuses an event whose signature is nonsense', () => {
-    expect(verifySigned({ ...ordersEvent, sig: '0'.repeat(128) }, PUBLISHER_PUBKEY)).toEqual({
+    expect(
+      verifySigned({ ...ordersEvent, sig: '0'.repeat(128) }, PUBLISHER_PUBKEY),
+    ).toEqual({
       ok: false,
       reason: 'signature',
     })
@@ -117,7 +135,12 @@ describe('verifyIndex', () => {
     const key = generateSecretKey()
     const publisher = getPublicKey(key)
     const wrong = finalizeEvent(
-      { kind: 30666, created_at: 1, tags: [['d', 'index']], content: '{"hello":"world"}' },
+      {
+        kind: 30666,
+        created_at: 1,
+        tags: [['d', 'index']],
+        content: '{"hello":"world"}',
+      },
       key,
     )
 
@@ -201,7 +224,12 @@ describe('verifyDocument · a document this client cannot read', () => {
         created_at: 1,
         tags: [['d', 'series:orders:daily:2026-08']],
         content: JSON.stringify({
-          payload: { period: { from: 'a', until: 'b' }, resolution: 'daily', columns: [], rows: 7 },
+          payload: {
+            period: { from: 'a', until: 'b' },
+            resolution: 'daily',
+            columns: [],
+            rows: 7,
+          },
         }),
       },
       key,

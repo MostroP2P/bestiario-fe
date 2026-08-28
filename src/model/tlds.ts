@@ -21,14 +21,48 @@ import type { RegionId } from './regions'
  */
 export const VANITY_CCTLDS: ReadonlySet<string> = new Set([
   // Tech and startup vanity
-  'io', 'ai', 'sh', 'co', 'cc', 'to', 'is', 'so', 'im',
+  'io',
+  'ai',
+  'sh',
+  'co',
+  'cc',
+  'to',
+  'is',
+  'so',
+  'im',
   // Words and abbreviations
-  'me', 'tv', 'fm', 'am', 'at', 'be', 'in', 'it', 'la', 'st', 'nu', 'gs',
-  'gg', 'mn', 'ws', 'si', 'sc', 'tl', 'vc', 'je', 'ms', 're', 'gl', 'pw', 'ac',
+  'me',
+  'tv',
+  'fm',
+  'am',
+  'at',
+  'be',
+  'in',
+  'it',
+  'la',
+  'st',
+  'nu',
+  'gs',
+  'gg',
+  'mn',
+  'ws',
+  'si',
+  'sc',
+  'tl',
+  'vc',
+  'je',
+  'ms',
+  're',
+  'gl',
+  'pw',
+  'ac',
   // URL shorteners
   'ly',
   // Former free-registration farms, still heavily non-geographic
-  'tk', 'ml', 'ga', 'cf',
+  'tk',
+  'ml',
+  'ga',
+  'cf',
 ])
 
 /** Suffixes that name a region rather than a country. */

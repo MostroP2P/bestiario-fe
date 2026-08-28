@@ -48,7 +48,11 @@ describe('pointFor', () => {
   })
 
   test('puts a region placement inside one of the regions countries', () => {
-    const point = pointFor({ kind: 'region', region: 'latam', via: 'tld' }, atlas, seededRng(3))
+    const point = pointFor(
+      { kind: 'region', region: 'latam', via: 'tld' },
+      atlas,
+      seededRng(3),
+    )
 
     expect(point).not.toBeNull()
     const landed = REGIONS.latam.filter((code) => {
@@ -63,23 +67,31 @@ describe('pointFor', () => {
   })
 
   test('gives no point for a country the atlas cannot draw', () => {
-    expect(pointFor({ kind: 'country', alpha2: 'MC', via: 'flag' }, atlas, seededRng(1))).toBeNull()
+    expect(
+      pointFor({ kind: 'country', alpha2: 'MC', via: 'flag' }, atlas, seededRng(1)),
+    ).toBeNull()
   })
 
   test('gives no point for a region whose countries are all undrawable', () => {
     const empty = { byAlpha2: new Map(), features: [] }
 
-    expect(pointFor({ kind: 'region', region: 'latam', via: 'tld' }, empty, seededRng(1))).toBeNull()
+    expect(
+      pointFor({ kind: 'region', region: 'latam', via: 'tld' }, empty, seededRng(1)),
+    ).toBeNull()
   })
 
   test('is stable for a seed, so a node stays put across re-renders', () => {
-    expect(pointFor({ kind: 'country', alpha2: 'AR', via: 'flag' }, atlas, seededRng(8))).toEqual(
+    expect(
+      pointFor({ kind: 'country', alpha2: 'AR', via: 'flag' }, atlas, seededRng(8)),
+    ).toEqual(
       pointFor({ kind: 'country', alpha2: 'AR', via: 'flag' }, atlas, seededRng(8)),
     )
   })
 
   test('scatters different seeds to different points', () => {
-    expect(pointFor({ kind: 'country', alpha2: 'BR', via: 'flag' }, atlas, seededRng(1))).not.toEqual(
+    expect(
+      pointFor({ kind: 'country', alpha2: 'BR', via: 'flag' }, atlas, seededRng(1)),
+    ).not.toEqual(
       pointFor({ kind: 'country', alpha2: 'BR', via: 'flag' }, atlas, seededRng(2)),
     )
   })

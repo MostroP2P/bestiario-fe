@@ -160,7 +160,12 @@ describe('documents', () => {
     const real = fixtures.find((event) => dOf(event) === 'orders:24h')!
     const key = generateSecretKey()
     const impostor = finalizeEvent(
-      { kind: 30666, created_at: real.created_at, tags: real.tags, content: real.content },
+      {
+        kind: 30666,
+        created_at: real.created_at,
+        tags: real.tags,
+        content: real.content,
+      },
       key,
     )
     const store = createStore(fakeRelays([indexEvent, impostor]), PUBLISHER_PUBKEY)

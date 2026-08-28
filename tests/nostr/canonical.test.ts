@@ -50,7 +50,10 @@ describe('the fixtures themselves', () => {
   test('include the index and every document it names', () => {
     expect(events.has('index')).toBe(true)
     for (const entry of index.documents) {
-      expect(events.has(entry.d), `${entry.d} is named by the index but not captured`).toBe(true)
+      expect(
+        events.has(entry.d),
+        `${entry.d} is named by the index but not captured`,
+      ).toBe(true)
     }
   })
 })

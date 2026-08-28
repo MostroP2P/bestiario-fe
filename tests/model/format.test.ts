@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import { ABSENT, formatAge, formatDuration, formatMetric, formatValue } from '~/model/format'
+import {
+  ABSENT,
+  formatAge,
+  formatDuration,
+  formatMetric,
+  formatValue,
+} from '~/model/format'
 import type { Metric } from '~/nostr/documents'
 
 describe('formatValue · by unit', () => {

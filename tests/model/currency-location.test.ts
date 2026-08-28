@@ -4,7 +4,11 @@ import { currencyPlacement } from '~/model/currency-location'
 describe('currencyPlacement', () => {
   test('reads the country from the ISO 4217 code, which starts with the country', () => {
     // Arrange / Act / Assert — ARS is Argentina's peso, and says so.
-    expect(currencyPlacement('ARS')).toEqual({ kind: 'country', alpha2: 'AR', via: 'name' })
+    expect(currencyPlacement('ARS')).toEqual({
+      kind: 'country',
+      alpha2: 'AR',
+      via: 'name',
+    })
   })
 
   test('places the currencies the network actually trades', () => {
@@ -26,12 +30,19 @@ describe('currencyPlacement', () => {
   })
 
   test('places a currency with no single country in its region', () => {
-    expect(currencyPlacement('EUR')).toEqual({ kind: 'region', region: 'europe', via: 'name' })
+    expect(currencyPlacement('EUR')).toEqual({
+      kind: 'region',
+      region: 'europe',
+      via: 'name',
+    })
   })
 
   test('places the shared African and Caribbean currencies in their regions', () => {
     expect(currencyPlacement('XOF')).toMatchObject({ kind: 'region', region: 'africa' })
-    expect(currencyPlacement('XCD')).toMatchObject({ kind: 'region', region: 'caribbean' })
+    expect(currencyPlacement('XCD')).toMatchObject({
+      kind: 'region',
+      region: 'caribbean',
+    })
   })
 
   test('is case-insensitive', () => {

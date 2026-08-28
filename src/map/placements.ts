@@ -24,7 +24,9 @@ export function placeInstances(
 ): Map<string, LonLat> {
   const rng = seededRng(seed)
   const placed = new Map<string, LonLat>()
-  for (const instance of [...instances].sort((a, b) => a.pubkey.localeCompare(b.pubkey))) {
+  for (const instance of [...instances].sort((a, b) =>
+    a.pubkey.localeCompare(b.pubkey),
+  )) {
     const point = pointFor(resolvePlacement(instance.name), atlas, rng)
     if (point) placed.set(instance.pubkey, point)
   }
@@ -69,7 +71,11 @@ const ANCHOR_REGIONS: readonly RegionId[] = [
   'middle-east',
 ]
 
-export function placeAnchors(atlas: Atlas, seed: number, count: number): Map<string, LonLat> {
+export function placeAnchors(
+  atlas: Atlas,
+  seed: number,
+  count: number,
+): Map<string, LonLat> {
   // A third stream, so adding a market moves neither the anchors nor the
   // currencies.
   const rng = seededRng(seed ^ 0x2f1b3c4d)

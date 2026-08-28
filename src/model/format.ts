@@ -62,7 +62,9 @@ export function formatValue(value: MetricValue, unit: Unit): Formatted {
 
   switch (unit) {
     case 'count':
-      return typeof value === 'number' ? plain(integers.format(value)) : absent('sin dato')
+      return typeof value === 'number'
+        ? plain(integers.format(value))
+        : absent('sin dato')
     case 'sats':
       // Never silently converted to BTC: a figure in sats is in sats.
       return typeof value === 'number'

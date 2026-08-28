@@ -199,11 +199,17 @@ describe('buildScene · currencies with no drawable counterparty', () => {
   test('draws a currency the network trades even when no line reaches it', () => {
     // Arrange — nothing published names an instance, so there is no line to
     // draw; the market exists all the same.
-    const scene = buildScene({ ...base, lines: [], currencies: [{ code: 'ARS', weight: 9 }] })
+    const scene = buildScene({
+      ...base,
+      lines: [],
+      currencies: [{ code: 'ARS', weight: 9 }],
+    })
 
     // Assert
     expect(scene.arcs).toEqual([])
-    expect(scene.currencies).toEqual([{ code: 'ARS', xy: [-64, -34], lines: 0, weight: 9 }])
+    expect(scene.currencies).toEqual([
+      { code: 'ARS', xy: [-64, -34], lines: 0, weight: 9 },
+    ])
   })
 
   test('sizes it by what the network published, not by its lines', () => {
@@ -217,7 +223,11 @@ describe('buildScene · currencies with no drawable counterparty', () => {
   })
 
   test('counts a currency it cannot place, rather than dropping it quietly', () => {
-    const scene = buildScene({ ...base, lines: [], currencies: [{ code: 'XXX', weight: 3 }] })
+    const scene = buildScene({
+      ...base,
+      lines: [],
+      currencies: [{ code: 'XXX', weight: 3 }],
+    })
 
     expect(scene.currencies).toEqual([])
     expect(scene.unplaced.currencies).toBe(1)

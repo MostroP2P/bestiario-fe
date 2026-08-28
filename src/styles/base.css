@@ -18,8 +18,11 @@
   --ink-bright: #f0f7fb;
   --ink-soft: #a9bfcc;
   --ink-muted: #7d95a4;
-  --ink-dim: #5d7382;
-  --ink-dimmer: #4f6675;
+  /* Lightened from the artboard's #5d7382 and #4f6675, which read 3.90 and
+     3.21 against the panel. Every use of them is small text, so WCAG AA
+     asks 4.5; these are the nearest shades on the same hue that clear it. */
+  --ink-dim: #677f90;
+  --ink-dimmer: #638093;
   --accent: #2bd9ff;
   --success: #7ee08a;
   --danger: #ff6b5e;
@@ -673,7 +676,12 @@ body {
   width: min(78%, 900px);
   height: 82%;
   border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 50%, #10222d 0%, #0a1720 70%, transparent 100%);
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    #10222d 0%,
+    #0a1720 70%,
+    transparent 100%
+  );
   position: relative;
   overflow: hidden;
 }
@@ -787,12 +795,15 @@ body {
   color: var(--ink-dim);
 }
 
+.b-dispute-scroll {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
 .b-dispute-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 420px;
-  overflow-y: auto;
 }
 
 .b-dispute-age {
@@ -841,4 +852,69 @@ body {
   line-height: 1.5;
   color: var(--ink-dim);
   background: var(--rail);
+}
+
+/* ── inferred figures ──────────────────────────────────────────────── */
+
+.b-figure {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  position: relative;
+}
+
+.b-figure[data-absent='true'] {
+  color: var(--ink-dimmer);
+}
+
+/* A marker, not a hue: colour alone fails WCAG 1.4.1. */
+.b-inferred-mark {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  color: var(--inferred);
+  border: 1px solid var(--inferred);
+  border-radius: 2px;
+  padding: 0 3px;
+  cursor: help;
+  position: relative;
+}
+
+.b-inferred-mark:focus-visible {
+  outline: 2px solid var(--inferred);
+  outline-offset: 2px;
+}
+
+.b-tooltip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 7px);
+  z-index: 5;
+  display: none;
+  width: max-content;
+  max-width: 280px;
+  padding: 8px 10px;
+  background: #0d1c26;
+  border: 1px solid var(--inferred);
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: 11px;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-align: left;
+  white-space: normal;
+}
+
+/* Reachable by pointer and by keyboard alike. */
+.b-inferred-mark:hover .b-tooltip,
+.b-inferred-mark:focus .b-tooltip,
+.b-inferred-mark:focus-within .b-tooltip {
+  display: block;
+}
+
+/* A scrollable region is focusable, so it needs a visible focus ring. */
+.b-table:focus-visible,
+.b-dispute-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }

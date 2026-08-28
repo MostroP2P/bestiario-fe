@@ -22,7 +22,8 @@ const OUT = 'tests/fixtures/snapshot'
 // manifest records what this run used, and a test asserts it still matches
 // the configured publisher — drift is caught rather than prevented.
 const PUBLISHER_PUBKEY =
-  process.env.PUBLISHER ?? '000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f'
+  process.env.PUBLISHER ??
+  '000001204177f1e40e2732aa6a01648fc545b73883f2b0ea6fbc91d3ea5a5b9f'
 const BESTIARIO_KIND = 30666
 const relays = ['wss://relay.mostro.network', 'wss://nos.lol']
 

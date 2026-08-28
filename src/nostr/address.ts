@@ -71,7 +71,9 @@ function isResolution(text: string): text is Resolution {
 
 /** A bucket is `YYYY-MM` for daily and weekly, `YYYY` for monthly. */
 function bucketFits(resolution: Resolution, bucket: string): boolean {
-  return resolution === 'monthly' ? MONTHLY_BUCKET.test(bucket) : DAILY_BUCKET.test(bucket)
+  return resolution === 'monthly'
+    ? MONTHLY_BUCKET.test(bucket)
+    : DAILY_BUCKET.test(bucket)
 }
 
 function parseScope(parts: readonly string[]): Scope | null | undefined {

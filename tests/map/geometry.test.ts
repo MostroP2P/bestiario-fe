@@ -85,7 +85,13 @@ describe('bowPoints', () => {
 
 describe('toPathData', () => {
   test('draws a polyline as one stroke', () => {
-    expect(toPathData([[0, 0], [10, 5], [20, 0]])).toBe('M0.0,0.0L10.0,5.0L20.0,0.0')
+    expect(
+      toPathData([
+        [0, 0],
+        [10, 5],
+        [20, 0],
+      ]),
+    ).toBe('M0.0,0.0L10.0,5.0L20.0,0.0')
   })
 
   test('lifts the pen where the projection wraps', () => {
@@ -106,13 +112,24 @@ describe('toPathData', () => {
   })
 
   test('joins everything when no seam is possible', () => {
-    const points: Point[] = [[0, 0], [900, 0]]
+    const points: Point[] = [
+      [0, 0],
+      [900, 0],
+    ]
 
     expect(toPathData(points)).toBe('M0.0,0.0L900.0,0.0')
   })
 
   test('does not break on a step that is merely long', () => {
-    expect(toPathData([[0, 0], [400, 0]], 500)).toBe('M0.0,0.0L400.0,0.0')
+    expect(
+      toPathData(
+        [
+          [0, 0],
+          [400, 0],
+        ],
+        500,
+      ),
+    ).toBe('M0.0,0.0L400.0,0.0')
   })
 
   test('handles a single point', () => {

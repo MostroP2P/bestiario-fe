@@ -27,7 +27,9 @@ vi.mock('~/nostr/pool', () => ({
 const { Dashboard } = await import('~/views/Dashboard')
 const { resetStore } = await import('~/store/useStore')
 const { clearCache } = await import('~/store/cache')
-const topology = JSON.parse(readFileSync('public/geo/countries-110m.json', 'utf8')) as unknown
+const topology = JSON.parse(
+  readFileSync('public/geo/countries-110m.json', 'utf8'),
+) as unknown
 const { clearAtlasCache } = await import('~/map/useAtlas')
 
 beforeAll(() => {
@@ -101,7 +103,9 @@ describe('Dashboard · real figures', () => {
 
     // Assert — orders:30d, from the live archive, verified against its hash.
     await waitFor(() => {
-      const values = [...container.querySelectorAll('.b-kpi strong')].map((n) => n.textContent)
+      const values = [...container.querySelectorAll('.b-kpi strong')].map(
+        (n) => n.textContent,
+      )
       expect(values.length).toBe(4)
       expect(values[0]).toMatch(/\d/)
     })
@@ -111,8 +115,9 @@ describe('Dashboard · real figures', () => {
     // Arrange — read the expected set out of the very document the view
     // renders, so this asserts the grouping and not a snapshot of the market.
     const event = fixtures.find((e) => dOf(e) === 'volume:30d')!
-    const payload = (JSON.parse(event.content) as { payload: { metrics: { name: string }[] } })
-      .payload
+    const payload = (
+      JSON.parse(event.content) as { payload: { metrics: { name: string }[] } }
+    ).payload
     const expected = [
       ...new Set(
         payload.metrics
@@ -126,7 +131,9 @@ describe('Dashboard · real figures', () => {
 
     // Assert
     await waitFor(() => {
-      const codes = [...container.querySelectorAll('.b-table tbody th')].map((n) => n.textContent)
+      const codes = [...container.querySelectorAll('.b-table tbody th')].map(
+        (n) => n.textContent,
+      )
       expect(codes).toEqual(expected)
     })
     expect(expected.length).toBeGreaterThan(5)
@@ -154,7 +161,9 @@ describe('Dashboard · real figures', () => {
     const { container } = render(<Dashboard />)
 
     await waitFor(() => {
-      expect(container.querySelectorAll('[data-layer="arcs"] path').length).toBeGreaterThan(10)
+      expect(
+        container.querySelectorAll('[data-layer="arcs"] path').length,
+      ).toBeGreaterThan(10)
     })
   })
 
@@ -163,7 +172,9 @@ describe('Dashboard · real figures', () => {
 
     await waitFor(() => {
       const arcs = container.querySelectorAll('[data-layer="arcs"] path').length
-      expect(container.querySelectorAll('[data-layer="travellers"] circle')).toHaveLength(arcs)
+      expect(container.querySelectorAll('[data-layer="travellers"] circle')).toHaveLength(
+        arcs,
+      )
     })
   })
 
@@ -183,10 +194,14 @@ describe('Dashboard · real figures', () => {
     const { container } = render(<Dashboard />)
 
     await waitFor(() => {
-      expect(container.querySelectorAll('[data-layer="arcs"] path').length).toBeGreaterThan(0)
+      expect(
+        container.querySelectorAll('[data-layer="arcs"] path').length,
+      ).toBeGreaterThan(0)
     })
     // Every label on the map is a currency code; none is an instance.
-    const labels = [...container.querySelectorAll('svg text')].map((t) => t.textContent ?? '')
+    const labels = [...container.querySelectorAll('svg text')].map(
+      (t) => t.textContent ?? '',
+    )
     expect(labels.length).toBeGreaterThan(0)
     for (const label of labels) expect(label).toMatch(/^[A-Z]{3}$/)
   })
