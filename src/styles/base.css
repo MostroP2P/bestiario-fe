@@ -1,0 +1,9 @@
+/* Placeholder. The incoming design (SPEC 15: "lands between 01 and 10")
+   replaces this file; phase 01 only proves the pipeline builds. */
+:root {
+  color-scheme: light dark;
+}
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
