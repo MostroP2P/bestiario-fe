@@ -207,5 +207,5 @@ Conventional commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:`, …).
 
 ## Licence
 
-MIT, which is what [bestiario](https://github.com/MostroP2P/bestiario)
-declares for the daemon. Neither repository carries a `LICENSE` file yet.
+[MIT](LICENSE), the same licence
+[bestiario](https://github.com/MostroP2P/bestiario) declares for the daemon.
