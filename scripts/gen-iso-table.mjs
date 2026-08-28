@@ -65,8 +65,16 @@ for (const a of letters) {
 
 const table = {}
 const unmatched = []
+const idless = []
 for (const g of geometries) {
   const atlasName = g.properties.name
+  // Natural Earth carries a few features with no ISO numeric id — Kosovo,
+  // N. Cyprus, Somaliland. There is nothing to key them by, so they are not
+  // addressable and must not enter the table as the string "undefined".
+  if (g.id === undefined) {
+    idless.push(atlasName)
+    continue
+  }
   const alpha2 = ATLAS_NAME_OVERRIDES[atlasName] ?? nameToAlpha2.get(atlasName)
   if (!alpha2) {
     unmatched.push(atlasName)
@@ -99,3 +107,4 @@ export const ATLAS_FEATURE_COUNT = ${geometries.length}
 
 console.error(`wrote ${OUT}: ${entries.length}/${geometries.length} features mapped`)
 if (unmatched.length) console.error(`unmapped atlas features: ${unmatched.join(', ')}`)
+if (idless.length) console.error(`atlas features with no ISO numeric id: ${idless.join(', ')}`)

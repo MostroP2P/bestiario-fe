@@ -175,7 +175,6 @@ export const ALPHA2_TO_NUMERIC: Readonly<Record<string, string>> = {
   VE: '862',
   VN: '704',
   VU: '548',
-  XK: 'undefined',
   YE: '887',
   YU: '688',
   ZA: '710',
@@ -183,5 +182,5 @@ export const ALPHA2_TO_NUMERIC: Readonly<Record<string, string>> = {
   ZW: '716',
 }
 
-/** 175 of 177 atlas features are addressable by alpha-2. */
+/** 174 of 177 atlas features are addressable by alpha-2. */
 export const ATLAS_FEATURE_COUNT = 177
