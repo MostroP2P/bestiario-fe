@@ -168,6 +168,7 @@ export const fr: Strings = {
     ticketAvg: 'ticket moyen',
     p50: 'p50',
     p90: 'p90',
+    sortBy: (column) => `Trier par ${column}`,
     empty: 'Rien à signaler dans cette fenêtre.',
   },
 

@@ -174,6 +174,7 @@ export const en: Strings = {
     ticketAvg: 'average ticket',
     p50: 'p50',
     p90: 'p90',
+    sortBy: (column) => `Sort by ${column}`,
     empty: 'Nothing to report in this window.',
   },
 
