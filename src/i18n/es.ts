@@ -38,7 +38,7 @@ export const es: Strings = {
     allFiat: 'Todas las monedas',
     allInstances: 'Toda la red',
     unscoped: (name) =>
-      `${name} todavía no publica un documento de órdenes propio, así que lo que sigue es de toda la red.`,
+      `${name} todavía no publica un documento de órdenes propio, así que aquí solo se muestra lo que publica sobre sí misma; una cifra que el publicador no desglosa por instancia se lee como ausencia y no como la de la red.`,
     noInstanceVolume:
       'El volumen se publica para la red y no por instancia, así que estas cifras no se acotan a una sola.',
   },
@@ -63,11 +63,21 @@ export const es: Strings = {
       'Contadas en el documento de volumen, que es donde la red desglosa las órdenes por moneda.',
     instanceHeading: 'Lo que esta instancia publica sobre sí misma',
     instanceFee: 'Comisión',
-    instanceLimits: 'Límites de orden',
+    instanceMinOrder: 'Orden mínima',
+    instanceMaxOrder: 'Orden máxima',
     instanceBond: 'Fianza',
     instanceVersion: 'Versión',
     instanceFiat: 'Monedas declaradas',
     instanceSeen: 'Vista por última vez',
+    instanceFirstSeen: 'Vista por primera vez',
+    instanceSilent: 'En silencio desde hace',
+    instanceProtocol: 'Versión del protocolo',
+    instanceNetworks: 'Redes Lightning',
+    instanceCreated: 'Órdenes creadas en la ventana',
+    perCurrencyNoInstance:
+      'El publicador no desglosa por moneda las órdenes de esta instancia, así que no hay nada que mostrar por moneda para ella.',
+    shareNotPerInstance:
+      'Este reparto se firma para toda la red y no por instancia, así que no se acota a una sola.',
   },
 
   volumeView: {

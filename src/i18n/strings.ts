@@ -108,11 +108,21 @@ export type Strings = {
     readonly perCurrencyNote: string
     readonly instanceHeading: string
     readonly instanceFee: string
-    readonly instanceLimits: string
+    readonly instanceMinOrder: string
+    readonly instanceMaxOrder: string
     readonly instanceBond: string
     readonly instanceVersion: string
     readonly instanceFiat: string
     readonly instanceSeen: string
+    readonly instanceFirstSeen: string
+    readonly instanceSilent: string
+    readonly instanceProtocol: string
+    readonly instanceNetworks: string
+    readonly instanceCreated: string
+    /** Why an instance shows no currency breakdown of its own. */
+    readonly perCurrencyNoInstance: string
+    /** Why the buy/sell split does not narrow to one instance. */
+    readonly shareNotPerInstance: string
   }
 
   readonly volumeView: {

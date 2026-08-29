@@ -123,3 +123,24 @@ export function currencyOrders(metrics: readonly Metric[]): CurrencyOrders[] {
       openNow: numberOf(block, 'open_now'),
     }))
 }
+
+/**
+ * The orders figures to read when one instance is being looked at.
+ *
+ * The instance's own scoped document is preferred, and until the publisher
+ * writes one (SPEC 14.3) the only order figure signed *for this instance* is
+ * the `created` count in its own block — renamed here to the name the view
+ * looks it up by, since it is the same figure counted for one publisher.
+ *
+ * Everything else comes back absent on purpose. The network's totals are not
+ * this instance's, and showing them under an instance's name would be the
+ * one thing this site must not do: put a number in a publisher's mouth.
+ */
+export function instanceOrders(
+  row: InstanceRow,
+  scoped: readonly Metric[],
+): readonly Metric[] {
+  if (scoped.length > 0) return scoped
+  const created = row.figures.get('created')
+  return created ? [{ ...created, name: 'orders.created' }] : []
+}

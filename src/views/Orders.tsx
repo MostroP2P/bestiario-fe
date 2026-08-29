@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'preact/hooks'
 import { printAddress, windowAddress, type Span } from '~/nostr/address'
 import { fiatRows, lookup, metricsOf } from '~/model/metrics'
-import { instanceRows, currencyOrders } from '~/model/instances'
+import { instanceRows, currencyOrders, instanceOrders } from '~/model/instances'
 import { formatMetric } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
@@ -43,7 +43,7 @@ export function Orders(props: { readonly window: Span }) {
 
   const { boot, documents } = useStore(needed)
 
-  const orders = metricsOf(payloadOf(documents, windowAddress('orders', props.window)))
+  const network = metricsOf(payloadOf(documents, windowAddress('orders', props.window)))
   const volume = metricsOf(payloadOf(documents, windowAddress('volume', props.window)))
   const market = metricsOf(payloadOf(documents, windowAddress('market', props.window)))
   const instances = useMemo(
@@ -54,7 +54,7 @@ export function Orders(props: { readonly window: Span }) {
     [documents, props.window],
   )
 
-  const loading = boot.status === 'loading' || orders.length === 0
+  const loading = boot.status === 'loading' || network.length === 0
 
   /** The instance the reader asked for, when the publisher named one. */
   const chosen = instances.find((instance) => instance.pubkey === filters.instance)
@@ -73,12 +73,26 @@ export function Orders(props: { readonly window: Span }) {
         ),
       )
     : []
+
+  /**
+   * The figures the page reads. Choosing an instance narrows every one of
+   * them: what follows is that instance's or it is absent, and never the
+   * network's total wearing an instance's name.
+   */
+  const orders = chosen ? instanceOrders(chosen, scoped) : network
+
+  /** The market document is signed for the network, and narrows to nothing. */
+  const marketOf = (name: string) => (chosen ? undefined : lookup(market, name))
+
   const perInstanceCurrencies = useMemo(() => currencyOrders(scoped), [scoped])
 
   const currencies = useMemo(() => fiatRows(volume), [volume])
   const shown = filters.fiat
     ? currencies.filter((row) => row.code === filters.fiat)
     : currencies
+  const shownForInstance = filters.fiat
+    ? perInstanceCurrencies.filter((row) => row.code === filters.fiat)
+    : perInstanceCurrencies
 
   return (
     <>
@@ -142,11 +156,20 @@ export function Orders(props: { readonly window: Span }) {
 
       <div class="b-lower">
         <div class="b-lower-main">
-          <h2 class="b-eyebrow b-section-head">{strings.ordersView.perCurrency}</h2>
-          <p class="b-note-why b-section-note">{strings.ordersView.perCurrencyNote}</p>
+          <h2 class="b-eyebrow b-section-head">
+            {chosen
+              ? `${chosen.name || chosen.label} · ${strings.ordersView.perCurrency}`
+              : strings.ordersView.perCurrency}
+          </h2>
+          <p class="b-note-why b-section-note">
+            {chosen && shownForInstance.length === 0
+              ? strings.ordersView.perCurrencyNoInstance
+              : strings.ordersView.perCurrencyNote}
+          </p>
           <div class="b-table">
             {loading && <Skeleton width="80%" height="11px" />}
             {!loading &&
+              !chosen &&
               shown.map((row) => (
                 <p key={row.code} class="b-pair" style={{ margin: 0 }}>
                   <span class="b-mono">{row.code}</span>
@@ -155,36 +178,39 @@ export function Orders(props: { readonly window: Span }) {
                   </span>
                 </p>
               ))}
+            {!loading &&
+              chosen &&
+              shownForInstance.map((currency) => (
+                <p key={currency.code} class="b-pair" style={{ margin: 0 }}>
+                  <span class="b-mono">{currency.code}</span>
+                  <span class="b-mono">{currency.created}</span>
+                </p>
+              ))}
           </div>
-
-          {chosen && perInstanceCurrencies.length > 0 && (
-            <>
-              <h2 class="b-eyebrow b-section-head">{chosen.name || chosen.label}</h2>
-              <div class="b-table">
-                {perInstanceCurrencies.map((currency) => (
-                  <p key={currency.code} class="b-pair" style={{ margin: 0 }}>
-                    <span class="b-mono">{currency.code}</span>
-                    <span class="b-mono">{currency.created}</span>
-                  </p>
-                ))}
-              </div>
-            </>
-          )}
 
           {chosen && (
             <Pairs
               heading={strings.ordersView.instanceHeading}
               loading={false}
               rows={[
+                [strings.ordersView.instanceCreated, chosen.figures.get('created')],
                 [strings.ordersView.instanceFee, chosen.figures.get('fee')],
-                [strings.ordersView.instanceLimits, chosen.figures.get('max_order')],
+                [strings.ordersView.instanceMinOrder, chosen.figures.get('min_order')],
+                [strings.ordersView.instanceMaxOrder, chosen.figures.get('max_order')],
                 [strings.ordersView.instanceBond, chosen.figures.get('bond')],
                 [
                   strings.ordersView.instanceVersion,
                   chosen.figures.get('mostro_version'),
                 ],
+                [
+                  strings.ordersView.instanceProtocol,
+                  chosen.figures.get('protocol_version'),
+                ],
+                [strings.ordersView.instanceNetworks, chosen.figures.get('ln_networks')],
                 [strings.ordersView.instanceFiat, chosen.figures.get('fiat')],
+                [strings.ordersView.instanceFirstSeen, chosen.figures.get('first_seen')],
                 [strings.ordersView.instanceSeen, chosen.figures.get('last_seen')],
+                [strings.ordersView.instanceSilent, chosen.figures.get('silent_for')],
               ]}
             />
           )}
@@ -195,11 +221,15 @@ export function Orders(props: { readonly window: Span }) {
             heading={strings.ordersView.shareHeading}
             loading={loading}
             rows={[
-              [strings.ordersView.buyShare, lookup(market, 'market.buy_orders_share')],
-              [strings.ordersView.sellShare, lookup(market, 'market.sell_orders_share')],
+              [strings.ordersView.buyShare, marketOf('market.buy_orders_share')],
+              [strings.ordersView.sellShare, marketOf('market.sell_orders_share')],
             ]}
           />
-          <p class="b-note-why b-section-note">{strings.ordersView.shareNote}</p>
+          <p class="b-note-why b-section-note">
+            {chosen
+              ? strings.ordersView.shareNotPerInstance
+              : strings.ordersView.shareNote}
+          </p>
 
           <Pairs
             heading={strings.ordersView.openNow}

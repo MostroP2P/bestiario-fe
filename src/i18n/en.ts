@@ -44,7 +44,7 @@ export const en: Strings = {
     allFiat: 'All currencies',
     allInstances: 'The whole network',
     unscoped: (name) =>
-      `${name} does not publish an orders document of its own yet, so what follows is the whole network's.`,
+      `${name} does not publish an orders document of its own yet, so only what it publishes about itself is shown here; a figure the publisher does not break down per instance reads as absent rather than as the network's.`,
     noInstanceVolume:
       'Volume is published for the network and not per instance, so these figures do not narrow to one.',
   },
@@ -69,11 +69,21 @@ export const en: Strings = {
       'Counted in the volume document, which is where the network breaks orders down by currency.',
     instanceHeading: 'What this instance publishes about itself',
     instanceFee: 'Fee',
-    instanceLimits: 'Order limits',
+    instanceMinOrder: 'Minimum order',
+    instanceMaxOrder: 'Maximum order',
     instanceBond: 'Bond',
     instanceVersion: 'Version',
     instanceFiat: 'Currencies declared',
     instanceSeen: 'Last seen',
+    instanceFirstSeen: 'First seen',
+    instanceSilent: 'Silent for',
+    instanceProtocol: 'Protocol version',
+    instanceNetworks: 'Lightning networks',
+    instanceCreated: 'Orders created in the window',
+    perCurrencyNoInstance:
+      "The publisher does not break this instance's orders down by currency, so there is nothing to show per currency for it.",
+    shareNotPerInstance:
+      'This split is signed for the whole network and not per instance, so it does not narrow to one.',
   },
 
   volumeView: {

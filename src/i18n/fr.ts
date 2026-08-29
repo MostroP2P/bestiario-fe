@@ -38,7 +38,7 @@ export const fr: Strings = {
     allFiat: 'Toutes les devises',
     allInstances: 'Tout le réseau',
     unscoped: (name) =>
-      `${name} ne publie pas encore de document d'ordres qui lui soit propre : ce qui suit concerne donc tout le réseau.`,
+      `${name} ne publie pas encore de document d'ordres qui lui soit propre : seul ce qu'elle publie sur elle-même est montré ici ; un chiffre que le publicateur ne ventile pas par instance se lit comme une absence et non comme celui du réseau.`,
     noInstanceVolume:
       'Le volume est publié pour le réseau et non par instance : ces chiffres ne se restreignent pas à une seule.',
   },
@@ -64,11 +64,21 @@ export const fr: Strings = {
       'Comptés dans le document de volume, qui est là où le réseau ventile les ordres par devise.',
     instanceHeading: 'Ce que cette instance publie sur elle-même',
     instanceFee: 'Commission',
-    instanceLimits: "Limites d'ordre",
+    instanceMinOrder: 'Ordre minimum',
+    instanceMaxOrder: 'Ordre maximum',
     instanceBond: 'Caution',
     instanceVersion: 'Version',
     instanceFiat: 'Devises déclarées',
     instanceSeen: 'Vue pour la dernière fois',
+    instanceFirstSeen: 'Vue pour la première fois',
+    instanceSilent: 'Silencieuse depuis',
+    instanceProtocol: 'Version du protocole',
+    instanceNetworks: 'Réseaux Lightning',
+    instanceCreated: 'Ordres créés dans la fenêtre',
+    perCurrencyNoInstance:
+      "Le publicateur ne ventile pas par devise les ordres de cette instance : il n'y a donc rien à montrer par devise pour elle.",
+    shareNotPerInstance:
+      'Cette répartition est signée pour tout le réseau et non par instance : elle ne se restreint pas à une seule.',
   },
 
   volumeView: {

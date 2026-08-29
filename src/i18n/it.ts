@@ -38,7 +38,7 @@ export const it: Strings = {
     allFiat: 'Tutte le valute',
     allInstances: 'Tutta la rete',
     unscoped: (name) =>
-      `${name} non pubblica ancora un documento di ordini proprio, quindi quanto segue riguarda tutta la rete.`,
+      `${name} non pubblica ancora un documento di ordini proprio, quindi qui si mostra soltanto ciò che pubblica su di sé; una cifra che il pubblicatore non scompone per istanza si legge come assenza e non come quella della rete.`,
     noInstanceVolume:
       'Il volume è pubblicato per la rete e non per istanza, quindi queste cifre non si restringono a una sola.',
   },
@@ -63,11 +63,21 @@ export const it: Strings = {
       'Contati nel documento di volume, che è dove la rete distingue gli ordini per valuta.',
     instanceHeading: 'Ciò che questa istanza pubblica su di sé',
     instanceFee: 'Commissione',
-    instanceLimits: 'Limiti di ordine',
+    instanceMinOrder: 'Ordine minimo',
+    instanceMaxOrder: 'Ordine massimo',
     instanceBond: 'Cauzione',
     instanceVersion: 'Versione',
     instanceFiat: 'Valute dichiarate',
     instanceSeen: "Vista l'ultima volta",
+    instanceFirstSeen: 'Vista la prima volta',
+    instanceSilent: 'In silenzio da',
+    instanceProtocol: 'Versione del protocollo',
+    instanceNetworks: 'Reti Lightning',
+    instanceCreated: 'Ordini creati nella finestra',
+    perCurrencyNoInstance:
+      'Il pubblicatore non scompone per valuta gli ordini di questa istanza, quindi non c’è nulla da mostrare per valuta.',
+    shareNotPerInstance:
+      'Questa ripartizione è firmata per tutta la rete e non per istanza, quindi non si restringe a una sola.',
   },
 
   volumeView: {
