@@ -85,7 +85,9 @@ export function TrustRail(props: TrustRailProps) {
         {props.relays.map((relay) => (
           <li key={relay.url} class="b-relay">
             <span class="b-relay-dot" data-state={relayState(relay)} />
-            <span class="b-relay-url">{relay.url.replace(/^wss:\/\//, '')}</span>
+            <span class="b-relay-url" title={relay.url}>
+              {relay.url.replace(/^wss:\/\//, '')}
+            </span>
             <span class="b-relay-ms">
               {relay.newestAt === null ? '—' : formatAge(relay.newestAt, props.nowMs)}
             </span>

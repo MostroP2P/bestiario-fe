@@ -216,3 +216,33 @@ test.describe('accessibility', () => {
     )
   })
 })
+
+test.describe('the relay list', () => {
+  test.beforeEach(async ({ page }) => {
+    await serveRelay(page, events)
+  })
+
+  test('shows every relay name in full, at both widths', async ({ page }) => {
+    // A truncated hostname is a relay a reader cannot check, and the rail is
+    // 214px whatever gets added to the list — so this asserts the property
+    // rather than the current four names. It is the regression the next long
+    // relay URL will otherwise reintroduce.
+    for (const width of [1280, 390]) {
+      // Arrange
+      await page.setViewportSize({ width, height: 900 })
+
+      // Act
+      await page.goto('/')
+      const names = page.locator('.b-relay-url')
+      await expect(names.first()).not.toBeEmpty()
+
+      // Assert — nothing is clipped by its own box.
+      const clipped = await names.evaluateAll((spans) =>
+        spans
+          .filter((s) => s.scrollWidth > s.clientWidth + 1)
+          .map((s) => s.textContent ?? ''),
+      )
+      expect(clipped, `truncated at ${width}px`).toEqual([])
+    }
+  })
+})

@@ -194,27 +194,43 @@ body {
   border-top: 1px solid var(--rule);
 }
 
+/* A `ul` that forgot its reset: the browser's own `padding-inline-start` is
+   40px, and the rail is 214px wide, so it was spending a fifth of the column
+   on an indent for markers this list does not draw. The dot is the
+   `.b-relay-dot` span, not a marker. */
 .b-relays {
+  list-style: none;
   margin: 10px 18px 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 11px;
 }
 
+/* Two lines, not one. A hostname and its age competing for 178px meant the
+   hostname always lost — `relay.mostro.network` and `relay.shadowbip.com`
+   both ellipsed away, and a relay you cannot read is a relay you cannot
+   check. The age goes under it, aligned to the same edge as the text so the
+   dot column still reads as a column. */
 .b-relay {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 5px minmax(0, 1fr);
+  column-gap: 8px;
+  row-gap: 1px;
   font-family: var(--mono);
   font-size: 9px;
   color: var(--ink-muted);
 }
 
+/* Aligned to the first line's text rather than centred on the whole entry,
+   which is two lines tall now. */
 .b-relay-dot {
+  grid-column: 1;
+  grid-row: 1;
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  flex-shrink: 0;
+  align-self: center;
 }
 
 .b-relay-dot[data-state='ok'] {
@@ -225,16 +241,18 @@ body {
 }
 
 .b-relay-url {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  grid-column: 2;
+  grid-row: 1;
+  /* A hostname longer than the rail breaks rather than disappearing: the
+     `title` carries the whole URL either way. */
+  overflow-wrap: anywhere;
 }
 
 .b-relay-ms {
+  grid-column: 2;
+  grid-row: 2;
   color: var(--ink-dimmer);
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .b-backfill-row {
