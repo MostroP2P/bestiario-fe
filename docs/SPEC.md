@@ -130,9 +130,9 @@ relays at runtime, persisted locally (§7.3).
 
 ## 4. What is published today
 
-Verified against a live `bestiario publish --dry-run --out` over the
-maintainer's archive on 2026-08-28: **33 documents, 163 KB**, the index
-included.
+Verified against the signed snapshot the site is tested over
+(`tests/fixtures/snapshot`, fetched 2026-08-28), which is what the relays
+actually serve today.
 
 | Family | Window documents | Series partitions |
 |---|---|---|
@@ -140,21 +140,27 @@ included.
 | `volume` | same | same |
 | `disputes` | same | same |
 | `dev-fees` | same | same |
+| `summary` | same | none |
+| `instances` | same | none |
+| `market` | same | none |
+| `compare` | same | none |
 
 Plus `index`. **Nothing else.** Specifically absent, and each absence shapes
 §8:
 
-- **`summary`, `instances`, `compare`, `market` are not published at all.**
-  `Snapshot::compute` skips every report without a series family, and that
-  `continue` takes the report's *window* documents with it. So there is no
-  network summary document and no bestiary — no per-instance profile, no
-  comparison table — which is the product's main axis in SPEC §6.10.
 - **No scoped documents.** Every address is published with `scope: None`:
   no `:i:<pubkey>`, no `:n:<network>`. Per-instance and per-network views
   cannot be built from the wire as it stands.
 - **`volume.in.USD.total` is `missing`** on the maintainer's current archive:
   every completed order lacked a rate snapshot within 300s. It is a
   legitimate `null` and renders as absence, not as a bug in this site.
+
+The window documents of the four reports without a series family —
+`summary`, `instances`, `market`, `compare` — were absent when this was first
+written and are published now; §14.2 records what that changed. `instances:<w>`
+is what lets the site name a Mostro at all: the currency × instance cross of
+§8.1 is read from it, and it is the set that authorises an author on the
+dispute book below.
 
 §14 raises these upstream. This specification describes a site that is
 complete and honest over what is published **today**, and whose information
@@ -414,8 +420,22 @@ The one screen a reader who wants a number, not a study, can stop at.
   `index.coverage`, so a short archive reads as a short archive rather than
   as a quiet network.
 
+- The open dispute book. Not a published figure and not governed by the
+  window selector: it is read from the instances' own dispute events —
+  Mostro's kind `38386`, `d` the dispute id and `s` its status — kept to the
+  disputes an instance last called `initiated` or `in-progress`, and reaching
+  back only two days, so an instance that goes quiet cannot hold a dispute
+  open forever. Ages are measured against the reader's clock, from each
+  event's signed `created_at`.
+
 `d` set: `orders:<w>`, `volume:<w>`, `disputes:<w>`, `dev-fees:<w>`, plus the
 series partitions for the window.
+
+The dispute events are the one place this route reads something the publisher
+did not sign. The trust anchor there is the instance set: only a key the
+`instances:<w>` document names may put a row on the book, and its signature
+is checked like any other. What such an event proves is that *that instance*
+said this about its own dispute — never that the archive agrees.
 
 Until §14.2 lands there is no `summary` document, so this route composes its
 tiles from the four family documents. The tiles are named for the metric
@@ -704,16 +724,20 @@ received — and the fixtures prove the collapse was safe.
 Until then this site carries §5, which is a reimplementation of another
 program's serialiser and will rot the first time a field is added.
 
-### 14.2 `summary`, `instances` and `compare` are not published
+### 14.2 `summary`, `instances` and `compare` — fixed upstream
 
-`family_of` returns `None` for them and the loop `continue`s, dropping their
+`family_of` returned `None` for them and the loop `continue`d, dropping their
 *window* documents along with series they were never going to have. The
 network summary and the bestiary — the per-instance profiles and the
-comparison that SPEC §6.10 calls the product's main axis — are computable,
-are specified, and reach no relay.
+comparison that SPEC §6.10 calls the product's main axis — were computable,
+were specified, and reached no relay.
 
-Fix: publish window documents for every report, and let only the *series*
-loop depend on a family.
+The daemon now publishes window documents for every report, and only the
+*series* loop depends on a family. `instances:<w>` is what the currency ×
+instance cross of §8.1 is read from, and what authorises an author on the
+open dispute book. `summary:<w>` is published and this site does not read it
+yet: §8.1 still composes its tiles from the four family documents, named for
+the metrics they show, so the day it does the numbers do not move.
 
 ### 14.3 No scoped documents
 

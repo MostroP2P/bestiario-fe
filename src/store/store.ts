@@ -13,10 +13,12 @@
  */
 import { signal, type Signal } from '@preact/signals'
 import type { Event } from 'nostr-tools'
-import { BESTIARIO_KIND, TIMEOUTS } from '~/config'
+import { BESTIARIO_KIND, DISPUTES, MOSTRO_DISPUTE_KIND, TIMEOUTS } from '~/config'
 import type { Relays, RelayState } from '~/nostr/pool'
-import { verifyDocument, verifyIndex, type Failure } from '~/nostr/verify'
+import { verifyDocument, verifyFrom, verifyIndex, type Failure } from '~/nostr/verify'
 import type { Envelope, IndexDoc, IndexEntry } from '~/nostr/documents'
+import { disputeFrom } from '~/nostr/mostro'
+import { keyOf, supersedes, type LiveDispute } from '~/model/open-disputes'
 import { openCache, readCached, writeCached } from './cache'
 
 export type DocState =
@@ -40,10 +42,23 @@ export type Store = {
   readonly boot: Signal<BootState>
   readonly documents: Signal<ReadonlyMap<string, DocState>>
   readonly relays: Signal<readonly RelayState[]>
+  /**
+   * The instances' own dispute events, newest revision per dispute. Raw:
+   * which of them are open, and how recent is recent enough, is decided in
+   * `model/open-disputes.ts` against the reader's clock.
+   */
+  readonly disputes: Signal<readonly LiveDispute[]>
+  /**
+   * Whether the relays have answered for the instances currently watched. An
+   * empty book before they have is a verdict nobody has given yet.
+   */
+  readonly disputesReady: Signal<boolean>
   /** Fetch the index and open the standing subscription to it. */
   start(): Promise<void>
   /** Ensure these `d` values are loaded, from cache where the hash matches. */
   need(ds: readonly string[]): Promise<void>
+  /** Follow these instances' dispute events. Re-watching the same set is free. */
+  watchDisputes(authors: readonly string[]): Promise<void>
   stop(): void
 }
 
@@ -63,8 +78,17 @@ export function createStore(relays: Relays, publisher: string): Store {
   const boot = signal<BootState>({ status: 'loading' })
   const documents = signal<ReadonlyMap<string, DocState>>(new Map())
   const relayStates = signal<readonly RelayState[]>(relays.states())
+  const disputes = signal<readonly LiveDispute[]>([])
+  const disputesReady = signal(false)
 
   let unsubscribe: (() => void) | null = null
+  let disputeUnsubscribe: (() => void) | null = null
+  /**
+   * The instance set currently followed, as a stable key. Null until the
+   * first watch: the empty set is a set, and answering it is what tells the
+   * panel that an empty book is an answer and not a wait.
+   */
+  let watched: string | null = null
 
   const setDoc = (d: string, state: DocState) => {
     const next = new Map(documents.value)
@@ -184,10 +208,77 @@ export function createStore(relays: Relays, publisher: string): Store {
     )
   }
 
+  /**
+   * Follow the instances' own dispute events (kind 38386).
+   *
+   * A different trust anchor from everything else here, and deliberately a
+   * narrow one: these events are signed by each Mostro, so the check is that
+   * the signature holds and the author is one of the instances the archive
+   * named. Nothing else may put a row on the book.
+   *
+   * The query and the standing subscription share one filter, and `since`
+   * bounds it at the book's own window: a relay holding years of settled
+   * disputes must not send them all to fill a panel about now.
+   */
+  async function watchDisputes(authors: readonly string[]): Promise<void> {
+    const key = [...authors].sort().join(' ')
+    if (key === watched) return
+    watched = key
+
+    disputeUnsubscribe?.()
+    disputeUnsubscribe = null
+    disputes.value = []
+    disputesReady.value = false
+    if (authors.length === 0) {
+      // Nothing to wait for: no instance to ask is an answered question.
+      disputesReady.value = true
+      return
+    }
+
+    const known = new Set(authors)
+    const book = new Map<string, LiveDispute>()
+    const filter = {
+      kinds: [MOSTRO_DISPUTE_KIND],
+      authors: [...authors],
+      since: Math.floor((Date.now() - DISPUTES.windowMs) / 1000),
+    }
+
+    const take = (event: Event) => {
+      if (!verifyFrom(event, known).ok) return
+      const dispute = disputeFrom(event)
+      if (!dispute) return
+      // 38386 is addressable: an older revision alongside the current one is
+      // a relay being normal, and must never undo a status.
+      const held = book.get(keyOf(dispute))
+      if (held && !supersedes(dispute, held)) return
+      book.set(keyOf(dispute), dispute)
+      disputes.value = [...book.values()]
+    }
+
+    // Standing before the query is awaited, and not after it: a dispute
+    // published in between would otherwise be lost until its instance
+    // touched it again, which for a settled dispute is never.
+    disputeUnsubscribe = relays.subscribe(filter, (event) => {
+      take(event)
+      refreshRelays()
+    })
+
+    const events = await relays.query(filter)
+    // The set may have moved while the query was in flight; the newer watch
+    // owns the signal and has already closed the subscription above, and this
+    // one's events belong to nobody.
+    if (watched !== key) return
+    refreshRelays()
+    for (const event of events) take(event)
+    disputesReady.value = true
+  }
+
   return {
     boot,
     documents,
     relays: relayStates,
+    disputes,
+    disputesReady,
 
     async start() {
       openCache()
@@ -203,9 +294,15 @@ export function createStore(relays: Relays, publisher: string): Store {
 
     need: fetchDocuments,
 
+    watchDisputes,
+
     stop() {
       unsubscribe?.()
       unsubscribe = null
+      disputeUnsubscribe?.()
+      disputeUnsubscribe = null
+      disputesReady.value = false
+      watched = null
       relays.close()
     },
   }

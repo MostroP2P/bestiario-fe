@@ -227,8 +227,13 @@ export type Strings = {
   readonly disputes: {
     readonly heading: string
     readonly listLabel: string
-    readonly empty: string
-    readonly asOf: (when: string) => string
+    readonly empty: (days: number) => string
+    /** What the book is: the instances' own word, and how far back it reaches. */
+    readonly live: (days: number) => string
+    /** A dispute's `s` tag, in words. An unknown status is shown as it came. */
+    readonly status: Readonly<Record<string, string>>
+    /** `instance` is already shortened: a catalogue interpolates, it never formats. */
+    readonly rowTitle: (id: string, instance: string) => string
   }
 
   readonly absence: {

@@ -13,7 +13,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { windowAddress, type Span } from '~/nostr/address'
-import { fiatRows, indexedFamily, lookup, metricsOf } from '~/model/metrics'
+import { fiatRows, lookup, metricsOf } from '~/model/metrics'
 import { formatMetric } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
@@ -30,6 +30,8 @@ import { placeAnchors, placeCurrencies, placeMostros } from '~/map/placements'
 import { ANCHOR_COUNT, flowLines } from '~/map/flows'
 import { networkLines, tradedCurrencies } from '~/map/network'
 import { currencyOrders, instanceRows } from '~/model/instances'
+import { openDisputes } from '~/model/open-disputes'
+import { DISPUTES } from '~/config'
 import { currencyMatrix } from '~/model/matrix'
 import { printAddress } from '~/nostr/address'
 import { createProjection } from '~/map/projection'
@@ -51,6 +53,9 @@ export function Overview(props: { readonly window: Span }) {
   // instance the first pass named. The store fetches each set in one round
   // trip and serves anything already cached.
   const [scoped, setScoped] = useState<readonly string[]>([])
+  // The instances whose dispute events the open book is read from. Named by a
+  // document, so the set arrives on the second pass with the scoped orders.
+  const [disputeAuthors, setDisputeAuthors] = useState<readonly string[]>([])
   const needed = useMemo(
     () => [
       ...(['orders', 'volume', 'disputes', 'dev-fees', 'instances'] as const).map(
@@ -60,7 +65,12 @@ export function Overview(props: { readonly window: Span }) {
     ],
     [window_, scoped],
   )
-  const { boot, documents } = useStore(needed)
+  const {
+    boot,
+    documents,
+    disputes: disputeEvents,
+    disputesReady,
+  } = useStore(needed, disputeAuthors)
 
   const orders = metricsOf(payloadOf(documents, windowAddress('orders', window_)))
   const volume = metricsOf(payloadOf(documents, windowAddress('volume', window_)))
@@ -91,6 +101,16 @@ export function Overview(props: { readonly window: Span }) {
   useEffect(() => {
     setScoped(scopedKey ? scopedKey.split(' ') : [])
   }, [scopedKey])
+
+  // Only the instances the archive names may put a row on the dispute book:
+  // an event signed by anyone else is somebody else's claim about Mostro.
+  const instanceKey = useMemo(
+    () => instances.map((instance) => instance.pubkey).join(' '),
+    [instances],
+  )
+  useEffect(() => {
+    setDisputeAuthors(instanceKey ? instanceKey.split(' ') : [])
+  }, [instanceKey])
 
   /** What each instance traded, when the publisher says. */
   const trades = useMemo(
@@ -131,7 +151,27 @@ export function Overview(props: { readonly window: Span }) {
     !settled(windowAddress('instances', window_)) ||
     scopedWanted.some((address) => !settled(address))
   const currencies = useMemo(() => fiatRows(volume), [volume])
-  const openBook = useMemo(() => indexedFamily(disputes, 'disputes.open'), [disputes])
+  // ── the open dispute book ────────────────────────────────────────────
+  // Not a published figure: the instances' own 38386 events, filtered to the
+  // statuses that mean open and to what has been said in the last two days.
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+
+  const openBook = useMemo(
+    () => openDisputes(disputeEvents, nowMs, DISPUTES),
+    [disputeEvents, nowMs],
+  )
+
+  /** An empty book is only news once the instances are named and have answered. */
+  const bookLoading =
+    boot.status === 'loading' ||
+    !settled(windowAddress('instances', window_)) ||
+    !disputesReady
+
+  const bookWindowDays = Math.round(DISPUTES.windowMs / 86_400_000)
 
   // ── the map ──────────────────────────────────────────────────────────
   const mapRef = useRef<HTMLDivElement>(null)
@@ -402,12 +442,13 @@ export function Overview(props: { readonly window: Span }) {
         <div>
           <h2 class="b-eyebrow b-feed-head">
             <span>{strings.disputes.heading}</span>
-            <span class="b-feed-live">{loading ? '' : openBook.length}</span>
+            <span class="b-feed-live">{bookLoading ? '' : openBook.length}</span>
           </h2>
           <OpenDisputes
             entries={openBook}
-            asOf={boot.status === 'ready' ? boot.index.generated_at : null}
-            loading={loading}
+            nowMs={nowMs}
+            windowDays={bookWindowDays}
+            loading={bookLoading}
           />
         </div>
       </div>

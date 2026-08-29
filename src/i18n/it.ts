@@ -206,9 +206,12 @@ export const it: Strings = {
   disputes: {
     heading: 'DISPUTE APERTE ORA',
     listLabel: 'Dispute aperte',
-    empty: 'Nessuna disputa aperta.',
-    asOf: (when) =>
-      `Età misurate dall’editore al momento del calcolo dell’istantanea il ${when}, non ora.`,
+    empty: (days) =>
+      `Nessuna disputa è aperta ora, secondo gli eventi delle istanze stesse degli ultimi ${days} giorni.`,
+    live: (days) =>
+      `Dispute che ogni istanza ha dichiarato avviate o in corso, dai suoi eventi firmati degli ultimi ${days} giorni. Le età sono misurate sul tuo orologio.`,
+    status: { initiated: 'avviata', 'in-progress': 'in corso' },
+    rowTitle: (id, instance) => `Disputa ${id} · istanza ${instance}`,
   },
 
   absence: {

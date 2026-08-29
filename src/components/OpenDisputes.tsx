@@ -1,23 +1,26 @@
-import { formatMetric } from '~/model/format'
+import { formatDuration } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { SkeletonRow } from './Skeleton'
-import type { Metric } from '~/nostr/documents'
+import type { LiveDispute } from '~/model/open-disputes'
 
 /**
- * The open dispute book, rebuilt from the indexed `disputes.open.<n>.*`
- * family.
+ * The open dispute book, rebuilt from the instances' own dispute events.
  *
- * The ages are the publisher's, measured against its own clock at the moment
- * it computed the snapshot. They are shown as of that moment and not as of
- * now, which is why the panel says when.
+ * Every row is a dispute a Mostro last called `initiated` or `in-progress`,
+ * and the age is measured from that event's signed `created_at` against the
+ * reader's own clock — not from a snapshot the publisher computed at some
+ * earlier moment. The panel says so, and says how far back it reaches: a
+ * dispute nobody has spoken about in two days is not on it.
  */
 export function OpenDisputes({
   entries,
-  asOf,
+  nowMs,
+  windowDays,
   loading,
 }: {
-  readonly entries: readonly { index: number; figures: Map<string, Metric> }[]
-  readonly asOf: string | null
+  readonly entries: readonly LiveDispute[]
+  readonly nowMs: number
+  readonly windowDays: number
   readonly loading: boolean
 }) {
   const strings = useStrings()
@@ -32,7 +35,12 @@ export function OpenDisputes({
   }
 
   if (entries.length === 0) {
-    return <p class="b-empty">{strings.disputes.empty}</p>
+    return (
+      <>
+        <p class="b-empty">{strings.disputes.empty(windowDays)}</p>
+        <p class="b-asof">{strings.disputes.live(windowDays)}</p>
+      </>
+    )
   }
 
   return (
@@ -47,22 +55,28 @@ export function OpenDisputes({
         aria-label={strings.disputes.listLabel}
       >
         <ul class="b-dispute-list">
-          {entries.map((entry) => {
-            const id = formatMetric(entry.figures.get('id'))
-            const age = formatMetric(entry.figures.get('age'))
-            return (
-              <li key={entry.index} class="b-feed-item">
-                <span class="b-feed-time">{entry.index}</span>
-                <span class="b-feed-text b-mono" title={id.text}>
-                  {id.text.slice(0, 8)}…
-                </span>
-                <span class="b-dispute-age">{age.text}</span>
-              </li>
-            )
-          })}
+          {entries.map((entry, position) => (
+            <li
+              key={`${entry.instancePubkey}:${entry.id}`}
+              class="b-feed-item"
+              title={strings.disputes.rowTitle(
+                entry.id,
+                entry.instancePubkey.slice(0, 8),
+              )}
+            >
+              <span class="b-feed-time">{position + 1}</span>
+              <span class="b-feed-text b-mono">{entry.id.slice(0, 8)}…</span>
+              <span class="b-dispute-status">
+                {strings.disputes.status[entry.status] ?? entry.status}
+              </span>
+              <span class="b-dispute-age">
+                {formatDuration(Math.max(0, (nowMs - entry.updatedAt) / 1000))}
+              </span>
+            </li>
+          ))}
         </ul>
       </div>
-      {asOf && <p class="b-asof">{strings.disputes.asOf(asOf)}</p>}
+      <p class="b-asof">{strings.disputes.live(windowDays)}</p>
     </>
   )
 }

@@ -18,6 +18,15 @@ export const BESTIARIO_KIND = 30666
 /** Mostro's own order events, the live layer behind the world map. */
 export const MOSTRO_ORDER_KIND = 38383
 
+/**
+ * Mostro's own dispute events, the live layer behind the open-dispute book.
+ *
+ * These are the instances' events and not bestiario's: they are signed by
+ * each Mostro, carry no payload this client hashes, and say only what that
+ * instance says about its own disputes.
+ */
+export const MOSTRO_DISPUTE_KIND = 38386
+
 /** Nostr metadata, used to resolve a Mostro instance's name and flag. */
 export const METADATA_KIND = 0
 
@@ -57,6 +66,24 @@ export const MAP = {
   settlingStatuses: ['success'],
   /** Ceiling on lines drawn at once, so a spike degrades into a sample. */
   maxLines: 400,
+} as const
+
+/**
+ * The open-dispute book.
+ *
+ * A dispute is on the book while its own instance last said it was open, and
+ * only for as long as that word is recent: an instance that stops publishing
+ * leaves a dispute that would otherwise stand open forever. Two days is the
+ * knob — long enough that a dispute argued over a weekend is still there,
+ * short enough that the panel is about now.
+ */
+export const DISPUTES = {
+  /** Statuses that count as an open dispute (`s` tag of a 38386 event). */
+  openStatuses: ['initiated', 'in-progress'],
+  /** How far back the book reaches, measured on the signed `created_at`. */
+  windowMs: 2 * 24 * 60 * 60 * 1000,
+  /** Ceiling on entries, so a spike degrades into a sample. */
+  maxEntries: 50,
 } as const
 
 export const CACHE_SCHEMA_VERSION = 1

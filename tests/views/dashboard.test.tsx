@@ -2,6 +2,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vi
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/preact'
 import { readFileSync, readdirSync } from 'node:fs'
 import type { Event, Filter } from 'nostr-tools'
+import { finalizeEvent, generateSecretKey } from 'nostr-tools/pure'
 
 const DIR = 'tests/fixtures/snapshot'
 const fixtures: Event[] = readdirSync(DIR)
@@ -11,10 +12,19 @@ const dOf = (event: Event) => event.tags.find((tag) => tag[0] === 'd')?.[1] ?? '
 
 /** What the fake pool will serve. Swapped per test before rendering. */
 let served: Event[] = fixtures
+/** Mostro's own events — the live layer, asked for by kind and not by `d`. */
+let servedMostro: Event[] = []
+/** Every filter the site put on the wire, so a test can read what it asked. */
+const asked: Filter[] = []
 
 vi.mock('~/nostr/pool', () => ({
   openRelays: () => ({
     query: (filter: Filter) => {
+      asked.push(filter)
+      const kinds = filter.kinds ?? []
+      if (!kinds.includes(30666)) {
+        return Promise.resolve(servedMostro.filter((e) => kinds.includes(e.kind)))
+      }
       const wanted = filter['#d']
       return Promise.resolve(served.filter((e) => !wanted || wanted.includes(dOf(e))))
     },
@@ -32,6 +42,18 @@ const topology = JSON.parse(
   readFileSync('public/geo/countries-110m.json', 'utf8'),
 ) as unknown
 const { clearAtlasCache } = await import('~/map/useAtlas')
+const { PUBLISHER_PUBKEY } = await import('~/config')
+
+/** The one instance the snapshot fixture names, and the only allowed author. */
+const instancePubkey = (() => {
+  const event = fixtures.find((e) => dOf(e) === 'instances:30d')!
+  const metrics = (
+    JSON.parse(event.content) as {
+      payload: { metrics: { name: string; value: unknown }[] }
+    }
+  ).payload.metrics
+  return metrics.find((m) => m.name.endsWith('.pubkey'))!.value as string
+})()
 
 beforeAll(() => {
   globalThis.ResizeObserver = class {
@@ -59,6 +81,8 @@ beforeAll(() => {
 
 beforeEach(() => {
   served = fixtures
+  servedMostro = []
+  asked.length = 0
   resetStore()
   clearCache()
   clearAtlasCache()
@@ -185,12 +209,27 @@ describe('Dashboard · real figures', () => {
     })
   })
 
-  test('rebuilds the open dispute book from the indexed family', async () => {
+  test('no longer reads the book out of the archive it was published in', async () => {
+    // The panel is about now, and the archive's `disputes.open.<n>.*` family
+    // is about the moment the publisher computed its snapshot. A row from it
+    // on this screen would be an age measured against somebody else's clock.
+    const archived = (() => {
+      const event = fixtures.find((e) => dOf(e) === 'disputes:30d')!
+      const metrics = (
+        JSON.parse(event.content) as {
+          payload: { metrics: { name: string; value: unknown }[] }
+        }
+      ).payload.metrics
+      return metrics.find((m) => /^disputes\.open\.\d+\.id$/.test(m.name))
+        ?.value as string
+    })()
+
     const { container } = render(<Dashboard />)
 
     await waitFor(() => {
-      expect(container.querySelectorAll('.b-dispute-list li').length).toBeGreaterThan(10)
+      expect(container.querySelector('.b-dispute-scroll, .b-empty')).not.toBeNull()
     })
+    expect(container.textContent).not.toContain(archived.slice(0, 8))
   })
 
   test('draws movement out of every market that traded', async () => {
@@ -343,17 +382,62 @@ describe('Dashboard · a window figure is not a now figure', () => {
     expect(disputesKpi(container)?.querySelector('strong')?.textContent).not.toBe(before)
   })
 
-  test('the standing book is counted where it says it is about now', async () => {
-    const openNow = figure('disputes', '30d', 'disputes.open_now')
+  test('asks every instance the archive names for its own dispute events', async () => {
+    // Arrange / Act
+    render(<Dashboard />)
+
+    // Assert — kind 38386, authored by the instances, bounded at two days.
+    await waitFor(() => {
+      expect(asked.some((filter) => filter.kinds?.includes(38386))).toBe(true)
+    })
+    const filter = asked.find((f) => f.kinds?.includes(38386))!
+    expect(filter.authors).toContain(instancePubkey)
+    expect(filter.authors).not.toContain(PUBLISHER_PUBKEY)
+    const since = filter.since ?? 0
+    expect(Math.abs(since - (Date.now() - 2 * 86_400_000) / 1000)).toBeLessThan(5)
+  })
+
+  test('says the book is empty when no instance published a dispute', async () => {
+    // Act
     const { container } = render(<Dashboard />)
 
+    // Assert
     await waitFor(() => {
-      expect(container.querySelectorAll('.b-dispute-list li')).toHaveLength(openNow)
+      // `.b-empty` is also the matrix's; the book's is the one that says so.
+      const said = [...container.querySelectorAll('.b-empty')].map((n) => n.textContent)
+      expect(said).toContain(en.disputes.empty(2))
     })
-    const heading = [...container.querySelectorAll('.b-feed-head')].find((h) =>
-      h.textContent?.includes('DISPUTES'),
-    )
-    expect(heading?.textContent).toContain('NOW')
+    expect(container.querySelectorAll('.b-dispute-list li')).toHaveLength(0)
+  })
+
+  test('an event signed by somebody who is not an instance never lands', async () => {
+    // Arrange — a well-formed dispute, signed by a key the archive never named.
+    const stranger = generateSecretKey()
+    servedMostro = [
+      finalizeEvent(
+        {
+          kind: 38386,
+          created_at: Math.floor(Date.now() / 1000),
+          tags: [
+            ['d', 'forged'],
+            ['s', 'initiated'],
+            ['z', 'dispute'],
+          ],
+          content: '',
+        },
+        stranger,
+      ),
+    ]
+
+    // Act
+    const { container } = render(<Dashboard />)
+
+    // Assert
+    await waitFor(() => {
+      const said = [...container.querySelectorAll('.b-empty')].map((n) => n.textContent)
+      expect(said).toContain(en.disputes.empty(2))
+    })
+    expect(container.querySelectorAll('.b-dispute-list li')).toHaveLength(0)
   })
 
   test('no tile in the window row repeats the standing book', async () => {
