@@ -5,24 +5,20 @@
  * translations of it, and the type in `strings.ts` is what stops one going
  * stale silently.
  *
- * The choice is the browser's, not the site's: `navigator.languages` is
- * already the reader's stated order of preference, and asking again with a
- * picker would be asking a question they have answered. A reader whose
- * languages this site does not speak gets English rather than nothing.
+ * The first answer is the browser's: `navigator.languages` is already the
+ * reader's stated order of preference, so the page opens in their language
+ * without being asked. But a browser is a guess about a person — a shared
+ * machine, a laptop installed in a language its owner does not read — so the
+ * guess is always correctable, and a correction outranks it from then on
+ * (`preference.ts`). A reader whose languages this site does not speak gets
+ * English rather than nothing.
  */
-import { en } from './en'
-import { es } from './es'
-import { pt } from './pt'
-import { fr } from './fr'
-import { it } from './it'
+import { DEFAULT_LOCALE, LOCALES, stringsFor } from './catalogue'
+import { storedLocale } from './preference'
 import type { Strings } from './strings'
 
 export type { Strings } from './strings'
-
-/** Every locale this site speaks, English first. */
-export const LOCALES: Readonly<Record<string, Strings>> = { en, es, pt, fr, it }
-
-export const DEFAULT_LOCALE = 'en'
+export { DEFAULT_LOCALE, LOCALES, stringsFor } from './catalogue'
 
 /**
  * The first of `preferred` this site speaks, or the default.
@@ -58,12 +54,15 @@ export function preferredLanguages(): readonly string[] {
   return nav.language ? [nav.language] : []
 }
 
-/** The strings for a locale, falling back rather than failing. */
-export function stringsFor(locale: string): Strings {
-  return LOCALES[locale] ?? en
+/**
+ * The locale the page opens in: the reader's own choice when they have made
+ * one, and their browser's preference when they have not.
+ */
+export function initialLocale(): string {
+  return storedLocale() ?? pickLocale(preferredLanguages())
 }
 
-/** The strings this reader gets, chosen from their browser. */
+/** The strings this reader opens the page in. */
 export function detectStrings(): Strings {
-  return stringsFor(pickLocale(preferredLanguages()))
+  return stringsFor(initialLocale())
 }

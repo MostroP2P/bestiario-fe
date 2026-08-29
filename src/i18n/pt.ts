@@ -17,6 +17,7 @@ export const pt: Strings = {
 
   header: {
     windowNav: 'Janela',
+    language: 'Idioma',
     windows: { '24h': '24 H', '7d': '7 D', '30d': '30 D', '90d': '90 D', all: 'TUDO' },
     network: 'MAINNET',
     verified: 'VERIFICADO',

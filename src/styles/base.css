@@ -918,3 +918,35 @@ body {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
+
+/* The reader's way out of a wrong guess: quiet in the header, and never
+   quieter than the meta it sits with. */
+.b-lang {
+  display: flex;
+  align-items: center;
+}
+
+.b-lang-select {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.b-lang-select:hover,
+.b-lang-select:focus-visible {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+/* The list itself is drawn by the platform, which does not inherit the
+   page's colours; say them, or a dark theme gets black on black. */
+.b-lang-select option {
+  background: var(--panel);
+  color: var(--ink);
+}

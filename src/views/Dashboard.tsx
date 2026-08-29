@@ -17,6 +17,7 @@ import {
   SkeletonMap,
 } from '~/components/Skeleton'
 import { WorldPulse } from '~/components/WorldPulse'
+import { LanguagePicker } from '~/components/LanguagePicker'
 import { useAtlas } from '~/map/useAtlas'
 import { useMeasuredSize, usePrefersReducedMotion } from '~/map/hooks'
 import { placeAnchors, placeCurrencies, placeMostros } from '~/map/placements'
@@ -260,6 +261,7 @@ export function Dashboard() {
               ))}
             </nav>
             <div class="b-header-meta">
+              <LanguagePicker />
               <span>{strings.header.network}</span>
               <span class="b-stream">
                 <i aria-hidden="true" />

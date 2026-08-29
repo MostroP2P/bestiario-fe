@@ -52,6 +52,8 @@ export type Strings = {
 
   readonly header: {
     readonly windowNav: string
+    /** Labels the language picker, for a reader who cannot see its icon. */
+    readonly language: string
     readonly windows: Readonly<Record<Span, string>>
     readonly network: string
     readonly verified: string
