@@ -214,9 +214,11 @@ export const en: Strings = {
   disputes: {
     heading: 'DISPUTES OPEN NOW',
     listLabel: 'Open disputes',
-    empty: 'No open disputes.',
-    asOf: (when) =>
-      `Ages measured by the publisher when it computed the snapshot on ${when}, not now.`,
+    empty: (days) => `No dispute has been open in the last ${days} days.`,
+    live: (days) =>
+      `Disputes each instance last called initiated or in progress, from its own signed events of the last ${days} days. Ages are measured against your clock.`,
+    status: { initiated: 'initiated', 'in-progress': 'in progress' },
+    rowTitle: (id, instance) => `Dispute ${id} · instance ${instance}`,
   },
 
   absence: {

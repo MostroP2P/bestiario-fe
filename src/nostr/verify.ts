@@ -49,11 +49,22 @@ function signedFieldsOf(event: Event): Event {
   }
 }
 
-/** Author and signature. Everything that can be checked without the index. */
-export function verifySigned(event: Event, publisher: string): Verified<Event> {
-  if (event.pubkey !== publisher) return fail('author')
+/**
+ * Author and signature, against a set of authors this client expects.
+ *
+ * Mostro's own events are signed by each instance and not by the publisher,
+ * so the anchor there is the set of instances the archive named — a set the
+ * reader can check, and one an unknown key cannot talk its way into.
+ */
+export function verifyFrom(event: Event, authors: ReadonlySet<string>): Verified<Event> {
+  if (!authors.has(event.pubkey)) return fail('author')
   if (!verifyEvent(signedFieldsOf(event))) return fail('signature')
   return { ok: true, value: event }
+}
+
+/** Author and signature. Everything that can be checked without the index. */
+export function verifySigned(event: Event, publisher: string): Verified<Event> {
+  return verifyFrom(event, new Set([publisher]))
 }
 
 /** The index: signed by the publisher, and JSON this client understands. */

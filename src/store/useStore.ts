@@ -11,6 +11,7 @@ import { DEFAULT_RELAYS, PUBLISHER_PUBKEY } from '~/config'
 import { openRelays } from '~/nostr/pool'
 import { createStore, type BootState, type DocState, type Store } from './store'
 import type { RelayState } from '~/nostr/pool'
+import type { LiveDispute } from '~/model/open-disputes'
 
 let shared: Store | null = null
 
@@ -29,14 +30,27 @@ export type StoreView = {
   readonly boot: BootState
   readonly documents: ReadonlyMap<string, DocState>
   readonly relays: readonly RelayState[]
+  readonly disputes: readonly LiveDispute[]
+  /** False while the relays have not yet answered for the watched instances. */
+  readonly disputesReady: boolean
 }
 
-export function useStore(needed: readonly string[]): StoreView {
+/**
+ * The documents a route needs, and — when it asks — the dispute events of the
+ * instances it names. The second set is not addressed by `d`: it is the
+ * instances' own live layer, and it is followed only while a view wants it.
+ */
+export function useStore(
+  needed: readonly string[],
+  disputeAuthors: readonly string[] = [],
+): StoreView {
   const store = useMemo(() => sharedStore(), [])
   const [view, setView] = useState<StoreView>({
     boot: store.boot.value,
     documents: store.documents.value,
     relays: store.relays.value,
+    disputes: store.disputes.value,
+    disputesReady: store.disputesReady.value,
   })
 
   useEffect(() => {
@@ -45,11 +59,15 @@ export function useStore(needed: readonly string[]): StoreView {
         boot: store.boot.value,
         documents: store.documents.value,
         relays: store.relays.value,
+        disputes: store.disputes.value,
+        disputesReady: store.disputesReady.value,
       })
     const stop = [
       store.boot.subscribe(read),
       store.documents.subscribe(read),
       store.relays.subscribe(read),
+      store.disputes.subscribe(read),
+      store.disputesReady.subscribe(read),
     ]
     void store.start()
     return () => stop.forEach((unsubscribe) => unsubscribe())
@@ -60,6 +78,13 @@ export function useStore(needed: readonly string[]): StoreView {
     if (store.boot.value.status !== 'ready') return
     void store.need(key.split(' ').filter(Boolean))
   }, [store, key, view.boot.status])
+
+  // The instances are named by a document, so this list arrives on the second
+  // render and not the first. Re-watching the same set is free.
+  const authorsKey = disputeAuthors.join(' ')
+  useEffect(() => {
+    void store.watchDisputes(authorsKey.split(' ').filter(Boolean))
+  }, [store, authorsKey])
 
   return view
 }

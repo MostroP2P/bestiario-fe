@@ -207,9 +207,11 @@ export const pt: Strings = {
   disputes: {
     heading: 'DISPUTAS ABERTAS AGORA',
     listLabel: 'Disputas abertas',
-    empty: 'Nenhuma disputa aberta.',
-    asOf: (when) =>
-      `Idades medidas pelo publicador ao calcular o instantâneo em ${when}, não agora.`,
+    empty: (days) => `Nenhuma disputa esteve aberta nos últimos ${days} dias.`,
+    live: (days) =>
+      `Disputas que cada instância declarou iniciadas ou em andamento, pelos seus próprios eventos assinados dos últimos ${days} dias. As idades são medidas pelo seu relógio.`,
+    status: { initiated: 'iniciada', 'in-progress': 'em andamento' },
+    rowTitle: (id, instance) => `Disputa ${id} · instância ${instance}`,
   },
 
   absence: {

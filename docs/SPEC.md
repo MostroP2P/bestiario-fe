@@ -414,8 +414,22 @@ The one screen a reader who wants a number, not a study, can stop at.
   `index.coverage`, so a short archive reads as a short archive rather than
   as a quiet network.
 
+- The open dispute book. Not a published figure and not governed by the
+  window selector: it is read from the instances' own dispute events —
+  Mostro's kind `38386`, `d` the dispute id and `s` its status — kept to the
+  disputes an instance last called `initiated` or `in-progress`, and reaching
+  back only two days, so an instance that goes quiet cannot hold a dispute
+  open forever. Ages are measured against the reader's clock, from each
+  event's signed `created_at`.
+
 `d` set: `orders:<w>`, `volume:<w>`, `disputes:<w>`, `dev-fees:<w>`, plus the
 series partitions for the window.
+
+The dispute events are the one place this route reads something the publisher
+did not sign. The trust anchor there is the instance set: only a key the
+`instances:<w>` document names may put a row on the book, and its signature
+is checked like any other. What such an event proves is that *that instance*
+said this about its own dispute — never that the archive agrees.
 
 Until §14.2 lands there is no `summary` document, so this route composes its
 tiles from the four family documents. The tiles are named for the metric

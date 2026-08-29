@@ -1017,6 +1017,15 @@ body {
   padding: 0;
 }
 
+.b-dispute-status {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
 .b-dispute-age {
   font-family: var(--mono);
   font-size: 9.5px;
