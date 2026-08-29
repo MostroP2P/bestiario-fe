@@ -201,12 +201,12 @@ export const en: Strings = {
   },
 
   matrix: {
-    heading: 'CURRENCY × INSTANCE · ORDERS',
-    caption: 'Orders created by each instance in each currency, in the chosen window',
+    heading: 'CURRENCY × INSTANCE · COMPLETED ORDERS',
+    caption: 'Orders completed by each instance in each currency, in the chosen window',
     instance: 'instance',
     cell: (instance, code, orders) => `${instance} · ${code}: ${orders}`,
-    none: 'no orders',
-    empty: 'No instance published a breakdown of its own for this window.',
+    none: 'no completed orders',
+    empty: 'No instance published a completed order in any currency for this window.',
   },
 
   fiat: {

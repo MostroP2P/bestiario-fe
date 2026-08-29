@@ -230,9 +230,9 @@ export type Strings = {
     readonly instance: string
     /** A cell, as the pointer and the keyboard both reach it. */
     readonly cell: (instance: string, code: string, orders: number) => string
-    /** A pair with no orders in the window. Absence, not a zero. */
+    /** A pair with no completed orders in the window. Absence, not a zero. */
     readonly none: string
-    /** No instance published a breakdown of its own for this window. */
+    /** No instance completed an order in any currency in this window. */
     readonly empty: string
   }
 

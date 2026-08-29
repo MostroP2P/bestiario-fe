@@ -69,11 +69,19 @@ const DOCS: Record<string, WindowPayload> = {
   },
   [`orders:30d:i:${AR_PUBKEY}`]: {
     range: RANGE,
-    metrics: [count('orders.created', 15), count('orders.ARS.created', 15)],
+    metrics: [
+      count('orders.created', 15),
+      count('orders.ARS.created', 15),
+      count('orders.ARS.completed', 9),
+    ],
   },
   [`orders:30d:i:${VE_PUBKEY}`]: {
     range: RANGE,
-    metrics: [count('orders.created', 5), count('orders.VES.created', 5)],
+    metrics: [
+      count('orders.created', 5),
+      count('orders.VES.created', 5),
+      count('orders.VES.completed', 3),
+    ],
   },
 }
 

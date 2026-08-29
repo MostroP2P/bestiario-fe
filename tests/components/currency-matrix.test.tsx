@@ -48,7 +48,14 @@ describe('CurrencyMatrix', () => {
       td.textContent?.trim(),
     )
     // An empty pair carries the artboard's dot and the word behind it.
-    expect(cells).toEqual(['8', '2', '·no orders', '1', '·no orders', '4'])
+    expect(cells).toEqual([
+      '8',
+      '2',
+      '·no completed orders',
+      '1',
+      '·no completed orders',
+      '4',
+    ])
   })
 
   test('shades each cell against the grid’s own peak', () => {
@@ -61,14 +68,16 @@ describe('CurrencyMatrix', () => {
     expect(levels).toEqual(['4', '1', '0', '1', '0', '2'])
   })
 
-  test('says a pair has no orders rather than showing a bare glyph', () => {
+  test('says a pair completed no orders rather than showing a bare glyph', () => {
     // The dot the artboard draws is decorative; the word is what is read.
     const { container } = draw(MATRIX)
 
     const empty = container.querySelectorAll('td[data-level="0"]')
     expect(empty.length).toBe(2)
     expect(empty[0]?.querySelector('[aria-hidden="true"]')?.textContent).toBe('·')
-    expect(empty[0]?.querySelector('.b-visually-hidden')?.textContent).toBe('no orders')
+    expect(empty[0]?.querySelector('.b-visually-hidden')?.textContent).toBe(
+      'no completed orders',
+    )
   })
 
   test('names each cell for a pointer and for the keyboard alike', () => {

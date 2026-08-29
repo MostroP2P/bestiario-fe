@@ -194,12 +194,13 @@ export const it: Strings = {
   },
 
   matrix: {
-    heading: 'VALUTA × ISTANZA · ORDINI',
-    caption: 'Ordini creati da ogni istanza in ogni valuta, nella finestra scelta',
+    heading: 'VALUTA × ISTANZA · ORDINI COMPLETATI',
+    caption: 'Ordini completati da ogni istanza in ogni valuta, nella finestra scelta',
     instance: 'istanza',
     cell: (instance, code, orders) => `${instance} · ${code}: ${orders}`,
-    none: 'nessun ordine',
-    empty: 'Nessuna istanza ha pubblicato la propria ripartizione per questa finestra.',
+    none: 'nessun ordine completato',
+    empty:
+      'Nessuna istanza ha pubblicato ordini completati in alcuna valuta per questa finestra.',
   },
 
   fiat: {

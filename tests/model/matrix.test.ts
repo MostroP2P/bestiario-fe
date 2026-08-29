@@ -4,9 +4,12 @@ import type { InstanceRow } from '~/model/instances'
 
 /**
  * The cross of artboard 2a: one row per instance, one column per currency,
- * the orders each pair created. Nothing here is summed from elsewhere — the
- * figures are the ones the scoped `orders:<window>:i:<pubkey>` documents
+ * the orders each pair *completed*. Nothing here is summed from elsewhere —
+ * the figures are the ones the scoped `orders:<window>:i:<pubkey>` documents
  * published, so the grid and the map read from the same source.
+ *
+ * The created counts are kept in the fixtures on purpose: a market can be
+ * created in and never settle, and the grid must not draw it.
  */
 
 function instance(pubkey: string, name: string): InstanceRow {
@@ -25,13 +28,13 @@ describe('currencyMatrix', () => {
       {
         pubkey: ALPHA,
         currencies: [
-          { code: 'ARS', created: 4, completed: 0, openNow: 1 },
-          { code: 'EUR', created: 1, completed: 0, openNow: 0 },
+          { code: 'ARS', created: 9, completed: 4, openNow: 1 },
+          { code: 'EUR', created: 3, completed: 1, openNow: 0 },
         ],
       },
       {
         pubkey: BETA,
-        currencies: [{ code: 'BRL', created: 2, completed: 0, openNow: 0 }],
+        currencies: [{ code: 'BRL', created: 5, completed: 2, openNow: 0 }],
       },
     ]
 
@@ -46,22 +49,66 @@ describe('currencyMatrix', () => {
     expect(matrix.peak).toBe(4)
   })
 
-  test('orders the columns by what the network traded most, then by code', () => {
+  test('leaves out a currency the network created orders in but never completed', () => {
+    // Arrange: CLP was quoted in and never settled — the noise the grid drops.
+    const instances = [instance(ALPHA, 'Alpha'), instance(BETA, 'Beta')]
+    const trades = [
+      {
+        pubkey: ALPHA,
+        currencies: [
+          { code: 'ARS', created: 4, completed: 2, openNow: 0 },
+          { code: 'CLP', created: 7, completed: 0, openNow: 3 },
+        ],
+      },
+      {
+        pubkey: BETA,
+        currencies: [{ code: 'CLP', created: 2, completed: 0, openNow: 0 }],
+      },
+    ]
+
+    // Act
+    const matrix = currencyMatrix(instances, trades)
+
+    // Assert
+    expect(matrix.columns).toEqual(['ARS'])
+    expect(matrix.rows[0]?.cells).toEqual([2])
+    expect(matrix.rows[1]?.cells).toEqual([0])
+  })
+
+  test('is empty when nothing settled anywhere, rather than a grid of dots', () => {
+    // Arrange / Act
+    const matrix = currencyMatrix(
+      [instance(ALPHA, 'Alpha')],
+      [
+        {
+          pubkey: ALPHA,
+          currencies: [{ code: 'ARS', created: 6, completed: 0, openNow: 2 }],
+        },
+      ],
+    )
+
+    // Assert
+    expect(matrix.columns).toEqual([])
+    expect(matrix.rows).toEqual([])
+    expect(matrix.peak).toBe(0)
+  })
+
+  test('orders the columns by what the network completed most, then by code', () => {
     // Arrange
     const instances = [instance(ALPHA, 'Alpha'), instance(BETA, 'Beta')]
     const trades = [
       {
         pubkey: ALPHA,
         currencies: [
-          { code: 'ARS', created: 1, completed: 0, openNow: 0 },
-          { code: 'USD', created: 3, completed: 0, openNow: 0 },
+          { code: 'ARS', created: 2, completed: 1, openNow: 0 },
+          { code: 'USD', created: 4, completed: 3, openNow: 0 },
         ],
       },
       {
         pubkey: BETA,
         currencies: [
-          { code: 'ARS', created: 5, completed: 0, openNow: 0 },
-          { code: 'BRL', created: 3, completed: 0, openNow: 0 },
+          { code: 'ARS', created: 8, completed: 5, openNow: 0 },
+          { code: 'BRL', created: 6, completed: 3, openNow: 0 },
         ],
       },
     ]
@@ -79,7 +126,7 @@ describe('currencyMatrix', () => {
     const trades = [
       {
         pubkey: ALPHA,
-        currencies: [{ code: 'ARS', created: 2, completed: 0, openNow: 0 }],
+        currencies: [{ code: 'ARS', created: 3, completed: 2, openNow: 0 }],
       },
     ]
 
@@ -108,7 +155,7 @@ describe('currencyMatrix', () => {
       [
         {
           pubkey: BETA,
-          currencies: [{ code: 'ARS', created: 9, completed: 0, openNow: 0 }],
+          currencies: [{ code: 'ARS', created: 12, completed: 9, openNow: 0 }],
         },
       ],
     )
