@@ -153,7 +153,6 @@ export type Strings = {
     readonly loadingGeometry: string
     readonly noGeometry: (reason: string) => string
     readonly activeMarkets: string
-    readonly unplaced: (count: number) => string
     /** Shown while the per-instance orders documents are not published. */
     readonly illustrativeRoutes: string
     /** Shown when some instances name no country. */

@@ -119,7 +119,6 @@ export const it: Strings = {
     loadingGeometry: 'CARICAMENTO GEOMETRIA…',
     noGeometry: (reason) => `NESSUNA GEOMETRIA · ${reason}`,
     activeMarkets: 'MERCATI ATTIVI',
-    unplaced: (count) => `${count} senza posizione, fuori dalla mappa`,
     illustrativeRoutes:
       'Le rotte sono illustrative: vanno verso ancoraggi senza nome, non verso le istanze Mostro. Il daemon non ha ancora pubblicato orders:…:i:<pubkey>, e senza quel dato nulla dice quale istanza tratta quale valuta. Ciò che è misurato è la valuta, il suo paese e i suoi ordini.',
     approximateInstances: (approximate, total) =>

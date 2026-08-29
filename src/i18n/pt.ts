@@ -119,8 +119,6 @@ export const pt: Strings = {
     loadingGeometry: 'CARREGANDO GEOMETRIA…',
     noGeometry: (reason) => `SEM GEOMETRIA · ${reason}`,
     activeMarkets: 'MERCADOS ATIVOS',
-    unplaced: (count) =>
-      `${count} ${plural(count, 'não localizada', 'não localizadas')}, fora do mapa`,
     illustrativeRoutes:
       'As rotas são ilustrativas: vão para âncoras sem nome, não para mostros. O daemon ainda não publicou orders:…:i:<pubkey>, e sem ele nada diz qual instância opera qual moeda. O que é medido é a moeda, o seu país e as suas ordens.',
     approximateInstances: (approximate, total) =>
