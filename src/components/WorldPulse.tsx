@@ -32,17 +32,6 @@ export type WorldPulseProps = {
 /** Seconds for a traveller to cross its line and come back. */
 const ROUND_TRIP_S = 10.4
 
-/**
- * A horizontal step wider than this fraction of the map is the antimeridian
- * seam and not a segment.
- *
- * A route is sampled into dozens of points, so even one crossing the whole
- * map advances a few tens of pixels per step; a wrap jumps most of the width
- * at once. A fifth sits far above the first and far below the second, and
- * half — the first guess — let a 790-pixel streak through.
- */
-const SEAM_FRACTION = 0.2
-
 /** What the map says about itself to a reader who cannot see it. */
 export function describeScene(scene: Scene, strings: Strings): string {
   const say = strings.map.describe
@@ -242,7 +231,7 @@ export function WorldPulse(props: WorldPulseProps) {
           return (
             <path
               key={arc.orderId}
-              d={toPathData(arc.points, props.width * SEAM_FRACTION)}
+              d={toPathData(arc.points)}
               fill="none"
               stroke={style.stroke}
               stroke-width={style.width}
