@@ -51,15 +51,23 @@ const DOCS: Record<string, WindowPayload> = {
       count('orders.completed', 12),
       count('orders.canceled', 4),
       count('orders.in_progress_now', 3),
+      // The network's own block per currency, which is where a currency
+      // reading comes from.
+      count('orders.ARS.created', 15),
+      count('orders.ARS.completed', 9),
+      count('orders.ARS.canceled', 5),
+      count('orders.ARS.open_now', 2),
+      count('orders.VES.created', 5),
+      count('orders.VES.completed', 3),
     ],
   },
-  'volume:30d': {
-    range: RANGE,
-    metrics: [count('volume.fiat.ARS.orders', 9), count('volume.fiat.VES.orders', 3)],
-  },
+  'volume:30d': { range: RANGE, metrics: [] },
   // A window the archive reaches further back than ARS's first order.
-  'orders:all': { range: RANGE, metrics: [count('orders.created', 50)] },
-  'volume:all': { range: RANGE, metrics: [count('volume.fiat.VES.orders', 8)] },
+  'orders:all': {
+    range: RANGE,
+    metrics: [count('orders.created', 50), count('orders.VES.completed', 8)],
+  },
+  'volume:all': { range: RANGE, metrics: [] },
   'market:all': { range: RANGE, metrics: [] },
   'instances:all': { range: RANGE, metrics: [] },
   'market:30d': {
@@ -333,7 +341,7 @@ describe('Orders · narrowed to one currency', () => {
     expect(mark?.getAttribute('tabindex')).toBe('0')
   })
 
-  test('offers no per-currency reading of what nothing signs per currency', async () => {
+  test('reads the currency own block and never the network figures', async () => {
     // Arrange
     const { container } = render(<Orders window="30d" />)
     await waitFor(() => {
@@ -343,15 +351,35 @@ describe('Orders · narrowed to one currency', () => {
     // Act
     await chooseFiat(container, 'ARS')
 
-    // Assert — created, canceled and in-progress are not the currency's,
-    // and the network's are not shown under it either.
+    // Assert — ARS's own 15, 9 and 5, and never the network's 20, 12 and 4.
     await waitFor(() => {
       expect(valueOf(container, en.ordersView.completed)).toBe('9')
     })
-    expect(tile(container, en.ordersView.created)).toBeNull()
-    expect(tile(container, en.ordersView.canceled)).toBeNull()
+    expect(valueOf(container, en.ordersView.created)).toBe('15')
+    expect(valueOf(container, en.ordersView.canceled)).toBe('5')
+    // In progress is not published per currency, so it is not offered.
+    expect(tile(container, en.ordersView.inProgressNow)).toBeNull()
     expect(container.textContent).toContain(en.filters.noFiatOrders)
     expect(container.textContent).not.toContain(printed('ratio', 0.6))
+  })
+
+  test('the panel of what is open right now is that currency own', async () => {
+    // Arrange
+    const { container } = render(<Orders window="30d" />)
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.created)).toBe('20')
+    })
+
+    // Act
+    await chooseFiat(container, 'ARS')
+
+    // Assert — ARS has two open right now; the network's 37 is not shown,
+    // and what the publisher does not break down stays absent.
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.completed)).toBe('9')
+    })
+    const pairs = [...container.querySelectorAll('.b-pair')].map((row) => row.textContent)
+    expect(pairs).toContain(`${en.ordersView.openNow}2`)
   })
 })
 
@@ -374,7 +402,8 @@ describe('Orders · a currency this window does not have', () => {
     await waitFor(() => {
       expect(container.textContent).toContain(en.filters.fiatUnavailable('ARS'))
     })
-    expect(valueOf(container, en.ordersView.completed)).toBe('—')
+    expect(valueOf(container, en.ordersView.completed)).toContain('—')
+    expect(valueOf(container, en.ordersView.completed)).toContain(en.absence.notPublished)
     expect(container.textContent).not.toContain('50')
   })
 })

@@ -76,7 +76,7 @@ export const it: Strings = {
       "L'editore firma questa ripartizione come quota del totale, non come un dettaglio che un filtro possa tagliare. Perciò si legge qui e non viene offerta come filtro.",
     perCurrency: 'Ordini per valuta',
     perCurrencyNote:
-      'Contati nel documento di volume, che è dove la rete distingue gli ordini per valuta.',
+      'Contate nel documento di ordini di questa finestra, dove la rete scompone i suoi ordini per valuta.',
     instanceHeading: 'Ciò che questa istanza pubblica su di sé',
     instanceFee: 'Commissione',
     instanceMinOrder: 'Ordine minimo',

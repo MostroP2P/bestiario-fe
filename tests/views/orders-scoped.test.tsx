@@ -54,8 +54,8 @@ const SCOPED = `orders:30d:i:${AR_PUBKEY}`
  * instance's own is not. Its figures must survive that.
  */
 const DOCS: Record<string, WindowPayload> = {
-  'orders:30d': { range: RANGE, metrics: [] },
-  'volume:30d': { range: RANGE, metrics: [count('volume.fiat.ARS.orders', 7)] },
+  'orders:30d': { range: RANGE, metrics: [count('orders.ARS.completed', 7)] },
+  'volume:30d': { range: RANGE, metrics: [] },
   'market:30d': { range: RANGE, metrics: [] },
   'instances:30d': {
     range: RANGE,
@@ -67,8 +67,11 @@ const DOCS: Record<string, WindowPayload> = {
   },
   // A second window, so a reader can carry a currency into one whose
   // documents have not answered yet.
-  'orders:all': { range: RANGE, metrics: [count('orders.created', 40)] },
-  'volume:all': { range: RANGE, metrics: [count('volume.fiat.ARS.orders', 11)] },
+  'orders:all': {
+    range: RANGE,
+    metrics: [count('orders.created', 40), count('orders.ARS.completed', 11)],
+  },
+  'volume:all': { range: RANGE, metrics: [] },
   'market:all': { range: RANGE, metrics: [] },
   'instances:all': { range: RANGE, metrics: [] },
   [SCOPED]: {
@@ -303,9 +306,10 @@ describe('Orders · one instance in one currency', () => {
 })
 
 describe('Orders · a currency whose document has not answered', () => {
-  test('waits for the volume document rather than claiming absence', async () => {
-    // Arrange — the currency reading is counted in the volume document, so
-    // it is that document the tiles depend on. Pick ARS while `30d` has it.
+  test('waits for the document it reads rather than claiming absence', async () => {
+    // Arrange — a currency is read from the window's own orders document,
+    // the same one the network figures come from. Pick ARS while `30d`
+    // has it.
     events = await buildSnapshot(false)
     const { container, rerender } = render(<Orders window="30d" />)
     await chooseFiat(container, 'ARS')
@@ -314,11 +318,11 @@ describe('Orders · a currency whose document has not answered', () => {
     })
 
     // Act — change the window with the currency still chosen, and hold the
-    // round that carries the new window's volume document.
+    // round that carries the new window's documents.
     held = new Promise<void>((resolve) => {
       release = resolve
     })
-    heldFor = (d) => d.startsWith('volume:')
+    heldFor = (d) => d.startsWith('orders:') && !d.includes(':i:')
     rerender(<Orders window="all" />)
 
     // Assert — placeholders, and never a dash claiming ARS has nothing.

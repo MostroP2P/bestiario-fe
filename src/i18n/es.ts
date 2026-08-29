@@ -76,7 +76,7 @@ export const es: Strings = {
       'El publicador firma este reparto como proporción del total, no como un desglose que un filtro pueda cortar. Por eso se lee aquí y no se ofrece como filtro.',
     perCurrency: 'Órdenes por moneda',
     perCurrencyNote:
-      'Contadas en el documento de volumen, que es donde la red desglosa las órdenes por moneda.',
+      'Contadas en el documento de órdenes de esta ventana, que es donde la red desglosa sus órdenes por moneda.',
     instanceHeading: 'Lo que esta instancia publica sobre sí misma',
     instanceFee: 'Comisión',
     instanceMinOrder: 'Orden mínima',
