@@ -109,14 +109,69 @@ test.describe('a reader on a phone', () => {
     await expect(page.locator('.b-map-canvas svg')).toBeVisible()
   })
 
+  /**
+   * How wide the page is, against how wide the reader's screen is.
+   *
+   * Measured after the lower panels have rendered and not at the first
+   * figure: the block that overflowed arrives with them, and an assertion
+   * that runs before it is an assertion about half a page.
+   *
+   * `window.innerWidth` is the wrong ruler and is why this went unnoticed —
+   * on a phone the layout viewport *grows* to whatever overflowed it, so it
+   * reported 443 for a 390px screen and `scrollWidth <= innerWidth` was true
+   * of a page a reader had to drag sideways to read. The screen is
+   * `documentElement.clientWidth`, which stays 390.
+   */
+  async function widths(page: Page) {
+    await expect(page.locator('.b-split .b-pair').first()).toBeVisible()
+    await expect(page.locator('.b-table table, .b-empty').first()).toBeVisible()
+    return page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      screen: document.documentElement.clientWidth,
+      layout: window.innerWidth,
+    }))
+  }
+
   test('never has to scroll sideways to read the page', async ({ page }) => {
     await open(page)
 
-    const { scrollWidth, innerWidth } = await page.evaluate(() => ({
-      scrollWidth: document.documentElement.scrollWidth,
-      innerWidth: window.innerWidth,
-    }))
-    expect(scrollWidth).toBeLessThanOrEqual(innerWidth)
+    const { scrollWidth, screen, layout } = await widths(page)
+
+    expect(scrollWidth).toBeLessThanOrEqual(screen)
+    // And the viewport itself never widened to accommodate an overflow.
+    expect(layout).toBeLessThanOrEqual(screen)
+  })
+
+  test('and cannot be slid sideways on a narrower phone either', async ({ page }) => {
+    // 320px is the narrowest viewport WCAG 2.2 reflow asks a page to hold.
+    await open(page)
+
+    for (const width of [360, 320]) {
+      await page.setViewportSize({ width, height: PHONE.height })
+      const measured = await widths(page)
+
+      expect(measured.scrollWidth, `at ${width}px`).toBeLessThanOrEqual(measured.screen)
+      expect(measured.layout, `at ${width}px`).toBeLessThanOrEqual(measured.screen)
+    }
+  })
+
+  test('and does not start sliding after a rotation or a window change', async ({
+    page,
+  }) => {
+    // The map is sized from a measurement, so a viewport that changed and
+    // changed back is the case where a stale one would show.
+    await open(page)
+
+    await page.setViewportSize({ width: PHONE.height, height: PHONE.width })
+    await page.setViewportSize(PHONE)
+    const afterRotation = await widths(page)
+    expect(afterRotation.scrollWidth).toBeLessThanOrEqual(afterRotation.screen)
+    expect(afterRotation.layout).toBeLessThanOrEqual(afterRotation.screen)
+
+    await page.getByLabel(en.header.windowNav, { exact: true }).selectOption('24h')
+    const afterWindow = await widths(page)
+    expect(afterWindow.scrollWidth).toBeLessThanOrEqual(afterWindow.screen)
+    expect(afterWindow.layout).toBeLessThanOrEqual(afterWindow.screen)
   })
 
   test('gets targets a thumb can hit', async ({ page }) => {

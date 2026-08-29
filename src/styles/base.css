@@ -70,10 +70,18 @@ body {
 
 /* ── shell ─────────────────────────────────────────────────────────── */
 
+/* `overflow-x: clip` is a guarantee to the reader and not a fix: the page
+   cannot be dragged sideways even if some future block overflows, and unlike
+   `hidden` it creates no scroll container, so it does not quietly turn a
+   sticky ancestor into a static one. What keeps content *reachable* is that
+   every wide block — the tables, the cross — scrolls inside its own wrapper,
+   and that the phone tests measure the page against the screen at 320, 360
+   and 390 rather than against a layout viewport that grows to fit. */
 .b-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 /* The artboard was 1240px wide; the site is however wide the screen is. The
@@ -632,14 +640,31 @@ body {
   align-items: center;
 }
 
+/* Two blocks of pairs side by side, and one under the other on a phone.
+   `minmax(0, …)` rather than `1fr 1fr`: a track's automatic minimum is its
+   content's, and a figure that may not wrap — `249,000 sats`, a currency and
+   its marker — pushed the track past the column, the column past the page,
+   and the page sideways under the reader's thumb. */
 .b-split {
   border-top: 1px solid var(--rule);
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .b-split > div:first-child {
   border-right: 1px solid var(--rule);
+}
+
+@media (max-width: 900px) {
+  .b-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Stacked, the divider is between the blocks and no longer beside them. */
+  .b-split > div:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
 }
 
 .b-pair {
@@ -750,8 +775,15 @@ body {
   color: var(--warn);
 }
 
+/* `min-width: 0` so the row can shrink: a flex item's automatic minimum is
+   its content's, and a dispute id has no break opportunity in it, so the
+   default would push the row wider than a narrow phone rather than trim it. */
 .b-feed-text {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 11.5px;
   color: var(--ink-soft);
   line-height: 1.35;
