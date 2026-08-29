@@ -65,6 +65,12 @@ const DOCS: Record<string, WindowPayload> = {
       count('instances.Mostro AR.created', 3),
     ],
   },
+  // A second window, so a reader can carry a currency into one whose
+  // documents have not answered yet.
+  'orders:all': { range: RANGE, metrics: [count('orders.created', 40)] },
+  'volume:all': { range: RANGE, metrics: [count('volume.fiat.ARS.orders', 11)] },
+  'market:all': { range: RANGE, metrics: [] },
+  'instances:all': { range: RANGE, metrics: [] },
   [SCOPED]: {
     range: RANGE,
     metrics: [
@@ -78,6 +84,8 @@ const DOCS: Record<string, WindowPayload> = {
 let events: Event[] = []
 /** Held while a test wants the scoped round still in the air. */
 let held: Promise<void> | null = null
+/** Which addresses a test wants still in the air; the scoped round by default. */
+let heldFor: ((d: string) => boolean) | null = null
 let release: () => void = () => {}
 
 /**
@@ -145,7 +153,8 @@ vi.mock('~/nostr/pool', () => ({
   openRelays: () => ({
     query: async (filter: Filter) => {
       const wanted = filter['#d']
-      if (held && wanted?.some((d) => d.includes(':i:'))) await held
+      const holding = heldFor ?? ((d: string) => d.includes(':i:'))
+      if (held && wanted?.some((d) => holding(d))) await held
       return events.filter((e) => !wanted || wanted.includes(dOf(e)))
     },
     subscribe: () => () => {},
@@ -163,6 +172,7 @@ beforeEach(() => {
   resetStore()
   clearCache()
   held = null
+  heldFor = null
 })
 
 afterEach(cleanup)
@@ -289,5 +299,40 @@ describe('Orders · one instance in one currency', () => {
     expect(valueOf(container, en.ordersView.completed)).toBe('—')
     expect(valueOf(container, en.ordersView.openNow)).toBe('—')
     expect(container.textContent).toContain(en.filters.instanceAndFiatOrders)
+  })
+})
+
+describe('Orders · a currency whose document has not answered', () => {
+  test('waits for the volume document rather than claiming absence', async () => {
+    // Arrange — the currency reading is counted in the volume document, so
+    // it is that document the tiles depend on. Pick ARS while `30d` has it.
+    events = await buildSnapshot(false)
+    const { container, rerender } = render(<Orders window="30d" />)
+    await chooseFiat(container, 'ARS')
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.completed)).toBe('7')
+    })
+
+    // Act — change the window with the currency still chosen, and hold the
+    // round that carries the new window's volume document.
+    held = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    heldFor = (d) => d.startsWith('volume:')
+    rerender(<Orders window="all" />)
+
+    // Assert — placeholders, and never a dash claiming ARS has nothing.
+    await waitFor(() => {
+      expect(skeletons(container).length).toBeGreaterThan(0)
+    })
+    expect(tile(container, en.ordersView.completed)).toBeNull()
+
+    // Act — the relay answers.
+    release()
+
+    // Assert
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.completed)).toBe('11')
+    })
   })
 })

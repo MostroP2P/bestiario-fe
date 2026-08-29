@@ -320,9 +320,17 @@ describe('Orders · narrowed to one currency', () => {
     await waitFor(() => {
       expect(valueOf(container, en.ordersView.completed)).toBe('9')
     })
-    expect(valueOf(container, en.ordersView.shareOfCompleted)).toBe(
+    // Worked out here, so it says so: the marker is in the tile and its
+    // accessible name says the figure is inferred.
+    const shareTile = tile(container, en.ordersView.shareOfCompleted)!
+    expect(shareTile.querySelector('strong')?.textContent).toContain(
       printed('ratio', 0.75),
     )
+    const mark = shareTile.querySelector('.b-inferred-mark')
+    expect(mark).not.toBeNull()
+    expect(mark?.getAttribute('aria-label')).toBe(en.inferred.label)
+    // Reachable by keyboard and not only under a pointer.
+    expect(mark?.getAttribute('tabindex')).toBe('0')
   })
 
   test('offers no per-currency reading of what nothing signs per currency', async () => {

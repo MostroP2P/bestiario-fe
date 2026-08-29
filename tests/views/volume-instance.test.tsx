@@ -279,10 +279,14 @@ describe('Volume · narrowed to one instance', () => {
 
     // Assert — 250k of a million.
     await waitFor(() => {
-      expect(valueOf(container, en.volumeView.shareOfNetwork)).toBe(
+      expect(valueOf(container, en.volumeView.shareOfNetwork)).toContain(
         printed('ratio', 0.25),
       )
     })
+    // Inferred, and marked as inferred rather than passing for a signed one.
+    expect(
+      tile(container, en.volumeView.shareOfNetwork)?.querySelector('.b-inferred-mark'),
+    ).not.toBeNull()
   })
 
   test('leaves the network-wide figures absent rather than lending them a name', async () => {
@@ -333,7 +337,11 @@ describe('Volume · narrowed to one instance', () => {
       )
     })
     expect(valueOf(container, en.volumeView.total)).toBe('—')
-    expect(valueOf(container, en.volumeView.shareOfNetwork)).toBe('—')
+    // An em dash in a headline says which absence it is, as everywhere else.
+    expect(valueOf(container, en.volumeView.shareOfNetwork)).toContain('—')
+    expect(valueOf(container, en.volumeView.shareOfNetwork)).toContain(
+      en.absence.notPublished,
+    )
   })
 })
 

@@ -103,7 +103,9 @@ export function Orders(props: { readonly window: Span }) {
     boot.status === 'loading' ||
     (filters.instance
       ? !settled(windowAddress('instances', props.window)) || scopedPending
-      : network.length === 0)
+      : filters.fiat
+        ? !settled(windowAddress('volume', props.window))
+        : network.length === 0)
 
   /**
    * The market document is signed for the network as a whole — not per
@@ -168,7 +170,11 @@ export function Orders(props: { readonly window: Span }) {
    * currency is the richest cut of all, because its own document breaks its
    * orders down by currency: created, completed and open right now.
    */
-  const tiles: { label: string; value: string; sub: string }[] =
+  const tiles: {
+    label: string
+    value: string | { metric: Metric | undefined }
+    sub: string
+  }[] =
     filters.instance && filters.fiat
       ? [
           {
@@ -195,8 +201,11 @@ export function Orders(props: { readonly window: Span }) {
               sub: filters.fiat,
             },
             {
+              // Worked out here and not read anywhere, so it is handed over
+              // as the metric it is: marked inferred, and saying so to a
+              // reader who reaches it by keyboard as well as by pointer.
               label: strings.ordersView.shareOfCompleted,
-              value: figure(shareOfCompleted),
+              value: { metric: shareOfCompleted },
               sub: strings.ordersView.shareOfCompletedSub,
             },
           ]

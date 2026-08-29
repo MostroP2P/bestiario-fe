@@ -108,9 +108,14 @@ test.describe('narrowing a section', () => {
 
     await page.getByLabel(en.filters.instance).selectOption({ index: 1 })
 
-    await expect(tile(en.volumeView.shareOfNetwork).locator('strong')).toHaveText(
+    // The share is a quotient this browser worked out, so the tile carries
+    // the inferred marker beside it and not a bare percentage.
+    await expect(tile(en.volumeView.shareOfNetwork).locator('strong')).toContainText(
       '100.0 %',
     )
+    await expect(
+      tile(en.volumeView.shareOfNetwork).locator('.b-inferred-mark'),
+    ).toHaveAttribute('aria-label', en.inferred.label)
     await expect(tile(en.volumeView.devFees).locator('strong')).not.toHaveText('—')
     // The percentiles and the largest order are network-wide, and go.
     await expect(tile(en.volumeView.p50)).toHaveCount(0)
