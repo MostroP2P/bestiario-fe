@@ -139,7 +139,7 @@ export const it: Strings = {
   },
 
   kpi: {
-    orders: (window) => `ORDINI · ${window}`,
+    orders: (window) => `ORDINI COMPLETATI · ${window}`,
     ordersSub: (rate, total) => `${rate} su un totale di ${total}`,
     volume: (window) => `VOLUME · ${window}`,
     volumeSub: (p50) => `ticket p50 ${p50}`,

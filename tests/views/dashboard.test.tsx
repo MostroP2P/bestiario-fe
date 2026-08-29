@@ -150,7 +150,7 @@ describe('Dashboard · real figures', () => {
     const figure = (name: string) => metrics.find((m) => m.name === name)!.value
     const ordersKpi = (root: Element) =>
       [...root.querySelectorAll('.b-kpi')].find((kpi) =>
-        kpi.querySelector('.b-eyebrow')?.textContent?.startsWith('ORDERS'),
+        kpi.querySelector('.b-eyebrow')?.textContent?.startsWith('COMPLETED ORDERS'),
       )
 
     // Act
