@@ -14,7 +14,7 @@ export const en: Strings = {
   document: {
     title: 'bestiario — the Mostro network, in the open',
     description:
-      'Mostro network statistics, read from signed Nostr events and verified in your browser.',
+      'Statistics for the Mostro network of peer-to-peer bitcoin trading, read from signed Nostr events and verified in your browser.',
   },
 
   units: { days: 'd', hours: 'h', minutes: 'm', seconds: 's' },
@@ -65,6 +65,10 @@ export const en: Strings = {
       'Per currency the archive counts the orders that completed, and only those: created, canceled, in progress and the buy/sell split are signed for every currency at once, so they read as absent while one is chosen.',
     instanceAndFiatOrders:
       'What follows is what this instance counted in this currency, in its own orders document. Its other figures are signed across every currency it trades, not per one.',
+  },
+
+  overviewView: {
+    heading: 'The Mostro network, in the open',
   },
 
   ordersView: {

@@ -8,7 +8,7 @@ export const it: Strings = {
   document: {
     title: 'bestiario — la rete Mostro, allo scoperto',
     description:
-      'Statistiche della rete Mostro, lette da eventi Nostr firmati e verificate nel tuo browser.',
+      'Statistiche della rete Mostro di scambio di bitcoin peer-to-peer, lette da eventi Nostr firmati e verificate nel tuo browser.',
   },
 
   units: { days: 'g', hours: 'h', minutes: 'min', seconds: 's' },
@@ -59,6 +59,10 @@ export const it: Strings = {
       "Per valuta l'archivio conta gli ordini che si sono completati, e soltanto quelli: creati, annullati, in corso e la ripartizione acquisto/vendita sono firmati per tutte le valute insieme, quindi si leggono come assenza finché ne è scelta una.",
     instanceAndFiatOrders:
       'Quanto segue è ciò che questa istanza ha contato in questa valuta, nel suo documento di ordini. Le altre sue cifre sono firmate su tutte le valute che tratta, non su una.',
+  },
+
+  overviewView: {
+    heading: 'La rete Mostro, allo scoperto',
   },
 
   ordersView: {

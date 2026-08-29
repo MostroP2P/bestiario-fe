@@ -8,7 +8,7 @@ export const es: Strings = {
   document: {
     title: 'bestiario — la red Mostro, a la vista',
     description:
-      'Estadísticas de la red Mostro, leídas de eventos Nostr firmados y verificadas en tu navegador.',
+      'Estadísticas de la red Mostro de intercambio de bitcoin entre pares, leídas de eventos Nostr firmados y verificadas en tu navegador.',
   },
 
   units: { days: 'd', hours: 'h', minutes: 'm', seconds: 's' },
@@ -59,6 +59,10 @@ export const es: Strings = {
       'Por moneda el archivo cuenta las órdenes que se completaron, y solo esas: creadas, canceladas, en curso y el reparto compra/venta se firman para todas las monedas a la vez, así que se leen como ausencia mientras haya una elegida.',
     instanceAndFiatOrders:
       'Lo que sigue es lo que esta instancia contó en esta moneda, en su propio documento de órdenes. Sus demás cifras se firman sobre todas las monedas que opera, no sobre una.',
+  },
+
+  overviewView: {
+    heading: 'La red Mostro, a la vista',
   },
 
   ordersView: {

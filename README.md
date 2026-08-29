@@ -151,9 +151,15 @@ cannot forge one past verification — and live in `src/config.ts`.
 ```
 bestiario-fe/
 ├── docs/SPEC.md              # the specification this implements
-├── public/geo/               # country geometry, served from this origin
+├── public/
+│   ├── geo/                  # country geometry, served from this origin
+│   ├── robots.txt            # crawlers, and where the sitemap is
+│   ├── sitemap.xml           # one URL: hash routes are not addresses
+│   └── og.png                # the card an unfurler builds, 1200×630
+├── assets/brand/             # Mostro's marks, as the share card draws them
 ├── scripts/
 │   ├── fetch-fixtures.mjs    # regenerates the fixtures from the relays
+│   ├── gen-og-image.mjs      # renders the share card and the touch icon
 │   └── gen-iso-table.mjs     # alpha-2 → ISO numeric, from the atlas
 ├── src/
 │   ├── config.ts             # publisher, relays, thresholds
@@ -169,6 +175,27 @@ bestiario-fe/
 ```
 
 Files stay under 400 lines and modules are organised by domain, not by type.
+
+## What a crawler gets
+
+Routing is by hash, so there is exactly one address a search engine holds:
+`https://mostro.world/`. `#/orders` and `#/volume` are the same document to
+it, which is why the sitemap names one URL and the canonical link names the
+same one.
+
+`index.html` carries a static description of the site inside `#app` —
+prose, not figures. It is the page while the bundle downloads, the page a
+reader without JavaScript keeps, and the page a crawler that runs none
+indexes. `main.tsx` empties the container before Preact mounts, so the two
+versions never overlap. No figure appears there: a number in that block
+would be one nobody's browser verified, and this site publishes no such
+number.
+
+`scripts/gen-og-image.mjs` renders `public/og.png` and
+`public/apple-touch-icon.png` with the Playwright Chromium the end-to-end
+suite already installs. It is run by hand and its output is committed, so
+what an unfurler fetches is a file somebody looked at. `tests/e2e/seo.spec.ts`
+asserts every one of these against the built site over HTTP.
 
 ## Testing
 

@@ -1,0 +1,14 @@
+# bestiario — https://mostro.world
+#
+# Everything here is public by construction: the site reads signed events off
+# public relays and verifies them in the reader's browser. There is nothing to
+# withhold from a crawler, so nothing is.
+#
+# The site is a single indexable URL. Routing is by hash (SPEC 10.2, GitHub
+# Pages serves no rewrites), and a fragment is not an address a crawler holds,
+# so `#/orders` and `#/volume` are the same document to a search engine.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://mostro.world/sitemap.xml

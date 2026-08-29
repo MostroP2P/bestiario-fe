@@ -107,6 +107,13 @@ export type Strings = {
     readonly instanceAndFiatOrders: string
   }
 
+  readonly overviewView: {
+    /** The page's only `h1`. Carried by every locale, shown to none of them:
+        it is what a screen reader announces the document as, and what a
+        search engine reads the page's subject off. */
+    readonly heading: string
+  }
+
   readonly ordersView: {
     readonly heading: string
     readonly caption: string

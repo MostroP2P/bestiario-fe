@@ -270,6 +270,13 @@ export function Overview(props: { readonly window: Span }) {
 
   return (
     <>
+      {/* The document's only `h1`, and the overview is the document: hash
+          routing means this URL is the whole site to anything that indexes
+          it, and a page whose sections are all `h2` has no subject. Hidden
+          rather than drawn, because the design's own title is the wordmark
+          in the header and a second one would be a second title. */}
+      <h1 class="b-visually-hidden">{strings.overviewView.heading}</h1>
+
       <section class="b-map" aria-labelledby="map-heading">
         {/* Only the two short corner marks are laid over the drawing — what
               the map is, and what it counts. The explanation is a caption
