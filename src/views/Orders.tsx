@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'preact/hooks'
 import { printAddress, windowAddress, type Span } from '~/nostr/address'
-import { fiatRows, lookup, metricsOf } from '~/model/metrics'
-import { instanceRows, currencyOrders, instanceOrders } from '~/model/instances'
-import { formatMetric } from '~/model/format'
+import { codeBlocks, lookup, metricsOf } from '~/model/metrics'
+import { instanceRows, instanceOrders } from '~/model/instances'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
 import type { Metric } from '~/nostr/documents'
@@ -36,7 +35,7 @@ export function Orders(props: { readonly window: Span }) {
     : null
 
   const needed = useMemo(() => {
-    const base = (['orders', 'volume', 'market', 'instances'] as const).map((report) =>
+    const base = (['orders', 'market', 'instances'] as const).map((report) =>
       windowAddress(report, props.window),
     )
     return scopedAddress ? [...base, scopedAddress] : base
@@ -45,7 +44,6 @@ export function Orders(props: { readonly window: Span }) {
   const { boot, documents } = useStore(needed)
 
   const network = metricsOf(payloadOf(documents, windowAddress('orders', props.window)))
-  const volume = metricsOf(payloadOf(documents, windowAddress('volume', props.window)))
   const market = metricsOf(payloadOf(documents, windowAddress('market', props.window)))
   const instances = useMemo(
     () =>
@@ -99,13 +97,17 @@ export function Orders(props: { readonly window: Span }) {
    * instance's own, and never the network's totals, which this reading does
    * not use and may be empty on a quiet window.
    */
+  /**
+   * The figures are in when the documents this reading needs have answered
+   * — answered, and not "carried a metric". A window the network was quiet
+   * through is an empty document and a settled one, and a skeleton over it
+   * would wait for a figure nobody is going to publish.
+   */
   const loading =
     boot.status === 'loading' ||
     (filters.instance
       ? !settled(windowAddress('instances', props.window)) || scopedPending
-      : filters.fiat
-        ? !settled(windowAddress('volume', props.window))
-        : network.length === 0)
+      : !settled(windowAddress('orders', props.window)))
 
   /**
    * The market document is signed for the network as a whole — not per
@@ -114,28 +116,31 @@ export function Orders(props: { readonly window: Span }) {
   const marketOf = (name: string) =>
     filters.instance || filters.fiat ? undefined : lookup(market, name)
 
-  const perInstanceCurrencies = useMemo(() => currencyOrders(scoped), [scoped])
+  /**
+   * One row per currency, from the document this reading is of: the
+   * network's own when nothing is narrowed, the instance's when one is
+   * chosen. Both write the block the same way, so the table reads the same
+   * figure — what completed in that currency — whichever it is looking at.
+   */
+  const currencies = useMemo(() => codeBlocks(network, 'orders.'), [network])
+  const perInstanceCurrencies = useMemo(() => codeBlocks(scoped, 'orders.'), [scoped])
 
-  const currencies = useMemo(() => fiatRows(volume), [volume])
-  const shown = filters.fiat
-    ? currencies.filter((row) => row.code === filters.fiat)
-    : currencies
-  const shownForInstance = filters.fiat
-    ? perInstanceCurrencies.filter((row) => row.code === filters.fiat)
-    : perInstanceCurrencies
-
-  const figure = (metric: Metric | undefined) => formatMetric(metric).text
+  const forFiat = (rows: readonly { code: string }[]) =>
+    filters.fiat ? rows.filter((row) => row.code === filters.fiat) : rows
+  const shown = forFiat(currencies) as typeof currencies
+  const shownForInstance = forFiat(perInstanceCurrencies) as typeof currencies
 
   /**
-   * What one currency's row of the volume document counts: completions.
-   * A currency chosen on one window and carried into another that never
-   * priced it has no row here, and that is absence — never the network's
-   * count wearing a currency's name.
+   * The chosen currency's own block of the network's document. A currency
+   * chosen on one window and carried into another that never counted it has
+   * no block here, and that is absence — never the network's own figures
+   * wearing a currency's name.
    */
   const fiatRow = filters.fiat
     ? currencies.find((row) => row.code === filters.fiat)
     : undefined
-  const completedInFiat = fiatRow?.figures.get('orders')
+  const networkFiat = (name: string) => fiatRow?.figures.get(name)
+  const completedInFiat = networkFiat('completed')
   const fiatUnavailable = filters.fiat !== null && !fiatRow && !loading
 
   /** What the instance counted in that currency, in its own document. */
@@ -173,31 +178,41 @@ export function Orders(props: { readonly window: Span }) {
   const tiles: {
     label: string
     value: string | { metric: Metric | undefined }
-    sub: string
+    sub: string | { metric: Metric | undefined }
   }[] =
     filters.instance && filters.fiat
       ? [
           {
             label: strings.ordersView.created,
-            value: figure(scopedFiat('created')),
+            value: { metric: scopedFiat('created') },
             sub: filters.fiat,
           },
           {
             label: strings.ordersView.completed,
-            value: figure(scopedFiat('completed')),
+            value: { metric: scopedFiat('completed') },
             sub: filters.fiat,
           },
           {
             label: strings.ordersView.openNow,
-            value: figure(scopedFiat('open_now')),
+            value: { metric: scopedFiat('open_now') },
             sub: filters.fiat,
           },
         ]
       : filters.fiat
         ? [
             {
+              label: strings.ordersView.created,
+              value: { metric: networkFiat('created') },
+              sub: filters.fiat,
+            },
+            {
               label: strings.ordersView.completed,
-              value: figure(completedInFiat),
+              value: { metric: completedInFiat },
+              sub: filters.fiat,
+            },
+            {
+              label: strings.ordersView.canceled,
+              value: { metric: networkFiat('canceled') },
               sub: filters.fiat,
             },
             {
@@ -212,22 +227,22 @@ export function Orders(props: { readonly window: Span }) {
         : [
             {
               label: strings.ordersView.created,
-              value: figure(lookup(orders, 'orders.created')),
+              value: { metric: lookup(orders, 'orders.created') },
               sub: strings.header.windows[props.window],
             },
             {
               label: strings.ordersView.completed,
-              value: figure(lookup(orders, 'orders.completed')),
-              sub: figure(lookup(orders, 'orders.completion_rate')),
+              value: { metric: lookup(orders, 'orders.completed') },
+              sub: { metric: lookup(orders, 'orders.completion_rate') },
             },
             {
               label: strings.ordersView.canceled,
-              value: figure(lookup(orders, 'orders.canceled')),
-              sub: figure(lookup(orders, 'orders.abandonment_rate')),
+              value: { metric: lookup(orders, 'orders.canceled') },
+              sub: { metric: lookup(orders, 'orders.abandonment_rate') },
             },
             {
               label: strings.ordersView.inProgressNow,
-              value: figure(lookup(orders, 'orders.in_progress_now')),
+              value: { metric: lookup(orders, 'orders.in_progress_now') },
               sub: strings.ordersView.openNow,
             },
           ]
@@ -308,7 +323,7 @@ export function Orders(props: { readonly window: Span }) {
                 <p key={row.code} class="b-pair" style={{ margin: 0 }}>
                   <span class="b-mono">{row.code}</span>
                   <span>
-                    <Figure metric={row.figures.get('orders')} />
+                    <Figure metric={row.figures.get('completed')} />
                   </span>
                 </p>
               ))}
@@ -317,7 +332,9 @@ export function Orders(props: { readonly window: Span }) {
               shownForInstance.map((currency) => (
                 <p key={currency.code} class="b-pair" style={{ margin: 0 }}>
                   <span class="b-mono">{currency.code}</span>
-                  <span class="b-mono">{currency.created}</span>
+                  <span>
+                    <Figure metric={currency.figures.get('completed')} />
+                  </span>
                 </p>
               ))}
           </div>
@@ -369,7 +386,17 @@ export function Orders(props: { readonly window: Span }) {
             heading={strings.ordersView.openNow}
             loading={loading}
             rows={[
-              [strings.ordersView.openNow, lookup(orders, 'orders.open_now')],
+              [
+                strings.ordersView.openNow,
+                // One currency's, from whichever document this reading is
+                // of: an instance's own when one is chosen, so the
+                // network's count never lands under an instance's name.
+                filters.fiat
+                  ? filters.instance
+                    ? scopedFiat('open_now')
+                    : networkFiat('open_now')
+                  : lookup(orders, 'orders.open_now'),
+              ],
               [
                 strings.ordersView.inProgressNow,
                 lookup(orders, 'orders.in_progress_now'),

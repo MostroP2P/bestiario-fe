@@ -84,7 +84,7 @@ export const en: Strings = {
       'The publisher signs this split as a share of the whole, not as a breakdown a filter could cut. It is read here rather than offered as one.',
     perCurrency: 'Orders by currency',
     perCurrencyNote:
-      'Counted in the volume document, which is where the network breaks orders down by currency.',
+      'Counted in this window’s orders document, which is where the network breaks its orders down by currency.',
     instanceHeading: 'What this instance publishes about itself',
     instanceFee: 'Fee',
     instanceMinOrder: 'Minimum order',

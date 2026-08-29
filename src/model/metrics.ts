@@ -78,6 +78,28 @@ export function labelledBlocks(
   return blocks
 }
 
+/** A currency code as the documents write one: three uppercase letters. */
+const CODE = /^[A-Z]{3}$/
+
+/**
+ * The currency blocks of a family — `orders.ARS.completed`,
+ * `orders.EUR.created` — one per code, with the figures as they were
+ * published so an absent one stays absent.
+ *
+ * Told apart from the family's own figures by the shape of the segment and
+ * not by position: `orders.completed` is the whole window's and opens no
+ * block, `orders.completion_rate` is not a code either, and a publisher who
+ * adds a figure to the block needs no change here.
+ */
+export function codeBlocks(
+  metrics: readonly Metric[],
+  prefix: string,
+): { code: string; figures: ReadonlyMap<string, Metric> }[] {
+  return [...labelledBlocks(metrics, prefix).entries()]
+    .filter(([code]) => CODE.test(code))
+    .map(([code, figures]) => ({ code, figures }))
+}
+
 /**
  * An indexed family — `disputes.open.1.id`, `disputes.open.1.age` — rebuilt
  * into one record per entry, in the publisher's order.

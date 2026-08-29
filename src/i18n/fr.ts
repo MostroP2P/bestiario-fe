@@ -79,7 +79,7 @@ export const fr: Strings = {
       "L'éditeur signe cette répartition comme une part du total, et non comme une ventilation qu'un filtre pourrait découper. Elle se lit donc ici plutôt que de s'offrir en filtre.",
     perCurrency: 'Ordres par devise',
     perCurrencyNote:
-      'Comptés dans le document de volume, qui est là où le réseau ventile les ordres par devise.',
+      "Comptées dans le document d'ordres de cette fenêtre, où le réseau ventile ses ordres par devise.",
     instanceHeading: 'Ce que cette instance publie sur elle-même',
     instanceFee: 'Commission',
     instanceMinOrder: 'Ordre minimum',
