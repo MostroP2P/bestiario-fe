@@ -169,6 +169,11 @@ export type Strings = {
     readonly instanceCurrencies: string
     readonly instanceCurrenciesNote: string
     readonly instanceCurrenciesEmpty: string
+    readonly created: string
+    readonly completionRate: string
+    /** One instance's share of what the network completed in a currency. */
+    readonly shareOfMarket: string
+    readonly shareOfMarketSub: (code: string) => string
   }
 
   readonly rail: {

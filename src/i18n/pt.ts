@@ -52,7 +52,7 @@ export const pt: Strings = {
     fiatUnavailable: (code) =>
       `O arquivo não publica nada em ${code} para esta janela, portanto as cifras acima são ausência e não as da rede. Outra janela, ou toda a rede, pode tê-lo.`,
     instanceAndFiat:
-      'Para uma instância numa moeda o publicador assina uma contagem de ordens e nada mais: os montantes são assinados para a rede, e por instância apenas como um total de todas as moedas.',
+      'Para uma instância numa moeda o publicador assina contagens e taxas, e nenhum montante: os montantes são assinados para a rede, e por instância apenas como um total de todas as moedas.',
     noFiatOrders:
       'Por moeda o arquivo conta as ordens que se completaram, e só essas: criadas, canceladas, em curso e a repartição compra/venda são assinadas para todas as moedas de uma vez, portanto leem-se como ausência enquanto houver uma escolhida.',
     instanceAndFiatOrders:
@@ -132,6 +132,10 @@ export const pt: Strings = {
       'Contadas no documento de ordens da própria instância: quantas ordens completou em cada moeda. Os montantes são publicados para a rede e não por instância.',
     instanceCurrenciesEmpty:
       'Esta instância não publica desdobramento por moeda para esta janela.',
+    created: 'Ordens criadas',
+    completionRate: 'Taxa de completado',
+    shareOfMarket: 'Proporção desse mercado',
+    shareOfMarketSub: (code) => `Do que a rede completou em ${code} nesta janela`,
   },
 
   rail: {

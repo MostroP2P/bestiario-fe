@@ -52,7 +52,7 @@ export const it: Strings = {
     fiatUnavailable: (code) =>
       `L'archivio non pubblica nulla in ${code} per questa finestra, quindi le cifre qui sopra sono assenza e non quelle della rete. Un'altra finestra, o tutta la rete, può averlo.`,
     instanceAndFiat:
-      "Per un'istanza in una valuta il pubblicatore firma un conteggio di ordini e nulla più: gli importi sono firmati per la rete, e per istanza soltanto come totale su tutte le valute.",
+      "Per un'istanza in una valuta il pubblicatore firma conteggi e tassi, e nessun importo: gli importi sono firmati per la rete, e per istanza soltanto come totale su tutte le valute.",
     noFiatOrders:
       "Per valuta l'archivio conta gli ordini che si sono completati, e soltanto quelli: creati, annullati, in corso e la ripartizione acquisto/vendita sono firmati per tutte le valute insieme, quindi si leggono come assenza finché ne è scelta una.",
     instanceAndFiatOrders:
@@ -132,6 +132,11 @@ export const it: Strings = {
       "Contate nel documento di ordini dell'istanza stessa: quanti ordini ha completato in ciascuna valuta. Gli importi sono pubblicati per la rete e non per istanza.",
     instanceCurrenciesEmpty:
       'Questa istanza non pubblica alcuna scomposizione per valuta per questa finestra.',
+    created: 'Ordini creati',
+    completionRate: 'Tasso di completamento',
+    shareOfMarket: 'Quota di quel mercato',
+    shareOfMarketSub: (code) =>
+      `Di quanto la rete ha completato in ${code} in questa finestra`,
   },
 
   rail: {
