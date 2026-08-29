@@ -211,10 +211,17 @@ export function Overview(props: { readonly window: Span }) {
   return (
     <>
       <section class="b-map" aria-labelledby="map-heading">
-        {/* The drawing is measured, not the section: on a phone the
-              caption and the count sit above and below it in the flow
-              rather than over it, and the projection must be fitted to the
-              globe's own box either way. */}
+        {/* Only the two short corner marks are laid over the drawing — what
+              the map is, and what it counts. The explanation is a caption
+              under the globe: at the width where the projection fills its
+              box there is no empty ocean left to write in, and a paragraph
+              placed anywhere over it lands on the countries it describes. */}
+        <h2 id="map-heading" class="b-eyebrow b-map-label">
+          {strings.map.heading}
+        </h2>
+
+        {/* The drawing is measured, not the section, so the projection is
+              fitted to the globe's own box at every width. */}
         <div class="b-map-canvas" ref={mapRef}>
           {!mapReady && <SkeletonMap />}
           {atlasState.status === 'failed' && (
@@ -234,21 +241,6 @@ export function Overview(props: { readonly window: Span }) {
             />
           )}
         </div>
-        <div class="b-map-caption">
-          <h2 id="map-heading" class="b-eyebrow" style={{ margin: 0 }}>
-            {strings.map.heading}
-          </h2>
-          <p>{strings.map.caption}</p>
-          {measuredRoutes ? (
-            approximate > 0 && (
-              <p class="b-map-gap">
-                {strings.map.approximateInstances(approximate, instances.length)}
-              </p>
-            )
-          ) : (
-            <p class="b-map-gap">{strings.map.illustrativeRoutes}</p>
-          )}
-        </div>
         <div class="b-map-count">
           <span class="b-eyebrow">{strings.map.activeMarkets}</span>
           {loading ? (
@@ -260,6 +252,19 @@ export function Overview(props: { readonly window: Span }) {
             <small class="b-unplaced">
               {strings.map.unplaced(scene.unplaced.currencies)}
             </small>
+          )}
+        </div>
+
+        <div class="b-map-caption">
+          <p>{strings.map.caption}</p>
+          {measuredRoutes ? (
+            approximate > 0 && (
+              <p class="b-map-gap">
+                {strings.map.approximateInstances(approximate, instances.length)}
+              </p>
+            )
+          ) : (
+            <p class="b-map-gap">{strings.map.illustrativeRoutes}</p>
           )}
         </div>
       </section>

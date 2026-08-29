@@ -89,13 +89,16 @@ test.describe('a reader on a phone', () => {
     await open(page)
 
     // Act
-    const caption = (await page.locator('.b-map-caption').boundingBox())!
+    const label = (await page.locator('.b-map-label').boundingBox())!
     const canvas = (await page.locator('.b-map-canvas').boundingBox())!
     const count = (await page.locator('.b-map-count').boundingBox())!
+    const caption = (await page.locator('.b-map-caption').boundingBox())!
 
-    // Assert — three bands, in reading order, none overlapping.
-    expect(caption.y + caption.height).toBeLessThanOrEqual(canvas.y)
+    // Assert — four bands, in reading order, none overlapping: what the map
+    // is, the map, what it counts, and the caption that qualifies it.
+    expect(label.y + label.height).toBeLessThanOrEqual(canvas.y)
     expect(canvas.y + canvas.height).toBeLessThanOrEqual(count.y)
+    expect(count.y + count.height).toBeLessThanOrEqual(caption.y)
   })
 
   test('still gets a map worth looking at', async ({ page }) => {

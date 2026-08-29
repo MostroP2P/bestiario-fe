@@ -60,6 +60,26 @@ test.describe('the overview', () => {
     await expect(page.locator('[data-layer="currencies"] > g').first()).toBeVisible()
     await expect(page.locator('[data-layer="arcs"] path').first()).toBeVisible()
   })
+
+  test('keeps the explanation off the drawing at every width', async ({ page }) => {
+    // Arrange — the caption was written for the artboard's empty ocean, and
+    // the ocean runs out as the box narrows: by 1024 the projection fills it
+    // edge to edge and the paragraph sat on North America and on the very
+    // node it was describing. 1024 is where that first bites, 1440 is the
+    // artboard's own width.
+    await page.goto('/')
+    await expect(page.locator('.b-kpi strong').first()).not.toBeEmpty()
+
+    for (const width of [1024, 1280, 1440]) {
+      // Act
+      await page.setViewportSize({ width, height: 900 })
+      const caption = (await page.locator('.b-map-caption').boundingBox())!
+      const canvas = (await page.locator('.b-map-canvas').boundingBox())!
+
+      // Assert — the words are below the globe, never over it.
+      expect(canvas.y + canvas.height, `at ${width}px`).toBeLessThanOrEqual(caption.y)
+    }
+  })
 })
 
 test.describe('absence', () => {

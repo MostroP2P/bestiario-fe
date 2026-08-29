@@ -330,35 +330,52 @@ body {
 
 .b-map {
   position: relative;
+  display: flex;
+  flex-direction: column;
   border-bottom: 1px solid var(--rule);
   background: var(--panel);
-  /* Grows with the viewport: the artboard's 408px was one screen's answer. */
+}
+
+/* The box the globe is drawn in, and the box that is measured. The height
+   is the drawing's, not the section's: the caption is added below it rather
+   than taken out of it, so moving the words off the map costs the map
+   nothing. It grows with the viewport — the artboard's 408px was one
+   screen's answer. */
+.b-map-canvas {
+  position: relative;
   height: clamp(320px, 42vh, 640px);
 }
 
-/* The box the globe is drawn in, and the box that is measured. Over the
-   whole section on a wide screen, a band of its own on a narrow one. */
-.b-map-canvas {
-  position: absolute;
-  inset: 0;
-}
-
-.b-map-caption {
+/* Two short marks in opposite corners are all the drawing carries: the name
+   of the map and the number it is about. Both are one line long and both
+   fall outside the ellipse the projection draws. */
+.b-map-label {
   position: absolute;
   left: 22px;
   top: 18px;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* The explanation used to be a third thing over the globe, and it was the
+   one thing too long to fit: by 1024px the projection fills its box edge to
+   edge, so the paragraph landed on North America and on the very node it
+   was describing. It now reads as what it is — a caption — under the
+   drawing, small and set to a line length worth reading rather than to the
+   full width of the panel. */
+.b-map-caption {
+  padding: 12px 22px 16px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  pointer-events: none;
-  max-width: 280px;
+  gap: 2px;
 }
 
 .b-map-caption p {
   margin: 0;
-  font-size: 13px;
+  font-size: 11.5px;
   color: var(--ink-muted);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .b-map-count {
@@ -402,35 +419,26 @@ body {
   color: var(--danger);
 }
 
-/* The caption was written to sit in the artboard's empty ocean, and there is
-   no empty ocean on a phone: over the globe it covered the countries it was
-   describing and collided with the count on the other side. Narrow, the same
-   three parts stack — what the map is, the map, then what it counts. */
+/* A phone has no empty ocean at all, so nothing is laid over the drawing:
+   the same four parts simply stack in the order they are read — what the
+   map is, the map, what it counts, and then the caption that qualifies it. */
 @media (max-width: 700px) {
   .b-map {
     height: auto;
-    display: flex;
-    flex-direction: column;
     gap: 14px;
     padding: 16px 16px 20px;
   }
 
-  .b-map-canvas {
-    position: relative;
-    inset: auto;
-    order: 2;
-    height: clamp(260px, 46vh, 420px);
+  .b-map-label {
+    position: static;
   }
 
-  .b-map-caption {
-    position: static;
-    order: 1;
-    max-width: none;
+  .b-map-canvas {
+    height: clamp(260px, 46vh, 420px);
   }
 
   .b-map-count {
     position: static;
-    order: 3;
     flex-direction: row;
     align-items: baseline;
     gap: 10px;
@@ -438,6 +446,11 @@ body {
 
   .b-map-count strong {
     font-size: 28px;
+  }
+
+  .b-map-caption {
+    padding: 0;
+    max-width: none;
   }
 }
 
