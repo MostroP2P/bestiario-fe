@@ -195,13 +195,14 @@ export const fr: Strings = {
   },
 
   matrix: {
-    heading: 'MONNAIE × INSTANCE · ORDRES',
+    heading: 'MONNAIE × INSTANCE · ORDRES CLÔTURÉS',
     caption:
-      'Ordres créés par chaque instance dans chaque monnaie, dans la fenêtre choisie',
+      'Ordres clôturés par chaque instance dans chaque monnaie, dans la fenêtre choisie',
     instance: 'instance',
     cell: (instance, code, orders) => `${instance} · ${code} : ${orders}`,
-    none: 'aucun ordre',
-    empty: 'Aucune instance n’a publié sa propre ventilation pour cette fenêtre.',
+    none: 'aucun ordre clôturé',
+    empty:
+      'Aucune instance n’a publié d’ordre clôturé dans une monnaie pour cette fenêtre.',
   },
 
   fiat: {

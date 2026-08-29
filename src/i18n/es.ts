@@ -193,12 +193,14 @@ export const es: Strings = {
   },
 
   matrix: {
-    heading: 'MONEDA × INSTANCIA · ÓRDENES',
-    caption: 'Órdenes creadas por cada instancia en cada moneda, en la ventana elegida',
+    heading: 'MONEDA × INSTANCIA · ÓRDENES COMPLETADAS',
+    caption:
+      'Órdenes completadas por cada instancia en cada moneda, en la ventana elegida',
     instance: 'instancia',
     cell: (instance, code, orders) => `${instance} · ${code}: ${orders}`,
-    none: 'sin órdenes',
-    empty: 'Ninguna instancia publicó su propio desglose para esta ventana.',
+    none: 'sin órdenes completadas',
+    empty:
+      'Ninguna instancia publicó órdenes completadas en ninguna moneda para esta ventana.',
   },
 
   fiat: {

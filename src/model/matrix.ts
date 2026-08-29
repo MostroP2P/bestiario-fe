@@ -1,6 +1,6 @@
 /**
  * The currency-by-instance cross of artboard 2a: which Mostro traded which
- * currency, and how many orders it created there.
+ * currency, and how many orders it completed there.
  *
  * `instances:<window>` names the instances and `orders:<window>:i:<pubkey>`
  * breaks one instance's orders down by currency. Neither document carries the
@@ -8,11 +8,18 @@
  * same pair of documents the map is drawn from, so the grid and the map can
  * never disagree.
  *
+ * Only completed orders are counted. A currency block is written the moment
+ * an order is created in it, so counting what was created fills the grid with
+ * markets where nothing ever settled; the completed figure is the one that
+ * says a market moved. A currency no instance completed an order in is left
+ * out altogether rather than drawn as a column of dots.
+ *
  * Two absences are kept as absences rather than turned into zeros. An
  * instance that published no scoped document has no row at all — a row of
  * zeros would say it traded nothing, which is a claim nobody published. A
- * pair with no currency block has an empty cell: the publisher writes no
- * block for a currency an instance did not trade in the window.
+ * pair whose currency block reports no completed order has an empty cell:
+ * that is a market this instance did not settle in, and not a zero anyone
+ * published as a total.
  */
 import type { CurrencyOrders, InstanceRow } from './instances'
 
@@ -25,7 +32,7 @@ export type Trade = {
 export type MatrixRow = {
   readonly pubkey: string
   readonly name: string
-  /** Orders created per column, aligned to `columns`. */
+  /** Orders completed per column, aligned to `columns`. */
   readonly cells: readonly number[]
 }
 
@@ -39,9 +46,10 @@ export type Matrix = {
 /**
  * The cross, in the instances document's own order.
  *
- * Columns are ordered by what the whole network traded most, so the busiest
- * markets are the ones a reader sees before scrolling; a tie is broken by the
- * code, so the order is stable between two runs over the same archive.
+ * Columns are ordered by what the whole network completed most, so the
+ * busiest markets are the ones a reader sees before scrolling; a tie is
+ * broken by the code, so the order is stable between two runs over the same
+ * archive. A code the network completed nothing in is no column at all.
  */
 export function currencyMatrix(
   instances: readonly InstanceRow[],
@@ -61,20 +69,25 @@ export function currencyMatrix(
   const totals = new Map<string, number>()
   for (const { currencies } of named) {
     for (const currency of currencies) {
-      totals.set(currency.code, (totals.get(currency.code) ?? 0) + currency.created)
+      totals.set(currency.code, (totals.get(currency.code) ?? 0) + currency.completed)
     }
   }
 
   const columns = [...totals.entries()]
+    .filter(([, completed]) => completed > 0)
     .sort(([codeA, a], [codeB, b]) => b - a || codeA.localeCompare(codeB))
     .map(([code]) => code)
 
+  // With no column left there is no cross to draw: every market the archive
+  // names was created in and settled in none of them.
+  if (columns.length === 0) return { columns: [], rows: [], peak: 0 }
+
   const rows = named.map(({ instance, currencies }) => {
-    const created = new Map(currencies.map((c) => [c.code, c.created]))
+    const completed = new Map(currencies.map((c) => [c.code, c.completed]))
     return {
       pubkey: instance.pubkey,
       name: instance.name,
-      cells: columns.map((code) => created.get(code) ?? 0),
+      cells: columns.map((code) => completed.get(code) ?? 0),
     }
   })
 

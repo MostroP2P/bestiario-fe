@@ -4,7 +4,7 @@ import { Skeleton } from './Skeleton'
 
 /**
  * Artboard 2a's cross: one row per instance, one column per currency, shaded
- * by how many orders the pair created.
+ * by how many orders the pair completed.
  *
  * It is a real table and not the artboard's grid of boxes. The figures are a
  * two-dimensional relation — this instance, in that currency — and a screen
@@ -17,8 +17,8 @@ import { Skeleton } from './Skeleton'
  * 1.4.1. Each step clears AA against its own background, which the artboard's
  * inks did not at the two brightest steps.
  *
- * An empty cell is a pair with no orders in the window, drawn as the
- * artboard's dot; a screen reader hears the word rather than the glyph.
+ * An empty cell is a pair with no completed orders in the window, drawn as
+ * the artboard's dot; a screen reader hears the word rather than the glyph.
  */
 export function CurrencyMatrix({
   matrix,
