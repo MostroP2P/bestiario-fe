@@ -544,10 +544,16 @@ body {
   overflow-x: auto;
 }
 
+/* A fixed layout shares the container out among however many currencies
+   there are, and a `min-width` on a cell does not take part in it: a
+   twelve-currency cross on a phone squeezed every column to a few pixels and
+   the wrapper never had anything to scroll. An automatic layout does honour
+   the cells' floor, so the table fills the container while the columns fit
+   and grows past it when they do not — which is what `overflow-x` is for. */
 .b-matrix table {
   border-collapse: separate;
   border-spacing: 3px;
-  table-layout: fixed;
+  table-layout: auto;
   width: 100%;
   margin: -3px;
 }
@@ -562,6 +568,12 @@ body {
 
 .b-matrix th:first-child {
   width: 96px;
+}
+
+/* The artboard's cell, as a floor the header shares: a column is 38px wide
+   whatever the viewport, and the cross scrolls rather than shrinking. */
+.b-matrix thead th:not(:first-child) {
+  min-width: 38px;
 }
 
 .b-matrix tbody th {

@@ -115,6 +115,21 @@ export function Overview(props: { readonly window: Span }) {
   const matrix = useMemo(() => currencyMatrix(instances, trades), [instances, trades])
 
   const loading = boot.status === 'loading' || orders.length === 0
+
+  /** A document has answered: with figures, with silence, or with a failure. */
+  const settled = (address: string) => {
+    const state = documents.get(address)
+    return state !== undefined && state.status !== 'loading'
+  }
+
+  // The cross is the second pass, and `loading` only tracks the first. Until
+  // every scoped document has answered, a grid drawn now is missing rows
+  // nobody said were empty, and an empty grid is a verdict the archive has
+  // not given yet. So the block stays a skeleton until they settle.
+  const matrixLoading =
+    loading ||
+    !settled(windowAddress('instances', window_)) ||
+    scopedWanted.some((address) => !settled(address))
   const currencies = useMemo(() => fiatRows(volume), [volume])
   const openBook = useMemo(() => indexedFamily(disputes, 'disputes.open'), [disputes])
 
@@ -331,7 +346,7 @@ export function Overview(props: { readonly window: Span }) {
               is the only place the site says which instance trades which
               currency, and it is the figure behind the map above it. */}
           <h2 class="b-eyebrow b-section-head">{strings.matrix.heading}</h2>
-          <CurrencyMatrix matrix={matrix} loading={loading} />
+          <CurrencyMatrix matrix={matrix} loading={matrixLoading} />
 
           <h2 class="b-eyebrow b-section-head">{strings.fiat.heading}</h2>
           <FiatTable rows={currencies} loading={loading} />
