@@ -78,18 +78,19 @@ export function Volume(props: { readonly window: Span }) {
   const compareAddress = windowAddress('compare', props.window)
 
   /**
-   * The figures are in when the documents this reading needs have answered.
-   * Narrowed to one instance those are the instances document, the
-   * comparison document and the instance's own — asked for a round trip
-   * after the click — and not the network's totals, which this reading uses
-   * for nothing but the share and which may be empty on a quiet window.
+   * The figures are in when the documents *this* reading needs have
+   * answered, and no others. An instance is read from the comparison
+   * document and from its own; an instance in one currency is read from its
+   * own alone, so a slow comparison round must not hide a count that is
+   * already in. The network's totals are waited on only when they are what
+   * is being read.
    */
   const loading =
     boot.status === 'loading' ||
     (filters.instance
       ? !settled(windowAddress('instances', props.window)) ||
-        !settled(compareAddress) ||
-        (scopedAddress !== null && !settled(scopedAddress))
+        (scopedAddress !== null && !settled(scopedAddress)) ||
+        (!filters.fiat && !settled(compareAddress))
       : volume.length === 0)
 
   /**
@@ -133,10 +134,17 @@ export function Volume(props: { readonly window: Span }) {
   const networkOnly = (name: string) =>
     chosen || filters.fiat ? undefined : lookup(volume, name)
 
-  /** The currency's own block, when the reader asked for one. */
+  /**
+   * The currency's own block, when the reader asked for one and this
+   * window has it. A currency chosen on one window and carried into
+   * another the publisher never priced in it is a selection with nothing
+   * behind it: the reading stays the currency's and every figure in it is
+   * absent, because the network's totals are not that currency's.
+   */
   const fiat = filters.fiat
     ? currencies.find((row) => row.code === filters.fiat)
     : undefined
+  const fiatUnavailable = filters.fiat !== null && !fiat && !loading
 
   const figure = (metric: Metric | undefined) => formatMetric(metric).text
 
@@ -195,27 +203,27 @@ export function Volume(props: { readonly window: Span }) {
               sub: figure(compared?.figures.get('fee')),
             },
           ]
-        : fiat
+        : filters.fiat
           ? [
               {
                 label: strings.volumeView.total,
-                value: figure(fiat.figures.get('total')),
+                value: figure(fiat?.figures.get('total')),
                 sub: strings.header.windows[props.window],
               },
               {
                 label: strings.volumeView.completed,
-                value: figure(fiat.figures.get('orders')),
-                sub: fiat.code,
+                value: figure(fiat?.figures.get('orders')),
+                sub: filters.fiat,
               },
               {
                 label: strings.volumeView.p50,
-                value: figure(fiat.figures.get('ticket_p50')),
-                sub: figure(fiat.figures.get('ticket_p90')),
+                value: figure(fiat?.figures.get('ticket_p50')),
+                sub: figure(fiat?.figures.get('ticket_p90')),
               },
               {
                 label: strings.volumeView.ticketAvg,
-                value: figure(fiat.figures.get('ticket_avg')),
-                sub: fiat.code,
+                value: figure(fiat?.figures.get('ticket_avg')),
+                sub: filters.fiat,
               },
             ]
           : [
@@ -262,16 +270,18 @@ export function Volume(props: { readonly window: Span }) {
         onChange={setFilters}
         note={
           filters.instance
-            ? compareUnverified && compareState?.status === 'unverified'
-              ? strings.filters.unverifiedCompare(compareState.reason)
-              : filters.fiat
-                ? strings.filters.instanceAndFiat
+            ? filters.fiat
+              ? strings.filters.instanceAndFiat
+              : compareUnverified && compareState?.status === 'unverified'
+                ? strings.filters.unverifiedCompare(compareState.reason)
                 : chosen && !compared && !loading
                   ? strings.filters.noCompareRow(chosen.name || chosen.label)
                   : strings.filters.noInstanceVolume
-            : filters.fiat
-              ? strings.filters.noFiatBreakdown
-              : undefined
+            : fiatUnavailable && filters.fiat
+              ? strings.filters.fiatUnavailable(filters.fiat)
+              : filters.fiat
+                ? strings.filters.noFiatBreakdown
+                : undefined
         }
       />
 

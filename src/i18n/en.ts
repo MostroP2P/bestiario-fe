@@ -55,6 +55,8 @@ export const en: Strings = {
       `The comparison document for this window did not verify in this browser: ${reason}. Nothing per instance is read from it.`,
     noFiatBreakdown:
       "The headline is the currency's own: what it moved, the orders that moved it and its tickets, as the publisher signs them in that currency. The size buckets, the buy/sell split and the reference conversion are signed for every currency at once, so they read as absent while one is chosen.",
+    fiatUnavailable: (code) =>
+      `The archive publishes nothing in ${code} for this window, so the figures above are absent rather than the network's. Another window, or the whole network, may have it.`,
     instanceAndFiat:
       'For one instance in one currency the publisher signs a count of orders and nothing else — the amounts are signed for the network, and per instance only as a total across every currency.',
   },

@@ -48,7 +48,9 @@ export const pt: Strings = {
     unverifiedCompare: (reason) =>
       `O documento de comparação desta janela não passou a verificação neste navegador: ${reason}. Nada por instância é lido dele.`,
     noFiatBreakdown:
-      'As cifras do topo são as da moeda: o que moveu, as ordens que o moveram e os seus tickets, tal como o publicador os assina nessa moeda. As faixas de tamanho, a repartição compra/venda e a conversão de referência são assinadas para todas as moedas de uma vez, portanto leem-se como ausência enquanto houver uma escolhida.',
+      'As cifras do topo são as da moeda: o que moveu, as ordens que a moveram e os seus tickets, tal como o publicador os assina nessa moeda. As faixas de tamanho, a repartição compra/venda e a conversão de referência são assinadas para todas as moedas de uma vez, portanto leem-se como ausência enquanto houver uma escolhida.',
+    fiatUnavailable: (code) =>
+      `O arquivo não publica nada em ${code} para esta janela, portanto as cifras acima são ausência e não as da rede. Outra janela, ou toda a rede, pode tê-lo.`,
     instanceAndFiat:
       'Para uma instância numa moeda o publicador assina uma contagem de ordens e nada mais: os montantes são assinados para a rede, e por instância apenas como um total de todas as moedas.',
   },
