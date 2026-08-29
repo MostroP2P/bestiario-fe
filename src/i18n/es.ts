@@ -42,7 +42,9 @@ export const es: Strings = {
     unverifiedScoped: (name, reason) =>
       `${name} publica un documento de órdenes propio, y no superó la verificación en este navegador: ${reason}. No se muestra nada de él: solo lo que el documento de instancias dice sobre la instancia.`,
     noInstanceVolume:
-      'El volumen se publica para la red y no por instancia, así que estas cifras no se acotan a una sola.',
+      'Por instancia solo se publica el volumen total en sats, en el documento de comparación. Los importes por moneda, los tamaños de ticket, el reparto compra/venta y la conversión de referencia se firman para toda la red, así que se leen como ausencia mientras haya una instancia elegida.',
+    noCompareRow: (name) =>
+      `El documento de comparación de esta ventana no nombra ningún bloque para ${name}, así que no hay volumen propio que mostrar — y eso es ausencia, no un cero.`,
   },
 
   ordersView: {
@@ -108,6 +110,14 @@ export const es: Strings = {
     referenceHeading: 'En una moneda de referencia',
     referenceNote:
       'Inferido de las cotizaciones que el publicador tenía en ese momento. Donde ninguna estaba lo bastante cerca para valorar una orden, esto es ausencia y no una cifra.',
+    shareOfNetwork: 'Proporción del volumen de la red',
+    shareOfNetworkSub: 'De lo que movió toda la red en esta ventana',
+    devFees: 'Comisiones enviadas al desarrollo',
+    instanceCurrencies: 'Monedas que operó esta instancia',
+    instanceCurrenciesNote:
+      'Contadas en el documento de órdenes de la propia instancia: cuántas órdenes completó en cada moneda. Los importes se publican para la red y no por instancia.',
+    instanceCurrenciesEmpty:
+      'Esta instancia no publica desglose por moneda para esta ventana.',
   },
 
   rail: {

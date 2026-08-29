@@ -8,11 +8,11 @@ const instances = [
   {
     pubkey: A,
     currencies: [
-      { code: 'ARS', created: 13, openNow: 3 },
-      { code: 'USD', created: 2, openNow: 0 },
+      { code: 'ARS', created: 13, completed: 0, openNow: 3 },
+      { code: 'USD', created: 2, completed: 0, openNow: 0 },
     ],
   },
-  { pubkey: B, currencies: [{ code: 'ARS', created: 4, openNow: 1 }] },
+  { pubkey: B, currencies: [{ code: 'ARS', created: 4, completed: 0, openNow: 1 }] },
 ]
 
 describe('networkLines', () => {
@@ -36,8 +36,11 @@ describe('networkLines', () => {
   test('never leaves a traded pair without a line', () => {
     // One order out of hundreds is still a trade the network made.
     const lines = networkLines([
-      { pubkey: A, currencies: [{ code: 'ARS', created: 500, openNow: 0 }] },
-      { pubkey: B, currencies: [{ code: 'ETB', created: 1, openNow: 0 }] },
+      {
+        pubkey: A,
+        currencies: [{ code: 'ARS', created: 500, completed: 0, openNow: 0 }],
+      },
+      { pubkey: B, currencies: [{ code: 'ETB', created: 1, completed: 0, openNow: 0 }] },
     ])
 
     expect(lines.some((line) => line.fiat === 'ETB')).toBe(true)
@@ -45,7 +48,7 @@ describe('networkLines', () => {
 
   test('draws nothing for a pair with no orders', () => {
     const lines = networkLines([
-      { pubkey: A, currencies: [{ code: 'ARS', created: 0, openNow: 0 }] },
+      { pubkey: A, currencies: [{ code: 'ARS', created: 0, completed: 0, openNow: 0 }] },
     ])
 
     expect(lines).toEqual([])

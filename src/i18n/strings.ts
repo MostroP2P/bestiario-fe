@@ -87,8 +87,10 @@ export type Strings = {
     readonly unscoped: (name: string) => string
     /** Its own document was published, and did not verify in this browser. */
     readonly unverifiedScoped: (name: string, reason: string) => string
-    /** Volume carries no per-instance breakdown at all. */
+    /** What of volume does *not* narrow to one instance. */
     readonly noInstanceVolume: string
+    /** The comparison document names no block for this instance. */
+    readonly noCompareRow: (name: string) => string
   }
 
   readonly ordersView: {
@@ -145,6 +147,13 @@ export type Strings = {
     readonly sizes: Readonly<Record<SizeBucket, string>>
     readonly referenceHeading: string
     readonly referenceNote: string
+    /** This instance's volume as a share of the network's. */
+    readonly shareOfNetwork: string
+    readonly shareOfNetworkSub: string
+    readonly devFees: string
+    readonly instanceCurrencies: string
+    readonly instanceCurrenciesNote: string
+    readonly instanceCurrenciesEmpty: string
   }
 
   readonly rail: {

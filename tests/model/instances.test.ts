@@ -111,8 +111,8 @@ describe('currencyOrders', () => {
 
     // Assert
     expect(rows).toEqual([
-      { code: 'ARS', created: 13, openNow: 3 },
-      { code: 'USD', created: 2, openNow: 0 },
+      { code: 'ARS', created: 13, completed: 0, openNow: 3 },
+      { code: 'USD', created: 2, completed: 0, openNow: 0 },
     ])
   })
 
@@ -221,5 +221,22 @@ describe('instanceOrders', () => {
 
     // Act & Assert
     expect(instanceOrders(bare, [])).toEqual([])
+  })
+})
+
+describe('currencyOrders · what the currency block carries', () => {
+  test('reads what each currency completed as well as what it created', () => {
+    // Arrange
+    const metrics = [
+      count('orders.created', 20),
+      count('orders.ARS.created', 15),
+      count('orders.ARS.completed', 9),
+    ]
+
+    // Act
+    const rows = currencyOrders(metrics)
+
+    // Assert
+    expect(rows).toEqual([{ code: 'ARS', created: 15, completed: 9, openNow: 0 }])
   })
 })

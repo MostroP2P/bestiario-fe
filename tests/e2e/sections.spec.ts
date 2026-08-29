@@ -95,11 +95,25 @@ test.describe('narrowing a section', () => {
     await expect(rows.first()).toContainText('ARS')
   })
 
-  test('says plainly that volume is not published per instance', async ({ page }) => {
+  test('shows the volume the comparison document signs for one instance', async ({
+    page,
+  }) => {
+    // Issue #16: per-instance volume *is* published, one row per publisher in
+    // `compare:<window>`. The archive names a single instance, so its volume
+    // is the network's and its share of it is all of it — which is what the
+    // page has to say, from the instance's own row and not from the total.
     await open(page, '#/volume')
+    const tile = (label: string) =>
+      page.locator('.b-kpi').filter({ has: page.getByText(label, { exact: true }) })
 
     await page.getByLabel(en.filters.instance).selectOption({ index: 1 })
 
+    await expect(tile(en.volumeView.shareOfNetwork).locator('strong')).toHaveText(
+      '100.0 %',
+    )
+    await expect(tile(en.volumeView.devFees).locator('strong')).not.toHaveText('—')
+    // The percentiles and the largest order are network-wide, and go.
+    await expect(tile(en.volumeView.p50)).toHaveCount(0)
     await expect(page.locator('.b-filter-note')).toHaveText(en.filters.noInstanceVolume)
   })
 

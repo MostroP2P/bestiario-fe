@@ -25,11 +25,14 @@ describe('currencyMatrix', () => {
       {
         pubkey: ALPHA,
         currencies: [
-          { code: 'ARS', created: 4, openNow: 1 },
-          { code: 'EUR', created: 1, openNow: 0 },
+          { code: 'ARS', created: 4, completed: 0, openNow: 1 },
+          { code: 'EUR', created: 1, completed: 0, openNow: 0 },
         ],
       },
-      { pubkey: BETA, currencies: [{ code: 'BRL', created: 2, openNow: 0 }] },
+      {
+        pubkey: BETA,
+        currencies: [{ code: 'BRL', created: 2, completed: 0, openNow: 0 }],
+      },
     ]
 
     // Act
@@ -50,15 +53,15 @@ describe('currencyMatrix', () => {
       {
         pubkey: ALPHA,
         currencies: [
-          { code: 'ARS', created: 1, openNow: 0 },
-          { code: 'USD', created: 3, openNow: 0 },
+          { code: 'ARS', created: 1, completed: 0, openNow: 0 },
+          { code: 'USD', created: 3, completed: 0, openNow: 0 },
         ],
       },
       {
         pubkey: BETA,
         currencies: [
-          { code: 'ARS', created: 5, openNow: 0 },
-          { code: 'BRL', created: 3, openNow: 0 },
+          { code: 'ARS', created: 5, completed: 0, openNow: 0 },
+          { code: 'BRL', created: 3, completed: 0, openNow: 0 },
         ],
       },
     ]
@@ -74,7 +77,10 @@ describe('currencyMatrix', () => {
     // Arrange: Gamma is in the instances document and has no scoped one.
     const instances = [instance(ALPHA, 'Alpha'), instance(GAMMA, 'Gamma')]
     const trades = [
-      { pubkey: ALPHA, currencies: [{ code: 'ARS', created: 2, openNow: 0 }] },
+      {
+        pubkey: ALPHA,
+        currencies: [{ code: 'ARS', created: 2, completed: 0, openNow: 0 }],
+      },
     ]
 
     // Act
@@ -99,7 +105,12 @@ describe('currencyMatrix', () => {
     // claim about an instance this client cannot name.
     const matrix = currencyMatrix(
       [instance(ALPHA, 'Alpha')],
-      [{ pubkey: BETA, currencies: [{ code: 'ARS', created: 9, openNow: 0 }] }],
+      [
+        {
+          pubkey: BETA,
+          currencies: [{ code: 'ARS', created: 9, completed: 0, openNow: 0 }],
+        },
+      ],
     )
 
     expect(matrix.rows).toEqual([])

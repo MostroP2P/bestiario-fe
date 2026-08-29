@@ -51,6 +51,34 @@ export function fiatRows(metrics: readonly Metric[]): FiatRow[] {
 }
 
 /**
+ * `<prefix><label>.<figure>` grouped into one block per label, in the
+ * publisher's order.
+ *
+ * The key is a display *label* — `Mostro (82fa8cb9)`, spaces, parentheses
+ * and emoji included — so a name is split from the *right*, on its last dot,
+ * and never from the left: `mostro.network (abc).volume_sats` has to survive
+ * it. Two families are written this way, `instances.` and `compare.`, and
+ * both read the grammar from here.
+ */
+export function labelledBlocks(
+  metrics: readonly Metric[],
+  prefix: string,
+): Map<string, Map<string, Metric>> {
+  const blocks = new Map<string, Map<string, Metric>>()
+  for (const metric of metrics) {
+    if (!metric.name.startsWith(prefix)) continue
+    const rest = metric.name.slice(prefix.length)
+    const dot = rest.lastIndexOf('.')
+    if (dot <= 0 || dot === rest.length - 1) continue
+    const label = rest.slice(0, dot)
+    const block = blocks.get(label) ?? new Map<string, Metric>()
+    block.set(rest.slice(dot + 1), metric)
+    blocks.set(label, block)
+  }
+  return blocks
+}
+
+/**
  * An indexed family — `disputes.open.1.id`, `disputes.open.1.age` — rebuilt
  * into one record per entry, in the publisher's order.
  */
