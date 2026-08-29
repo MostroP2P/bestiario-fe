@@ -47,6 +47,10 @@ export const es: Strings = {
       `El documento de comparación de esta ventana no nombra ningún bloque para ${name}, así que no hay volumen propio que mostrar — y eso es ausencia, no un cero.`,
     unverifiedCompare: (reason) =>
       `El documento de comparación de esta ventana no superó la verificación en este navegador: ${reason}. No se lee de él nada por instancia.`,
+    noFiatBreakdown:
+      'Las cifras de arriba son las de la moneda: lo que movió, las órdenes que lo movieron y sus tickets, tal como el publicador los firma en esa moneda. Los tramos de tamaño, el reparto compra/venta y la conversión de referencia se firman para todas las monedas a la vez, así que se leen como ausencia mientras haya una elegida.',
+    instanceAndFiat:
+      'Para una instancia en una moneda el publicador firma un conteo de órdenes y nada más: los importes se firman para la red, y por instancia solo como un total de todas las monedas.',
   },
 
   ordersView: {

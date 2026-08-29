@@ -58,6 +58,9 @@ const DOCS: Record<string, WindowPayload> = {
       metric('volume.sell_sats', 'sats', 400_000),
       metric('volume.fiat.ARS.total', 'fiat', { amount: 500, code: 'ARS' }),
       count('volume.fiat.ARS.orders', 30),
+      metric('volume.fiat.ARS.ticket_avg', 'fiat', { amount: 17, code: 'ARS' }),
+      metric('volume.fiat.ARS.ticket_p50', 'fiat', { amount: 12, code: 'ARS' }),
+      metric('volume.fiat.ARS.ticket_p90', 'fiat', { amount: 40, code: 'ARS' }),
       metric('volume.fiat.VES.total', 'fiat', { amount: 20, code: 'VES' }),
       count('volume.fiat.VES.orders', 10),
     ],
@@ -196,6 +199,14 @@ const valueOf = (root: Element, label: string) =>
 /** Every figure on the page, tile and pair alike. */
 const textOf = (root: Element) => root.textContent ?? ''
 
+/** Pick a currency, once the volume document has named it. */
+function chooseFiat(container: Element, code: string) {
+  const select = [...container.querySelectorAll('select')].find((element) =>
+    [...element.options].some((option) => option.textContent === code),
+  )!
+  fireEvent.change(select, { target: { value: code } })
+}
+
 async function chooseInstance(container: Element, name: string) {
   const selectFor = () =>
     [...container.querySelectorAll('select')].find((element) =>
@@ -306,5 +317,63 @@ describe('Volume · narrowed to one instance', () => {
     })
     expect(valueOf(container, en.volumeView.total)).toBe('—')
     expect(valueOf(container, en.volumeView.shareOfNetwork)).toBe('—')
+  })
+})
+
+describe('Volume · narrowed to one currency', () => {
+  test('cuts the headline to what the publisher signs in that currency', async () => {
+    // Arrange
+    const container = await openNetwork()
+
+    // Act
+    chooseFiat(container, 'ARS')
+
+    // Assert — its own total, its own orders and its own tickets, in ARS.
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.total)).toBe(
+        printed('fiat', { amount: 500, code: 'ARS' }),
+      )
+    })
+    expect(valueOf(container, en.volumeView.completed)).toBe('30')
+    expect(valueOf(container, en.volumeView.p50)).toBe(
+      printed('fiat', { amount: 12, code: 'ARS' }),
+    )
+    expect(valueOf(container, en.volumeView.ticketAvg)).toBe(
+      printed('fiat', { amount: 17, code: 'ARS' }),
+    )
+  })
+
+  test('never leaves the network total standing under a currency', async () => {
+    // Arrange
+    const container = await openNetwork()
+
+    // Act
+    chooseFiat(container, 'ARS')
+
+    // Assert — no million sats, and no largest order, which is signed for
+    // every currency at once.
+    await waitFor(() => {
+      expect(textOf(container)).not.toContain(printed('sats', 1_000_000))
+    })
+    expect(tile(container, en.volumeView.largest)).toBeNull()
+    expect(textOf(container)).not.toContain(printed('sats', 600_000))
+    expect(textOf(container)).toContain(en.filters.noFiatBreakdown)
+  })
+
+  test('an instance in one currency is a count, and says so', async () => {
+    // Arrange
+    const container = await openNetwork()
+
+    // Act
+    await chooseInstance(container, 'Mostro AR')
+    chooseFiat(container, 'ARS')
+
+    // Assert — the 22 its own document counted, and no amount claimed.
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.completed)).toBe('22')
+    })
+    expect(valueOf(container, en.volumeView.total)).toBe('—')
+    expect(textOf(container)).toContain(en.filters.instanceAndFiat)
+    expect(textOf(container)).not.toContain(printed('sats', 250_000))
   })
 })

@@ -7,6 +7,7 @@ import { formatMetric } from '~/model/format'
 import { SIZE_BUCKETS } from '~/i18n/strings'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
+import type { Metric } from '~/nostr/documents'
 import { Kpi } from '~/components/Kpi'
 import { Pairs } from '~/components/Pairs'
 import { FiatTable } from '~/components/FiatTable'
@@ -128,8 +129,117 @@ export function Volume(props: { readonly window: Span }) {
     ? traded.filter((row) => row.code === filters.fiat)
     : traded
 
-  /** A network figure never carries an instance's name. */
-  const networkOnly = (name: string) => (chosen ? undefined : lookup(volume, name))
+  /** A figure the whole network's, and never a narrowed reading's. */
+  const networkOnly = (name: string) =>
+    chosen || filters.fiat ? undefined : lookup(volume, name)
+
+  /** The currency's own block, when the reader asked for one. */
+  const fiat = filters.fiat
+    ? currencies.find((row) => row.code === filters.fiat)
+    : undefined
+
+  const figure = (metric: Metric | undefined) => formatMetric(metric).text
+
+  /** A count the instance's own document carries, printed as any count is. */
+  const counted = (value: number | undefined) =>
+    figure(
+      value === undefined
+        ? undefined
+        : { name: 'orders.completed', kind: 'observed', unit: 'count', value },
+    )
+
+  /**
+   * The headline, narrowed by whatever the reader narrowed.
+   *
+   * Each filter cuts the tiles to what the publisher signs for that cut and
+   * to nothing else. One currency is signed in that currency — a total, a
+   * count and the three tickets — and no longer in sats. One instance is
+   * signed in sats, in the comparison document. Both at once is signed only
+   * as a count, in the instance's own orders document, so that is the only
+   * tile that carries a figure and the rest say so.
+   */
+  const tiles: { label: string; value: string; sub: string }[] =
+    chosen && filters.fiat
+      ? [
+          {
+            label: strings.volumeView.total,
+            value: figure(undefined),
+            sub: strings.header.windows[props.window],
+          },
+          {
+            label: strings.volumeView.completed,
+            value: counted(traded.find((row) => row.code === filters.fiat)?.completed),
+            sub: filters.fiat,
+          },
+        ]
+      : chosen
+        ? [
+            {
+              label: strings.volumeView.total,
+              value: figure(compared?.figures.get('volume_sats')),
+              sub: strings.header.windows[props.window],
+            },
+            {
+              label: strings.volumeView.completed,
+              value: figure(compared?.figures.get('completed')),
+              sub: figure(compared?.figures.get('completion_rate')),
+            },
+            {
+              label: strings.volumeView.shareOfNetwork,
+              value: figure(share),
+              sub: strings.volumeView.shareOfNetworkSub,
+            },
+            {
+              label: strings.volumeView.devFees,
+              value: figure(compared?.figures.get('dev_fees_sats')),
+              sub: figure(compared?.figures.get('fee')),
+            },
+          ]
+        : fiat
+          ? [
+              {
+                label: strings.volumeView.total,
+                value: figure(fiat.figures.get('total')),
+                sub: strings.header.windows[props.window],
+              },
+              {
+                label: strings.volumeView.completed,
+                value: figure(fiat.figures.get('orders')),
+                sub: fiat.code,
+              },
+              {
+                label: strings.volumeView.p50,
+                value: figure(fiat.figures.get('ticket_p50')),
+                sub: figure(fiat.figures.get('ticket_p90')),
+              },
+              {
+                label: strings.volumeView.ticketAvg,
+                value: figure(fiat.figures.get('ticket_avg')),
+                sub: fiat.code,
+              },
+            ]
+          : [
+              {
+                label: strings.volumeView.total,
+                value: figure(lookup(volume, 'volume.sats')),
+                sub: strings.header.windows[props.window],
+              },
+              {
+                label: strings.volumeView.completed,
+                value: figure(lookup(volume, 'volume.completed')),
+                sub: figure(lookup(volume, 'volume.ticket_avg')),
+              },
+              {
+                label: strings.volumeView.p50,
+                value: figure(lookup(volume, 'volume.ticket_p50')),
+                sub: figure(lookup(volume, 'volume.ticket_p90')),
+              },
+              {
+                label: strings.volumeView.largest,
+                value: figure(lookup(volume, 'volume.largest')),
+                sub: strings.header.windows[props.window],
+              },
+            ]
 
   return (
     <>
@@ -151,13 +261,17 @@ export function Volume(props: { readonly window: Span }) {
         value={filters}
         onChange={setFilters}
         note={
-          !filters.instance
-            ? undefined
-            : compareUnverified && compareState?.status === 'unverified'
+          filters.instance
+            ? compareUnverified && compareState?.status === 'unverified'
               ? strings.filters.unverifiedCompare(compareState.reason)
-              : chosen && !compared && !loading
-                ? strings.filters.noCompareRow(chosen.name || chosen.label)
-                : strings.filters.noInstanceVolume
+              : filters.fiat
+                ? strings.filters.instanceAndFiat
+                : chosen && !compared && !loading
+                  ? strings.filters.noCompareRow(chosen.name || chosen.label)
+                  : strings.filters.noInstanceVolume
+            : filters.fiat
+              ? strings.filters.noFiatBreakdown
+              : undefined
         }
       />
 
@@ -170,60 +284,9 @@ export function Volume(props: { readonly window: Span }) {
             <SkeletonKpi />
           </>
         ) : (
-          <>
-            <Kpi
-              label={strings.volumeView.total}
-              value={
-                formatMetric(
-                  chosen
-                    ? compared?.figures.get('volume_sats')
-                    : lookup(volume, 'volume.sats'),
-                ).text
-              }
-              sub={strings.header.windows[props.window]}
-            />
-            <Kpi
-              label={strings.volumeView.completed}
-              value={
-                formatMetric(
-                  chosen
-                    ? compared?.figures.get('completed')
-                    : lookup(volume, 'volume.completed'),
-                ).text
-              }
-              sub={
-                chosen
-                  ? formatMetric(compared?.figures.get('completion_rate')).text
-                  : strings.volumeView.ticketAvg
-              }
-            />
-            {chosen ? (
-              <Kpi
-                label={strings.volumeView.shareOfNetwork}
-                value={formatMetric(share).text}
-                sub={strings.volumeView.shareOfNetworkSub}
-              />
-            ) : (
-              <Kpi
-                label={strings.volumeView.p50}
-                value={formatMetric(lookup(volume, 'volume.ticket_p50')).text}
-                sub={formatMetric(lookup(volume, 'volume.ticket_p90')).text}
-              />
-            )}
-            {chosen ? (
-              <Kpi
-                label={strings.volumeView.devFees}
-                value={formatMetric(compared?.figures.get('dev_fees_sats')).text}
-                sub={formatMetric(compared?.figures.get('fee')).text}
-              />
-            ) : (
-              <Kpi
-                label={strings.volumeView.largest}
-                value={formatMetric(lookup(volume, 'volume.largest')).text}
-                sub={formatMetric(lookup(volume, 'volume.ticket_avg')).text}
-              />
-            )}
-          </>
+          tiles.map((tile) => (
+            <Kpi key={tile.label} label={tile.label} value={tile.value} sub={tile.sub} />
+          ))
         )}
       </div>
 
