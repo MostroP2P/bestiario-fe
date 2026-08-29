@@ -45,6 +45,8 @@ export const pt: Strings = {
       'Por instância só se publica o volume total em sats, no documento de comparação. Os montantes por moeda, os tamanhos de ticket, a repartição compra/venda e a conversão de referência são assinados para toda a rede, portanto leem-se como ausência enquanto houver uma instância escolhida.',
     noCompareRow: (name) =>
       `O documento de comparação desta janela não nomeia nenhum bloco para ${name}, portanto não há volume próprio para mostrar — e isso é ausência, não um zero.`,
+    unverifiedCompare: (reason) =>
+      `O documento de comparação desta janela não passou a verificação neste navegador: ${reason}. Nada por instância é lido dele.`,
   },
 
   ordersView: {

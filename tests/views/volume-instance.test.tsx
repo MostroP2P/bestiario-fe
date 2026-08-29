@@ -283,13 +283,12 @@ describe('Volume · narrowed to one instance', () => {
     await chooseInstance(container, 'Mostro AR')
 
     // Assert — its 22 completed in ARS, and not the network's 30 orders.
+    const rows = () =>
+      [...container.querySelectorAll('.b-table .b-pair')].map((row) => row.textContent)
     await waitFor(() => {
-      expect(textOf(container)).toContain(en.volumeView.instanceCurrencies)
+      expect(rows()).toEqual(['ARS22'])
     })
-    const rows = [...container.querySelectorAll('.b-table .b-pair')].map(
-      (row) => row.textContent,
-    )
-    expect(rows).toEqual(['ARS22'])
+    expect(textOf(container)).toContain(en.volumeView.instanceCurrencies)
   })
 
   test('says so plainly when the comparison document names no block for it', async () => {

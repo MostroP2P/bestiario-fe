@@ -91,6 +91,8 @@ export type Strings = {
     readonly noInstanceVolume: string
     /** The comparison document names no block for this instance. */
     readonly noCompareRow: (name: string) => string
+    /** The comparison document did not verify in this browser. */
+    readonly unverifiedCompare: (reason: string) => string
   }
 
   readonly ordersView: {

@@ -64,10 +64,32 @@ export function Volume(props: { readonly window: Span }) {
     [documents, props.window],
   )
 
-  const loading = boot.status === 'loading' || volume.length === 0
-
   /** The instance the reader asked for, when the publisher named one. */
   const chosen = instances.find((instance) => instance.pubkey === filters.instance)
+
+  /** A document has answered: with figures, with silence, or with a failure. */
+  const stateOf = (address: string) => documents.get(address)
+  const settled = (address: string) => {
+    const state = stateOf(address)
+    return state !== undefined && state.status !== 'loading'
+  }
+
+  const compareAddress = windowAddress('compare', props.window)
+
+  /**
+   * The figures are in when the documents this reading needs have answered.
+   * Narrowed to one instance those are the instances document, the
+   * comparison document and the instance's own — asked for a round trip
+   * after the click — and not the network's totals, which this reading uses
+   * for nothing but the share and which may be empty on a quiet window.
+   */
+  const loading =
+    boot.status === 'loading' ||
+    (filters.instance
+      ? !settled(windowAddress('instances', props.window)) ||
+        !settled(compareAddress) ||
+        (scopedAddress !== null && !settled(scopedAddress))
+      : volume.length === 0)
 
   /**
    * Its block in the comparison document. The join goes through the label,
@@ -76,25 +98,21 @@ export function Volume(props: { readonly window: Span }) {
    */
   const compared = useMemo(() => {
     if (!chosen) return undefined
-    const rows = compareRows(
-      metricsOf(payloadOf(documents, windowAddress('compare', props.window))),
-    )
+    const rows = compareRows(metricsOf(payloadOf(documents, compareAddress)))
     return compareOf(rows, chosen.label)
-  }, [documents, props.window, chosen])
+  }, [documents, compareAddress, chosen])
 
   const share = shareOfNetwork(compared, volume)
 
-  /** A document has answered: with figures, with silence, or with a failure. */
-  const settled = (address: string) => {
-    const state = documents.get(address)
-    return state !== undefined && state.status !== 'loading'
-  }
-
-  // The comparison document is asked for only once an instance is chosen, so
-  // it lands a round trip after the click. Saying it names no block for the
-  // instance before it has answered would be a verdict nobody has given yet.
-  const comparePending =
-    chosen !== undefined && !settled(windowAddress('compare', props.window))
+  /**
+   * A document that failed verification has said something this page must
+   * not repeat, and it is not the same answer as a document that names no
+   * block. Both are said, and neither is read.
+   */
+  const compareState = stateOf(compareAddress)
+  const compareUnverified = compareState?.status === 'unverified'
+  const scopedState = scopedAddress ? stateOf(scopedAddress) : undefined
+  const scopedUnverified = scopedState?.status === 'unverified'
 
   /** The currencies the instance itself counted, from its own document. */
   const traded = useMemo(() => {
@@ -133,11 +151,13 @@ export function Volume(props: { readonly window: Span }) {
         value={filters}
         onChange={setFilters}
         note={
-          chosen && !compared && !comparePending
-            ? strings.filters.noCompareRow(chosen.name || chosen.label)
-            : filters.instance
-              ? strings.filters.noInstanceVolume
-              : undefined
+          !filters.instance
+            ? undefined
+            : compareUnverified && compareState?.status === 'unverified'
+              ? strings.filters.unverifiedCompare(compareState.reason)
+              : chosen && !compared && !loading
+                ? strings.filters.noCompareRow(chosen.name || chosen.label)
+                : strings.filters.noInstanceVolume
         }
       />
 
@@ -218,7 +238,14 @@ export function Volume(props: { readonly window: Span }) {
                 {strings.volumeView.instanceCurrenciesNote}
               </p>
               {shownTraded.length === 0 ? (
-                <p class="b-empty">{strings.volumeView.instanceCurrenciesEmpty}</p>
+                <p class="b-empty">
+                  {scopedUnverified && scopedState?.status === 'unverified'
+                    ? strings.filters.unverifiedScoped(
+                        chosen.name || chosen.label,
+                        scopedState.reason,
+                      )
+                    : strings.volumeView.instanceCurrenciesEmpty}
+                </p>
               ) : (
                 <div class="b-table">
                   {shownTraded.map((currency) => (

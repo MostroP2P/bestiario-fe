@@ -45,6 +45,8 @@ export const es: Strings = {
       'Por instancia solo se publica el volumen total en sats, en el documento de comparación. Los importes por moneda, los tamaños de ticket, el reparto compra/venta y la conversión de referencia se firman para toda la red, así que se leen como ausencia mientras haya una instancia elegida.',
     noCompareRow: (name) =>
       `El documento de comparación de esta ventana no nombra ningún bloque para ${name}, así que no hay volumen propio que mostrar — y eso es ausencia, no un cero.`,
+    unverifiedCompare: (reason) =>
+      `El documento de comparación de esta ventana no superó la verificación en este navegador: ${reason}. No se lee de él nada por instancia.`,
   },
 
   ordersView: {

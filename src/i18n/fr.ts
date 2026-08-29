@@ -45,6 +45,8 @@ export const fr: Strings = {
       "Par instance, seul le volume total en sats est publié, dans le document de comparaison. Les montants par devise, les tailles de ticket, la répartition achat/vente et la conversion de référence sont signés pour tout le réseau : ils se lisent donc comme une absence tant qu'une instance est choisie.",
     noCompareRow: (name) =>
       `Le document de comparaison de cette fenêtre ne nomme aucun bloc pour ${name} : il n'y a donc pas de volume qui lui soit propre à montrer — ce qui est une absence et non un zéro.`,
+    unverifiedCompare: (reason) =>
+      `Le document de comparaison de cette fenêtre n'a pas passé la vérification dans ce navigateur : ${reason}. Rien n'en est lu par instance.`,
   },
 
   ordersView: {

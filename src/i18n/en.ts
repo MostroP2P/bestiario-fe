@@ -51,6 +51,8 @@ export const en: Strings = {
       'Only the total volume in sats is published per instance, in the comparison document. The per-currency amounts, ticket sizes, buy/sell split and reference conversion are signed for the whole network, so they read as absent while one instance is chosen.',
     noCompareRow: (name) =>
       `The comparison document for this window names no block for ${name}, so there is no volume of its own to show — which is absence, not a zero.`,
+    unverifiedCompare: (reason) =>
+      `The comparison document for this window did not verify in this browser: ${reason}. Nothing per instance is read from it.`,
   },
 
   ordersView: {

@@ -45,6 +45,8 @@ export const it: Strings = {
       'Per istanza si pubblica soltanto il volume totale in sats, nel documento di confronto. Gli importi per valuta, le dimensioni del ticket, la ripartizione acquisto/vendita e la conversione di riferimento sono firmati per tutta la rete, quindi si leggono come assenza finché è scelta un’istanza.',
     noCompareRow: (name) =>
       `Il documento di confronto di questa finestra non nomina alcun blocco per ${name}, quindi non c’è un volume proprio da mostrare — ed è assenza, non uno zero.`,
+    unverifiedCompare: (reason) =>
+      `Il documento di confronto di questa finestra non ha superato la verifica in questo browser: ${reason}. Non se ne legge nulla per istanza.`,
   },
 
   ordersView: {
