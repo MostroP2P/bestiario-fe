@@ -1,4 +1,5 @@
 import { Figure } from './Figure'
+import { useStrings } from '~/i18n/context'
 import { SkeletonRow } from './Skeleton'
 import type { FiatRow } from '~/model/metrics'
 
@@ -15,8 +16,15 @@ export function FiatTable({
   readonly rows: readonly FiatRow[]
   readonly loading: boolean
 }) {
+  const strings = useStrings()
   const columns = ['total', 'orders', 'ticket_avg', 'ticket_p50', 'ticket_p90'] as const
-  const headings = ['volumen', 'órdenes', 'ticket medio', 'p50', 'p90']
+  const headings = [
+    strings.fiat.volume,
+    strings.fiat.orders,
+    strings.fiat.ticketAvg,
+    strings.fiat.p50,
+    strings.fiat.p90,
+  ]
 
   if (loading) {
     return (
@@ -32,18 +40,18 @@ export function FiatTable({
   }
 
   if (rows.length === 0) {
-    return <p class="b-empty">Nada que informar en esta ventana.</p>
+    return <p class="b-empty">{strings.fiat.empty}</p>
   }
 
   return (
-    <div class="b-table" tabIndex={0} role="group" aria-label="Volumen por moneda">
+    <div class="b-table" tabIndex={0} role="group" aria-label={strings.fiat.caption}>
       <table>
         <caption class="b-visually-hidden">
           Volumen por moneda en la ventana elegida
         </caption>
         <thead>
           <tr>
-            <th scope="col">moneda</th>
+            <th scope="col">{strings.fiat.currency}</th>
             {headings.map((heading) => (
               <th key={heading} scope="col">
                 {heading}

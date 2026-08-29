@@ -66,7 +66,7 @@ export function SkeletonMap() {
 export function LoadingAnnouncement({ what }: { readonly what: string }) {
   return (
     <p class="b-visually-hidden" role="status" aria-live="polite">
-      Cargando {what}…
+      {what}
     </p>
   )
 }

@@ -1,9 +1,22 @@
 import { afterEach, describe, expect, test } from 'vitest'
 import { cleanup, render } from '@testing-library/preact'
 import { Figure } from '~/components/Figure'
+import { StringsProvider } from '~/i18n/context'
+import { en } from '~/i18n/en'
+import { es } from '~/i18n/es'
+import type { Strings } from '~/i18n'
 import type { Metric } from '~/nostr/documents'
 
 afterEach(cleanup)
+
+/** Explicit, so a test never depends on the runner's own locale. */
+function draw(metric: Metric | undefined, strings: Strings = en) {
+  return render(
+    <StringsProvider value={strings}>
+      <Figure metric={metric} />
+    </StringsProvider>,
+  )
+}
 
 const observed: Metric = {
   name: 'dev_fees.total_sats',
@@ -22,13 +35,13 @@ const inferred: Metric = {
 
 describe('Figure · observed', () => {
   test('shows the figure plainly', () => {
-    const { container } = render(<Figure metric={observed} />)
+    const { container } = draw(observed)
 
     expect(container.textContent).toContain('sats')
   })
 
   test('carries no inferred marker', () => {
-    const { container } = render(<Figure metric={observed} />)
+    const { container } = draw(observed)
 
     expect(container.querySelector('.b-inferred-mark')).toBeNull()
   })
@@ -37,21 +50,21 @@ describe('Figure · observed', () => {
 describe('Figure · inferred', () => {
   test('is distinguished by a marker and not by a colour alone', () => {
     // WCAG 1.4.1: colour alone is not a distinction.
-    const { container } = render(<Figure metric={inferred} />)
+    const { container } = draw(inferred)
 
     expect(container.querySelector('.b-inferred-mark')?.textContent).toContain('inf')
   })
 
   test('puts the assumption in the accessible name', () => {
-    const { container } = render(<Figure metric={inferred} />)
+    const { container } = draw(inferred)
 
     expect(container.querySelector('.b-inferred-mark')?.getAttribute('aria-label')).toBe(
-      'Cifra inferida. assumes a 0.30 dev fee share; see SPEC §5',
+      en.inferred.labelWith(inferred.error!),
     )
   })
 
   test('is reachable by keyboard, not only under a pointer', () => {
-    const { container } = render(<Figure metric={inferred} />)
+    const { container } = draw(inferred)
 
     expect(container.querySelector('.b-inferred-mark')?.getAttribute('tabindex')).toBe(
       '0',
@@ -59,7 +72,7 @@ describe('Figure · inferred', () => {
   })
 
   test('describes the figure with the error text it renders', () => {
-    const { container } = render(<Figure metric={inferred} />)
+    const { container } = draw(inferred)
     const mark = container.querySelector('.b-inferred-mark')!
     const describedBy = mark.getAttribute('aria-describedby')
 
@@ -74,19 +87,21 @@ describe('Figure · inferred', () => {
       unit: inferred.unit,
       value: inferred.value,
     }
-    const { container } = render(<Figure metric={withoutError} />)
+    const { container } = draw(withoutError)
     const mark = container.querySelector('.b-inferred-mark')!
 
-    expect(mark.getAttribute('aria-label')).toBe('Cifra inferida')
+    expect(mark.getAttribute('aria-label')).toBe(en.inferred.label)
     expect(mark.getAttribute('aria-describedby')).toBeNull()
   })
 
   test('gives each figure its own tooltip id, so two on a page do not collide', () => {
     const { container } = render(
-      <div>
-        <Figure metric={inferred} />
-        <Figure metric={inferred} />
-      </div>,
+      <StringsProvider value={en}>
+        <div>
+          <Figure metric={inferred} />
+          <Figure metric={inferred} />
+        </div>
+      </StringsProvider>,
     )
     const ids = [...container.querySelectorAll('.b-inferred-mark')].map((m) =>
       m.getAttribute('aria-describedby'),
@@ -105,23 +120,49 @@ describe('Figure · absence', () => {
       value: null,
       error: 'no rate used',
     }
-    const { container } = render(<Figure metric={missing} />)
+    const { container } = draw(missing)
 
     expect(container.textContent).toContain('—')
     expect(container.textContent).not.toContain('0')
   })
 
   test('says which absence it is, for a reader who cannot see the dash', () => {
-    const { container } = render(<Figure metric={undefined} />)
+    const { container } = draw(undefined)
 
     expect(container.querySelector('.b-visually-hidden')?.textContent).toBe(
-      'no publicado',
+      en.absence.notPublished,
     )
   })
 
   test('hides the dash itself from the accessible tree, having labelled it', () => {
-    const { container } = render(<Figure metric={undefined} />)
+    const { container } = draw(undefined)
 
     expect(container.querySelector('[aria-hidden="true"]')?.textContent).toBe('—')
+  })
+})
+
+describe('Figure · in another language', () => {
+  test('says the absence in the readers language', () => {
+    const { container } = draw(undefined, es)
+
+    expect(container.querySelector('.b-visually-hidden')?.textContent).toBe(
+      es.absence.notPublished,
+    )
+  })
+
+  test('labels the inferred marker in the readers language', () => {
+    const { container } = draw(inferred, es)
+
+    expect(container.querySelector('.b-inferred-mark')?.getAttribute('aria-label')).toBe(
+      es.inferred.labelWith(inferred.error!),
+    )
+  })
+
+  test('quotes the publishers own error text rather than translating it', () => {
+    // The `error` is the publisher's statement of what a figure rests on.
+    // Putting words in its mouth is the one thing this site must not do.
+    const { container } = draw(inferred, es)
+
+    expect(container.querySelector('.b-tooltip')?.textContent).toBe(inferred.error)
   })
 })

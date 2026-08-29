@@ -6,6 +6,7 @@ import { createProjection } from '~/map/projection'
 import type { Line } from '~/model/live-lines'
 import type { LonLat } from '~/model/random-point'
 import type { MapProjection } from '~/map/projection'
+import { en } from '~/i18n/en'
 
 const PLACES: Record<string, LonLat> = {
   ARS: [-64, -34],
@@ -46,6 +47,7 @@ function draw(lines: readonly Line[], reducedMotion = false) {
       width={900}
       height={408}
       reducedMotion={reducedMotion}
+      strings={en}
     />,
   )
 }
@@ -154,7 +156,7 @@ describe('WorldPulse', () => {
     const { container } = draw([line()])
 
     expect(container.querySelector('svg')?.getAttribute('aria-label')).toMatch(
-      /1 órdenes activas entre 1 monedas y 1 instancias/,
+      /1 order flows between 1 currencies and 1 Mostro instances/,
     )
   })
 
@@ -183,6 +185,7 @@ describe('WorldPulse', () => {
         width={900}
         height={408}
         reducedMotion={false}
+        strings={en}
       />,
     )
 
@@ -199,7 +202,7 @@ describe('describeScene', () => {
   }
 
   test('says so when there is nothing to show', () => {
-    expect(describeScene(empty)).toBe('Sin flujo de órdenes que mostrar.')
+    expect(describeScene(empty, en)).toBe(en.map.describe.empty)
   })
 
   test('says what it could not place rather than quietly omitting it', () => {
@@ -217,8 +220,8 @@ describe('describeScene', () => {
       unplaced: { currencies: 2, instances: 1 },
     }
 
-    expect(describeScene(scene)).toMatch(/2 monedas sin ubicar/)
-    expect(describeScene(scene)).toMatch(/1 instancias sin ubicar/)
+    expect(describeScene(scene, en)).toContain(en.map.describe.unplacedCurrencies(2))
+    expect(describeScene(scene, en)).toContain(en.map.describe.unplacedInstances(1))
   })
 })
 
@@ -250,6 +253,7 @@ describe('WorldPulse · the antimeridian', () => {
         width={900}
         height={408}
         reducedMotion={false}
+        strings={en}
       />,
     )
 

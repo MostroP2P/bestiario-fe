@@ -25,6 +25,7 @@ vi.mock('~/nostr/pool', () => ({
 }))
 
 const { Dashboard } = await import('~/views/Dashboard')
+const { en } = await import('~/i18n/en')
 const { resetStore } = await import('~/store/useStore')
 const { clearCache } = await import('~/store/cache')
 const topology = JSON.parse(
@@ -83,7 +84,9 @@ describe('Dashboard · before the figures arrive', () => {
   test('says once what is loading, and hides the decorative boxes', () => {
     const { getByRole, container } = render(<Dashboard />)
 
-    expect(getByRole('status').textContent).toMatch(/Cargando las cifras de la red/)
+    expect(getByRole('status').textContent).toBe(
+      en.loading.announcement(en.loading.figures),
+    )
     for (const skeleton of container.querySelectorAll('.b-kpi[aria-hidden]')) {
       expect(skeleton.getAttribute('aria-hidden')).toBe('true')
     }
@@ -185,7 +188,7 @@ describe('Dashboard · real figures', () => {
 
     await waitFor(() => {
       const note = container.querySelector('.b-map-gap')?.textContent ?? ''
-      expect(note).toMatch(/ilustrativas/)
+      expect(note).toMatch(/illustrative/)
       // Names the document whose absence is the reason.
       expect(note).toMatch(/orders:…:i:<pubkey>/)
     })
@@ -231,7 +234,7 @@ describe('Dashboard · when nothing can be verified', () => {
 
     // Assert
     await waitFor(() => {
-      expect(getByRole('alert').textContent).toMatch(/Sin cifras verificadas/)
+      expect(getByRole('alert').textContent).toContain(en.fatal.heading)
     })
     expect(container.querySelector('.b-kpi strong')).toBeNull()
   })
@@ -263,7 +266,7 @@ describe('Dashboard · a window figure is not a now figure', () => {
 
   const disputesKpi = (container: Element) =>
     [...container.querySelectorAll('.b-kpi')].find((kpi) =>
-      kpi.querySelector('.b-eyebrow')?.textContent?.startsWith('DISPUTAS'),
+      kpi.querySelector('.b-eyebrow')?.textContent?.startsWith('DISPUTES'),
     )
 
   test('the disputes tile counts the window, not the standing book', async () => {
@@ -314,9 +317,9 @@ describe('Dashboard · a window figure is not a now figure', () => {
       expect(container.querySelectorAll('.b-dispute-list li')).toHaveLength(openNow)
     })
     const heading = [...container.querySelectorAll('.b-feed-head')].find((h) =>
-      h.textContent?.includes('DISPUTAS'),
+      h.textContent?.includes('DISPUTES'),
     )
-    expect(heading?.textContent).toContain('AHORA')
+    expect(heading?.textContent).toContain('NOW')
   })
 
   test('no tile in the window row repeats the standing book', async () => {

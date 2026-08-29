@@ -3,7 +3,8 @@ import { DEFAULT_RELAYS, PUBLISHER_PUBKEY } from '~/config'
 import { WINDOWS, windowAddress, type Span } from '~/nostr/address'
 import { fiatRows, indexedFamily, lookup, metricsOf } from '~/model/metrics'
 import type { Metric } from '~/nostr/documents'
-import { formatMetric } from '~/model/format'
+import { formatMetric, useNumberLocale } from '~/model/format'
+import { useStrings } from '~/i18n/context'
 import { Figure } from '~/components/Figure'
 import { payloadOf, useStore } from '~/store/useStore'
 import { TrustRail } from '~/components/TrustRail'
@@ -44,15 +45,9 @@ const EMPTY_SCENE: Scene = {
   unplaced: { currencies: 0, instances: 0 },
 }
 
-const WINDOW_LABELS: Record<Span, string> = {
-  '24h': '24 H',
-  '7d': '7 D',
-  '30d': '30 D',
-  '90d': '90 D',
-  all: 'TODO',
-}
-
 export function Dashboard() {
+  const strings = useStrings()
+  useNumberLocale(strings.locale)
   const [window_, setWindow] = useState<Span>('30d')
   const [nowMs, setNowMs] = useState(() => Date.now())
   useEffect(() => {
@@ -225,15 +220,19 @@ export function Dashboard() {
 
   return (
     <div class="b-page">
-      {loading && <LoadingAnnouncement what="las cifras de la red" />}
+      {loading && (
+        <LoadingAnnouncement
+          what={strings.loading.announcement(strings.loading.figures)}
+        />
+      )}
 
       {boot.status === 'failed' && (
         <p class="b-fatal" role="alert">
-          <strong>Sin cifras verificadas.</strong>{' '}
+          <strong>{strings.fatal.heading}</strong>{' '}
           {boot.reason === 'timeout'
-            ? 'Ningún relay respondió con el índice del publicador.'
-            : `El índice no superó la verificación: ${boot.reason}.`}{' '}
-          Esta página no muestra cifras que no pueda probar.
+            ? strings.fatal.timeout
+            : strings.fatal.unverified(boot.reason)}{' '}
+          {strings.fatal.note}
         </p>
       )}
 
@@ -247,7 +246,7 @@ export function Dashboard() {
 
         <div style={{ minWidth: 0 }}>
           <div class="b-header">
-            <nav class="b-tabs" aria-label="Ventana">
+            <nav class="b-tabs" aria-label={strings.header.windowNav}>
               {WINDOWS.map((span) => (
                 <button
                   key={span}
@@ -256,15 +255,17 @@ export function Dashboard() {
                   aria-current={span === window_ ? 'page' : undefined}
                   onClick={() => setWindow(span)}
                 >
-                  {WINDOW_LABELS[span]}
+                  {strings.header.windows[span]}
                 </button>
               ))}
             </nav>
             <div class="b-header-meta">
-              <span>MAINNET</span>
+              <span>{strings.header.network}</span>
               <span class="b-stream">
                 <i aria-hidden="true" />
-                {boot.status === 'ready' ? 'VERIFICADO' : 'CONECTANDO'}
+                {boot.status === 'ready'
+                  ? strings.header.verified
+                  : strings.header.connecting}
               </span>
             </div>
           </div>
@@ -273,7 +274,7 @@ export function Dashboard() {
             {!mapReady && <SkeletonMap />}
             {atlasState.status === 'failed' && (
               <p class="b-map-state" data-failed="true">
-                SIN GEOMETRÍA · {atlasState.reason}
+                {strings.map.noGeometry(atlasState.reason)}
               </p>
             )}
             {mapReady && projection && (
@@ -284,35 +285,26 @@ export function Dashboard() {
                 width={mapWidth}
                 height={mapHeight}
                 reducedMotion={reducedMotion}
+                strings={strings}
               />
             )}
             <div class="b-map-caption">
               <h2 id="map-heading" class="b-eyebrow" style={{ margin: 0 }}>
-                MERCADOS DE LA RED
+                {strings.map.heading}
               </h2>
-              <p>
-                Cada punto es una moneda con órdenes en la ventana elegida, en su país. Su
-                tamaño y cuántas rutas salen de ella son su volumen de órdenes.
-              </p>
+              <p>{strings.map.caption}</p>
               {measuredRoutes ? (
                 approximate > 0 && (
                   <p class="b-map-gap">
-                    {approximate} de {instances.length} instancias no nombran un país, así
-                    que su punto es una dispersión y no una ubicación. Las rutas sí son
-                    medidas: cada una es una moneda que esa instancia operó.
+                    {strings.map.approximateInstances(approximate, instances.length)}
                   </p>
                 )
               ) : (
-                <p class="b-map-gap">
-                  Las rutas son ilustrativas: van a anclajes sin nombre, no a mostros. El
-                  daemon todavía no publicó <code>orders:…:i:&lt;pubkey&gt;</code>, y sin
-                  él nada dice qué instancia opera qué moneda. Lo medido es la moneda, su
-                  país y sus órdenes.
-                </p>
+                <p class="b-map-gap">{strings.map.illustrativeRoutes}</p>
               )}
             </div>
             <div class="b-map-count">
-              <span class="b-eyebrow">MERCADOS ACTIVOS</span>
+              <span class="b-eyebrow">{strings.map.activeMarkets}</span>
               {loading ? (
                 <Skeleton width="52px" height="30px" />
               ) : (
@@ -320,7 +312,7 @@ export function Dashboard() {
               )}
               {scene.unplaced.currencies > 0 && (
                 <small class="b-unplaced">
-                  {scene.unplaced.currencies} sin ubicar, fuera del mapa
+                  {strings.map.unplaced(scene.unplaced.currencies)}
                 </small>
               )}
             </div>
@@ -337,37 +329,41 @@ export function Dashboard() {
             ) : (
               <>
                 <Kpi
-                  label={`ÓRDENES · ${WINDOW_LABELS[window_]}`}
+                  label={strings.kpi.orders(strings.header.windows[window_])}
                   value={formatMetric(lookup(orders, 'orders.created')).text}
-                  sub={`${formatMetric(lookup(orders, 'orders.completed')).text} completadas · ${
-                    formatMetric(lookup(orders, 'orders.completion_rate')).text
-                  }`}
+                  sub={strings.kpi.ordersSub(
+                    formatMetric(lookup(orders, 'orders.completed')).text,
+                    formatMetric(lookup(orders, 'orders.completion_rate')).text,
+                  )}
                 />
                 <Kpi
-                  label={`VOLUMEN · ${WINDOW_LABELS[window_]}`}
+                  label={strings.kpi.volume(strings.header.windows[window_])}
                   value={formatMetric(lookup(volume, 'volume.sats')).text}
-                  sub={`ticket p50 ${formatMetric(lookup(volume, 'volume.ticket_p50')).text}`}
+                  sub={strings.kpi.volumeSub(
+                    formatMetric(lookup(volume, 'volume.ticket_p50')).text,
+                  )}
                 />
                 {/* Every figure in this row is of the chosen window. The
                     open book is about *now* and is a different question, so
                     it lives in its own panel and is labelled there. Putting
                     it here made one heading answer two. */}
                 <Kpi
-                  label={`DISPUTAS · ${WINDOW_LABELS[window_]}`}
+                  label={strings.kpi.disputes(strings.header.windows[window_])}
                   value={formatMetric(lookup(disputes, 'disputes.opened')).text}
-                  sub={`${formatMetric(lookup(disputes, 'disputes.resolved')).text} resueltas · ${
-                    formatMetric(lookup(disputes, 'disputes.rate')).text
-                  } de las órdenes`}
+                  sub={strings.kpi.disputesSub(
+                    formatMetric(lookup(disputes, 'disputes.resolved')).text,
+                    formatMetric(lookup(disputes, 'disputes.rate')).text,
+                  )}
                 />
                 {/* Both of these are about now, and the label says so.
                     `open_now` is pending orders still live, not "open
                     disputes" and not orders opened in the window. */}
                 <Kpi
-                  label="AHORA MISMO"
+                  label={strings.kpi.rightNow}
                   value={formatMetric(lookup(orders, 'orders.in_progress_now')).text}
-                  sub={`en curso · ${
-                    formatMetric(lookup(orders, 'orders.open_now')).text
-                  } pendientes de tomar`}
+                  sub={strings.kpi.rightNowSub(
+                    formatMetric(lookup(orders, 'orders.open_now')).text,
+                  )}
                 />
               </>
             )}
@@ -375,66 +371,66 @@ export function Dashboard() {
 
           <div class="b-lower">
             <div class="b-lower-main">
-              <h2 class="b-eyebrow b-section-head">VOLUMEN POR MONEDA</h2>
+              <h2 class="b-eyebrow b-section-head">{strings.fiat.heading}</h2>
               <FiatTable rows={currencies} loading={loading} />
 
               <div class="b-split">
                 <Pairs
-                  heading="ÓRDENES"
+                  heading={strings.pairs.ordersHeading}
                   loading={loading}
                   rows={[
-                    ['canceladas', lookup(orders, 'orders.canceled')],
-                    ['tasa de abandono', lookup(orders, 'orders.abandonment_rate')],
-                    ['ticket medio', lookup(volume, 'volume.ticket_avg')],
-                    ['mayor orden', lookup(volume, 'volume.largest')],
+                    [strings.pairs.canceled, lookup(orders, 'orders.canceled')],
+                    [
+                      strings.pairs.abandonmentRate,
+                      lookup(orders, 'orders.abandonment_rate'),
+                    ],
+                    [strings.pairs.ticketAvg, lookup(volume, 'volume.ticket_avg')],
+                    [strings.pairs.largest, lookup(volume, 'volume.largest')],
                   ]}
                 />
                 <Pairs
-                  heading="DISPUTAS · DEV FEES"
+                  heading={strings.pairs.disputesHeading}
                   loading={loading}
                   rows={[
-                    ['tasa de disputa', lookup(disputes, 'disputes.rate')],
+                    [strings.pairs.disputeRate, lookup(disputes, 'disputes.rate')],
                     [
-                      'mediana de resolución',
+                      strings.pairs.resolutionMedian,
                       lookup(disputes, 'disputes.resolution_p50'),
                     ],
-                    ['dev fees', lookup(fees, 'dev_fees.total_sats')],
-                    ['cobertura', lookup(fees, 'dev_fees.coverage')],
+                    [strings.pairs.devFees, lookup(fees, 'dev_fees.total_sats')],
+                    [strings.pairs.coverage, lookup(fees, 'dev_fees.coverage')],
                     // Inferred, and marked as such: it rests on an assumed fee
                     // share the daemon was configured with, not on a measurement.
-                    ['volumen implícito', lookup(fees, 'dev_fees.implied_volume')],
+                    [
+                      strings.pairs.impliedVolume,
+                      lookup(fees, 'dev_fees.implied_volume'),
+                    ],
                     // Inferred and, on the current archive, missing: no completed
                     // order had a rate snapshot close enough to price it. It
                     // renders as absence, which is the honest answer.
-                    ['volumen en USD', lookup(volume, 'volume.in.USD.total')],
+                    [
+                      strings.pairs.referenceVolume,
+                      lookup(volume, 'volume.in.USD.total'),
+                    ],
                   ]}
                 />
               </div>
 
               <div class="b-notes">
                 <h2 class="b-eyebrow" style={{ margin: 0 }}>
-                  FUERA DE ALCANCE DE LA MEDICIÓN
+                  {strings.notMeasurable.heading}
                 </h2>
                 <div class="b-notes-grid">
-                  <Note
-                    title="Usuarios únicos"
-                    why="las claves son efímeras por orden; contar pubkeys cuenta órdenes, no personas."
-                  />
-                  <Note
-                    title="Origen de una disputa"
-                    why="el evento de disputa no referencia la orden que la provocó."
-                  />
-                  <Note
-                    title="Motivo de cancelación"
-                    why="los eventos registran el cambio de estado, nunca la causa."
-                  />
+                  {strings.notMeasurable.items.map((note) => (
+                    <Note key={note.title} title={note.title} why={note.why} />
+                  ))}
                 </div>
               </div>
             </div>
 
             <div>
               <h2 class="b-eyebrow b-feed-head">
-                <span>DISPUTAS ABIERTAS AHORA</span>
+                <span>{strings.disputes.heading}</span>
                 <span class="b-feed-live">{loading ? '' : openBook.length}</span>
               </h2>
               <OpenDisputes
@@ -447,11 +443,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      <p class="b-footnote">
-        Leído de {DEFAULT_RELAYS.length} relays y verificado en este navegador contra la
-        clave del publicador. Un valor ausente se dibuja ausente y nunca como cero; una
-        cifra inferida se marca como tal.
-      </p>
+      <p class="b-footnote">{strings.footnote(DEFAULT_RELAYS.length)}</p>
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { toPathData } from '~/map/geometry'
 import type { MapProjection } from '~/map/projection'
 import { selectLabels, type Label, type Marker } from '~/map/labels'
 import type { Scene, SceneArc } from '~/map/scene'
+import type { Strings } from '~/i18n'
 
 /**
  * The map itself: land, and one line per active order.
@@ -25,6 +26,7 @@ export type WorldPulseProps = {
   readonly width: number
   readonly height: number
   readonly reducedMotion: boolean
+  readonly strings: Strings
 }
 
 /** Seconds for a traveller to cross its line and come back. */
@@ -42,20 +44,21 @@ const ROUND_TRIP_S = 10.4
 const SEAM_FRACTION = 0.2
 
 /** What the map says about itself to a reader who cannot see it. */
-export function describeScene(scene: Scene): string {
-  if (scene.arcs.length === 0) return 'Sin flujo de órdenes que mostrar.'
+export function describeScene(scene: Scene, strings: Strings): string {
+  const say = strings.map.describe
+  if (scene.arcs.length === 0) return say.empty
 
   const live = scene.arcs.filter((a) => a.phase === 'live').length
   const parts = [
-    `${scene.arcs.length} órdenes activas entre ${scene.currencies.length} monedas y ${scene.instances.length} instancias de Mostro`,
-    `${live} en curso`,
-    `${scene.arcs.length - live} recién completadas`,
+    say.flows(scene.arcs.length, scene.currencies.length, scene.instances.length),
+    say.live(live),
+    say.settling(scene.arcs.length - live),
   ]
   if (scene.unplaced.currencies > 0) {
-    parts.push(`${scene.unplaced.currencies} monedas sin ubicar en el mapa`)
+    parts.push(say.unplacedCurrencies(scene.unplaced.currencies))
   }
   if (scene.unplaced.instances > 0) {
-    parts.push(`${scene.unplaced.instances} instancias sin ubicar en el mapa`)
+    parts.push(say.unplacedInstances(scene.unplaced.instances))
   }
   return parts.join('; ') + '.'
 }
@@ -190,7 +193,7 @@ export function WorldPulse(props: WorldPulseProps) {
       height={props.height}
       viewBox={`0 0 ${props.width} ${props.height}`}
       role="img"
-      aria-label={describeScene(scene)}
+      aria-label={describeScene(scene, props.strings)}
       style={{ position: 'absolute', inset: 0, display: 'block' }}
     >
       <defs>
