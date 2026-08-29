@@ -53,6 +53,10 @@ export const es: Strings = {
       `El archivo no publica nada en ${code} para esta ventana, así que las cifras de arriba son ausencia y no las de la red. Otra ventana, o toda la red, puede tenerlo.`,
     instanceAndFiat:
       'Para una instancia en una moneda el publicador firma un conteo de órdenes y nada más: los importes se firman para la red, y por instancia solo como un total de todas las monedas.',
+    noFiatOrders:
+      'Por moneda el archivo cuenta las órdenes que se completaron, y solo esas: creadas, canceladas, en curso y el reparto compra/venta se firman para todas las monedas a la vez, así que se leen como ausencia mientras haya una elegida.',
+    instanceAndFiatOrders:
+      'Lo que sigue es lo que esta instancia contó en esta moneda, en su propio documento de órdenes. Sus demás cifras se firman sobre todas las monedas que opera, no sobre una.',
   },
 
   ordersView: {
@@ -91,7 +95,9 @@ export const es: Strings = {
     perCurrencyNoDocument:
       'Esta instancia no publica un documento de órdenes propio, así que no hay desglose por moneda que leer para ella.',
     shareNotPerInstance:
-      'Este reparto se firma para toda la red y no por instancia, así que no se acota a una sola.',
+      'Este reparto se firma para toda la red — no por instancia ni por moneda — así que no se acota a ninguna de las dos.',
+    shareOfCompleted: 'Proporción de las completadas',
+    shareOfCompletedSub: 'De lo que completó la red en esta ventana',
   },
 
   volumeView: {

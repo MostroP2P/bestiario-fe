@@ -182,6 +182,18 @@ const valueOf = (root: Element, label: string) =>
 const skeletons = (root: Element) => root.querySelectorAll('.b-kpi[aria-hidden="true"]')
 
 /** Pick the instance, once the document that names it has arrived. */
+/** Pick a currency, once the volume document has named it. */
+async function chooseFiat(container: Element, code: string) {
+  const selectFor = () =>
+    [...container.querySelectorAll('select')].find((element) =>
+      [...element.options].some((option) => option.textContent === code),
+    )
+  await waitFor(() => {
+    expect(selectFor()).toBeDefined()
+  })
+  fireEvent.change(selectFor()!, { target: { value: code } })
+}
+
 async function chooseInstance(container: Element, name: string) {
   const selectFor = () =>
     [...container.querySelectorAll('select')].find((element) =>
@@ -256,5 +268,26 @@ describe('Orders · the instance own document answers', () => {
     expect(container.textContent).not.toContain('999')
     // What is left is the instance's own block, which did verify.
     expect(valueOf(container, en.ordersView.created)).toBe('3')
+  })
+})
+
+describe('Orders · one instance in one currency', () => {
+  test('reads the currency block of the instance own document', async () => {
+    // Arrange — its document counts 12 created in ARS, and says nothing
+    // about what completed or is open in that currency.
+    events = await buildSnapshot(false)
+    const { container } = render(<Orders window="30d" />)
+
+    // Act
+    await chooseInstance(container, 'Mostro AR')
+    await chooseFiat(container, 'ARS')
+
+    // Assert
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.created)).toBe('12')
+    })
+    expect(valueOf(container, en.ordersView.completed)).toBe('—')
+    expect(valueOf(container, en.ordersView.openNow)).toBe('—')
+    expect(container.textContent).toContain(en.filters.instanceAndFiatOrders)
   })
 })

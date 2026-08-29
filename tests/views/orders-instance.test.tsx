@@ -55,7 +55,7 @@ const DOCS: Record<string, WindowPayload> = {
   },
   'volume:30d': {
     range: RANGE,
-    metrics: [count('volume.fiat.ARS.orders', 18), count('volume.fiat.VES.orders', 2)],
+    metrics: [count('volume.fiat.ARS.orders', 9), count('volume.fiat.VES.orders', 3)],
   },
   'market:30d': {
     range: RANGE,
@@ -146,6 +146,7 @@ vi.mock('~/nostr/pool', () => ({
 }))
 
 const { en } = await import('~/i18n/en')
+const { formatMetric } = await import('~/model/format')
 const { Orders } = await import('~/views/Orders')
 const { resetStore } = await import('~/store/useStore')
 const { clearCache } = await import('~/store/cache')
@@ -161,6 +162,10 @@ beforeEach(() => {
 
 afterEach(cleanup)
 
+/** As the page prints a figure, in whatever locale the run has. */
+const printed = (unit: Metric['unit'], value: Metric['value']) =>
+  formatMetric({ name: 'x', kind: 'observed', unit, value }).text
+
 /** The tile a label names, read as the reader reads it. */
 function tile(root: Element, label: string): HTMLElement | null {
   for (const kpi of root.querySelectorAll('.b-kpi')) {
@@ -171,6 +176,18 @@ function tile(root: Element, label: string): HTMLElement | null {
 
 const valueOf = (root: Element, label: string) =>
   tile(root, label)?.querySelector('strong')?.textContent
+
+/** Pick a currency, once the volume document has named it. */
+async function chooseFiat(container: Element, code: string) {
+  const selectFor = () =>
+    [...container.querySelectorAll('select')].find((element) =>
+      [...element.options].some((option) => option.textContent === code),
+    )
+  await waitFor(() => {
+    expect(selectFor()).toBeDefined()
+  })
+  fireEvent.change(selectFor()!, { target: { value: code } })
+}
 
 async function chooseInstance(container: Element, name: string) {
   // The instances document lands a round trip after the base ones, so the
@@ -280,5 +297,47 @@ describe('Orders · narrowed to one instance', () => {
     expect(pairs.some((row) => row?.startsWith(en.ordersView.instanceMaxOrder))).toBe(
       true,
     )
+  })
+})
+
+describe('Orders · narrowed to one currency', () => {
+  test('counts what completed in that currency, and its share of the whole', async () => {
+    // Arrange
+    const { container } = render(<Orders window="30d" />)
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.created)).toBe('20')
+    })
+
+    // Act
+    await chooseFiat(container, 'ARS')
+
+    // Assert — 9 of the 12 the network completed.
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.completed)).toBe('9')
+    })
+    expect(valueOf(container, en.ordersView.shareOfCompleted)).toBe(
+      printed('ratio', 0.75),
+    )
+  })
+
+  test('offers no per-currency reading of what nothing signs per currency', async () => {
+    // Arrange
+    const { container } = render(<Orders window="30d" />)
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.created)).toBe('20')
+    })
+
+    // Act
+    await chooseFiat(container, 'ARS')
+
+    // Assert — created, canceled and in-progress are not the currency's,
+    // and the network's are not shown under it either.
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.completed)).toBe('9')
+    })
+    expect(tile(container, en.ordersView.created)).toBeNull()
+    expect(tile(container, en.ordersView.canceled)).toBeNull()
+    expect(container.textContent).toContain(en.filters.noFiatOrders)
+    expect(container.textContent).not.toContain(printed('ratio', 0.6))
   })
 })

@@ -53,6 +53,10 @@ export const fr: Strings = {
       `L'archive ne publie rien en ${code} pour cette fenêtre : les chiffres ci-dessus sont donc une absence et non ceux du réseau. Une autre fenêtre, ou tout le réseau, peut en avoir.`,
     instanceAndFiat:
       "Pour une instance dans une devise, le publicateur signe un nombre d'ordres et rien d'autre : les montants sont signés pour le réseau, et par instance seulement comme un total toutes devises confondues.",
+    noFiatOrders:
+      "Par devise, l'archive compte les ordres qui se sont complétés, et eux seuls : créés, annulés, en cours et la répartition achat/vente sont signés pour toutes les devises à la fois, ils se lisent donc comme une absence tant qu'une seule est choisie.",
+    instanceAndFiatOrders:
+      "Ce qui suit est ce que cette instance a compté dans cette devise, dans son propre document d'ordres. Ses autres chiffres sont signés sur toutes les devises qu'elle négocie, pas sur une seule.",
   },
 
   ordersView: {
@@ -92,7 +96,9 @@ export const fr: Strings = {
     perCurrencyNoDocument:
       "Cette instance ne publie pas de document d'ordres qui lui soit propre : il n'y a donc pas de ventilation par devise à lire pour elle.",
     shareNotPerInstance:
-      'Cette répartition est signée pour tout le réseau et non par instance : elle ne se restreint pas à une seule.',
+      'Cette répartition est signée pour tout le réseau — ni par instance ni par devise — elle ne se restreint donc à aucune des deux.',
+    shareOfCompleted: 'Part des ordres complétés',
+    shareOfCompletedSub: 'De ce que le réseau a complété dans cette fenêtre',
   },
 
   volumeView: {

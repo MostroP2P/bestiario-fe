@@ -59,6 +59,10 @@ export const en: Strings = {
       `The archive publishes nothing in ${code} for this window, so the figures above are absent rather than the network's. Another window, or the whole network, may have it.`,
     instanceAndFiat:
       'For one instance in one currency the publisher signs a count of orders and nothing else — the amounts are signed for the network, and per instance only as a total across every currency.',
+    noFiatOrders:
+      'Per currency the archive counts the orders that completed, and only those: created, canceled, in progress and the buy/sell split are signed for every currency at once, so they read as absent while one is chosen.',
+    instanceAndFiatOrders:
+      'What follows is what this instance counted in this currency, in its own orders document. Its other figures are signed across every currency it trades, not per one.',
   },
 
   ordersView: {
@@ -97,7 +101,9 @@ export const en: Strings = {
     perCurrencyNoDocument:
       'This instance publishes no orders document of its own, so there is no breakdown by currency to read for it.',
     shareNotPerInstance:
-      'This split is signed for the whole network and not per instance, so it does not narrow to one.',
+      'This split is signed for the whole network — not per instance and not per currency — so it does not narrow to either.',
+    shareOfCompleted: 'Share of completed orders',
+    shareOfCompletedSub: 'Of what the network completed in this window',
   },
 
   volumeView: {

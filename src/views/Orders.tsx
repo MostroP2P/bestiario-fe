@@ -85,11 +85,13 @@ export function Orders(props: { readonly window: Span }) {
    * network's total wearing an instance's name — not even in the window
    * before the instances document has named the instance the reader picked.
    */
-  const orders = filters.instance
-    ? chosen
-      ? instanceOrders(chosen, scoped)
-      : []
-    : network
+  const orders = filters.fiat
+    ? []
+    : filters.instance
+      ? chosen
+        ? instanceOrders(chosen, scoped)
+        : []
+      : network
 
   /**
    * The figures are in when the documents this reading needs have answered.
@@ -103,8 +105,12 @@ export function Orders(props: { readonly window: Span }) {
       ? !settled(windowAddress('instances', props.window)) || scopedPending
       : network.length === 0)
 
-  /** The market document is signed for the network, and narrows to nothing. */
-  const marketOf = (name: string) => (filters.instance ? undefined : lookup(market, name))
+  /**
+   * The market document is signed for the network as a whole — not per
+   * instance, and not per currency — so it narrows to nothing.
+   */
+  const marketOf = (name: string) =>
+    filters.instance || filters.fiat ? undefined : lookup(market, name)
 
   const perInstanceCurrencies = useMemo(() => currencyOrders(scoped), [scoped])
 
@@ -115,6 +121,100 @@ export function Orders(props: { readonly window: Span }) {
   const shownForInstance = filters.fiat
     ? perInstanceCurrencies.filter((row) => row.code === filters.fiat)
     : perInstanceCurrencies
+
+  const figure = (metric: Metric | undefined) => formatMetric(metric).text
+
+  /** What one currency's row of the volume document counts: completions. */
+  const completedInFiat = filters.fiat
+    ? currencies.find((row) => row.code === filters.fiat)?.figures.get('orders')
+    : undefined
+
+  /** What the instance counted in that currency, in its own document. */
+  const scopedFiat = (name: string) =>
+    filters.fiat ? lookup(scoped, `orders.${filters.fiat}.${name}`) : undefined
+
+  /**
+   * A currency's share of what the network completed. The publisher signs
+   * both halves and not the quotient, so it is inferred and says so; a
+   * missing half, or a network that completed nothing, is absence.
+   */
+  const shareOfCompleted = ((): Metric | undefined => {
+    const mine = completedInFiat?.value
+    const whole = lookup(network, 'orders.completed')?.value
+    if (typeof mine !== 'number' || typeof whole !== 'number' || whole <= 0)
+      return undefined
+    return {
+      name: 'orders.share_of_completed',
+      kind: 'inferred',
+      unit: 'ratio',
+      value: mine / whole,
+    }
+  })()
+
+  /**
+   * The headline, narrowed by whatever the reader narrowed.
+   *
+   * Only what the publisher signs for a cut may stand under it. Per currency
+   * the archive counts completions and nothing else — `volume.fiat.<CODE>.orders`
+   * sums to `volume.completed` exactly — so created, canceled and in-progress
+   * have no per-currency reading and are not offered one. An instance in one
+   * currency is the richest cut of all, because its own document breaks its
+   * orders down by currency: created, completed and open right now.
+   */
+  const tiles: { label: string; value: string; sub: string }[] =
+    filters.instance && filters.fiat
+      ? [
+          {
+            label: strings.ordersView.created,
+            value: figure(scopedFiat('created')),
+            sub: filters.fiat,
+          },
+          {
+            label: strings.ordersView.completed,
+            value: figure(scopedFiat('completed')),
+            sub: filters.fiat,
+          },
+          {
+            label: strings.ordersView.openNow,
+            value: figure(scopedFiat('open_now')),
+            sub: filters.fiat,
+          },
+        ]
+      : filters.fiat
+        ? [
+            {
+              label: strings.ordersView.completed,
+              value: figure(completedInFiat),
+              sub: filters.fiat,
+            },
+            {
+              label: strings.ordersView.shareOfCompleted,
+              value: figure(shareOfCompleted),
+              sub: strings.ordersView.shareOfCompletedSub,
+            },
+          ]
+        : [
+            {
+              label: strings.ordersView.created,
+              value: figure(lookup(orders, 'orders.created')),
+              sub: strings.header.windows[props.window],
+            },
+            {
+              label: strings.ordersView.completed,
+              value: figure(lookup(orders, 'orders.completed')),
+              sub: figure(lookup(orders, 'orders.completion_rate')),
+            },
+            {
+              label: strings.ordersView.canceled,
+              value: figure(lookup(orders, 'orders.canceled')),
+              sub: figure(lookup(orders, 'orders.abandonment_rate')),
+            },
+            {
+              label: strings.ordersView.inProgressNow,
+              value: figure(lookup(orders, 'orders.in_progress_now')),
+              sub: strings.ordersView.openNow,
+            },
+          ]
 
   return (
     <>
@@ -143,7 +243,11 @@ export function Orders(props: { readonly window: Span }) {
               )
             : chosen && !scopedPending && scoped.length === 0
               ? strings.filters.unscoped(chosen.name || chosen.label)
-              : undefined
+              : filters.instance && filters.fiat
+                ? strings.filters.instanceAndFiatOrders
+                : filters.fiat
+                  ? strings.filters.noFiatOrders
+                  : undefined
         }
       />
 
@@ -156,28 +260,9 @@ export function Orders(props: { readonly window: Span }) {
             <SkeletonKpi />
           </>
         ) : (
-          <>
-            <Kpi
-              label={strings.ordersView.created}
-              value={formatMetric(lookup(orders, 'orders.created')).text}
-              sub={strings.header.windows[props.window]}
-            />
-            <Kpi
-              label={strings.ordersView.completed}
-              value={formatMetric(lookup(orders, 'orders.completed')).text}
-              sub={formatMetric(lookup(orders, 'orders.completion_rate')).text}
-            />
-            <Kpi
-              label={strings.ordersView.canceled}
-              value={formatMetric(lookup(orders, 'orders.canceled')).text}
-              sub={formatMetric(lookup(orders, 'orders.abandonment_rate')).text}
-            />
-            <Kpi
-              label={strings.ordersView.inProgressNow}
-              value={formatMetric(lookup(orders, 'orders.in_progress_now')).text}
-              sub={strings.ordersView.openNow}
-            />
-          </>
+          tiles.map((tile) => (
+            <Kpi key={tile.label} label={tile.label} value={tile.value} sub={tile.sub} />
+          ))
         )}
       </div>
 
@@ -257,7 +342,7 @@ export function Orders(props: { readonly window: Span }) {
             ]}
           />
           <p class="b-note-why b-section-note">
-            {chosen
+            {filters.instance || filters.fiat
               ? strings.ordersView.shareNotPerInstance
               : strings.ordersView.shareNote}
           </p>

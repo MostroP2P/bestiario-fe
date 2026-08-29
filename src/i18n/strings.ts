@@ -99,6 +99,10 @@ export type Strings = {
     readonly fiatUnavailable: (code: string) => string
     /** One instance in one currency is signed as a count and nothing else. */
     readonly instanceAndFiat: string
+    /** What of the orders route a currency cannot cut. */
+    readonly noFiatOrders: string
+    /** One instance in one currency, from the instance's own document. */
+    readonly instanceAndFiatOrders: string
   }
 
   readonly ordersView: {
@@ -137,6 +141,9 @@ export type Strings = {
     readonly perCurrencyNoDocument: string
     /** Why the buy/sell split does not narrow to one instance. */
     readonly shareNotPerInstance: string
+    /** A currency's share of what the network completed. */
+    readonly shareOfCompleted: string
+    readonly shareOfCompletedSub: string
   }
 
   readonly volumeView: {
