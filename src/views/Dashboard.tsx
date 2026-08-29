@@ -125,7 +125,7 @@ export function Dashboard() {
   const openBook = useMemo(() => indexedFamily(disputes, 'disputes.open'), [disputes])
 
   // ── the map ──────────────────────────────────────────────────────────
-  const mapRef = useRef<HTMLElement>(null)
+  const mapRef = useRef<HTMLDivElement>(null)
   const { width: mapWidth, height: mapHeight } = useMeasuredSize(mapRef)
   const reducedMotion = usePrefersReducedMotion()
   const atlasState = useAtlas(`${import.meta.env.BASE_URL}geo/countries-110m.json`)
@@ -245,7 +245,7 @@ export function Dashboard() {
           nowMs={nowMs}
         />
 
-        <div style={{ minWidth: 0 }}>
+        <div class="b-main">
           <div class="b-header">
             <nav class="b-tabs" aria-label={strings.header.windowNav}>
               {WINDOWS.map((span) => (
@@ -272,24 +272,30 @@ export function Dashboard() {
             </div>
           </div>
 
-          <section class="b-map" aria-labelledby="map-heading" ref={mapRef}>
-            {!mapReady && <SkeletonMap />}
-            {atlasState.status === 'failed' && (
-              <p class="b-map-state" data-failed="true">
-                {strings.map.noGeometry(atlasState.reason)}
-              </p>
-            )}
-            {mapReady && projection && (
-              <WorldPulse
-                scene={scene}
-                land={atlasState.status === 'ready' ? atlasState.atlas.features : []}
-                projection={projection}
-                width={mapWidth}
-                height={mapHeight}
-                reducedMotion={reducedMotion}
-                strings={strings}
-              />
-            )}
+          <section class="b-map" aria-labelledby="map-heading">
+            {/* The drawing is measured, not the section: on a phone the
+                caption and the count sit above and below it in the flow
+                rather than over it, and the projection must be fitted to the
+                globe's own box either way. */}
+            <div class="b-map-canvas" ref={mapRef}>
+              {!mapReady && <SkeletonMap />}
+              {atlasState.status === 'failed' && (
+                <p class="b-map-state" data-failed="true">
+                  {strings.map.noGeometry(atlasState.reason)}
+                </p>
+              )}
+              {mapReady && projection && (
+                <WorldPulse
+                  scene={scene}
+                  land={atlasState.status === 'ready' ? atlasState.atlas.features : []}
+                  projection={projection}
+                  width={mapWidth}
+                  height={mapHeight}
+                  reducedMotion={reducedMotion}
+                  strings={strings}
+                />
+              )}
+            </div>
             <div class="b-map-caption">
               <h2 id="map-heading" class="b-eyebrow" style={{ margin: 0 }}>
                 {strings.map.heading}
