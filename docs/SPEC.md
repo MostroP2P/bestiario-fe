@@ -464,7 +464,7 @@ the current archive — and the one that needs the most editing:
 - Buy/sell split.
 - **Per-fiat table**, one row per currency, built by grouping metric names
   on the `volume.fiat.<CODE>.<figure>` pattern: total, sats, orders, ticket
-  avg/p50/p90. Sortable, and the currency is a first-class column rather
+  avg. Sortable, and the currency is a first-class column rather
   than a suffix in a metric name. `sats` is what the same trade came to in
   the one unit every currency shares — the only figure in the row, beside
   the order count, that ranks a market against the others rather than

@@ -215,8 +215,6 @@ export const es: Strings = {
     sats: 'sats',
     orders: 'órdenes',
     ticketAvg: 'ticket medio',
-    p50: 'p50',
-    p90: 'p90',
     sortBy: (column) => `Ordenar por ${column}`,
     empty: 'Nada que informar en esta ventana.',
   },
