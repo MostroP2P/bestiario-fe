@@ -24,6 +24,78 @@ export const it: Strings = {
     connecting: 'IN CONNESSIONE',
   },
 
+  nav: {
+    label: 'Sezioni',
+    overview: 'RIEPILOGO',
+    orders: 'ORDINI',
+    volume: 'VOLUME',
+  },
+
+  filters: {
+    legend: 'Filtri',
+    fiat: 'Valuta',
+    instance: 'Istanza',
+    allFiat: 'Tutte le valute',
+    allInstances: 'Tutta la rete',
+    unscoped: (name) =>
+      `${name} non pubblica ancora un documento di ordini proprio, quindi quanto segue riguarda tutta la rete.`,
+    noInstanceVolume:
+      'Il volume è pubblicato per la rete e non per istanza, quindi queste cifre non si restringono a una sola.',
+  },
+
+  ordersView: {
+    heading: 'Ordini',
+    caption: 'Ciò che la rete ha creato nella finestra scelta, e come è andata a finire.',
+    created: 'Creati',
+    completed: 'Completati',
+    canceled: 'Annullati',
+    completionRate: 'Tasso di completamento',
+    abandonmentRate: 'Tasso di abbandono',
+    openNow: 'Aperti in questo momento',
+    inProgressNow: 'In corso in questo momento',
+    shareHeading: 'Acquisto e vendita',
+    buyShare: 'Quota di acquisto',
+    sellShare: 'Quota di vendita',
+    shareNote:
+      "L'editore firma questa ripartizione come quota del totale, non come un dettaglio che un filtro possa tagliare. Perciò si legge qui e non viene offerta come filtro.",
+    perCurrency: 'Ordini per valuta',
+    perCurrencyNote:
+      'Contati nel documento di volume, che è dove la rete distingue gli ordini per valuta.',
+    instanceHeading: 'Ciò che questa istanza pubblica su di sé',
+    instanceFee: 'Commissione',
+    instanceLimits: 'Limiti di ordine',
+    instanceBond: 'Cauzione',
+    instanceVersion: 'Versione',
+    instanceFiat: 'Valute dichiarate',
+    instanceSeen: "Vista l'ultima volta",
+  },
+
+  volumeView: {
+    heading: 'Volume',
+    caption:
+      'Quanto hanno mosso gli ordini completati: in sat e nelle valute in cui erano quotati.',
+    total: 'Totale',
+    completed: 'Ordini completati',
+    ticketAvg: 'Ticket medio',
+    p50: 'Ticket mediano',
+    p90: 'Ticket p90',
+    largest: 'Ordine più grande',
+    splitHeading: 'Acquisto e vendita',
+    buy: 'Acquistato',
+    sell: 'Venduto',
+    sizesHeading: 'Dimensione degli ordini',
+    sizes: {
+      lt_10k: 'meno di 10k',
+      '10k_50k': '10k – 50k',
+      '50k_200k': '50k – 200k',
+      '200k_1m': '200k – 1M',
+      gt_1m: 'più di 1M',
+    },
+    referenceHeading: 'In una valuta di riferimento',
+    referenceNote:
+      "Dedotto dalle quotazioni che l'editore aveva in quel momento. Dove nessuna era abbastanza vicina per valorizzare un ordine, questa è assenza e non una cifra.",
+  },
+
   rail: {
     publisher: 'EDITORE',
     publisherNote:

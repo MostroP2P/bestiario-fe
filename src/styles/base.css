@@ -88,9 +88,46 @@ body {
   grid-template-columns: 214px minmax(0, 1fr);
 }
 
+/* The column the figures live in. `min-width: 0` so a wide table scrolls
+   inside it rather than stretching the grid. */
+.b-main {
+  min-width: 0;
+}
+
+/* On a phone the two columns become one, and the order matters: stacked as
+   written, a reader met the whole provenance rail — publisher, relays,
+   archive, snapshot — before the first figure, and the header holding the
+   window tabs and the language picker sat 500px down the page where nobody
+   found it. The brand stays at the top; the rest of the rail goes below the
+   figures it is evidence for. */
 @media (max-width: 900px) {
   .b-shell {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* The rail stops being a box so its two halves can be ordered
+     independently; each carries the rail's own background instead. */
+  .b-rail {
+    display: contents;
+  }
+
+  .b-brand {
+    order: 1;
+    background: var(--rail);
+    border-bottom: 1px solid var(--rule);
+    padding: 16px 18px;
+  }
+
+  .b-main {
+    order: 2;
+  }
+
+  .b-rail-body {
+    order: 3;
+    background: var(--rail);
+    border-top: 1px solid var(--rule);
+    padding: 4px 0 28px;
   }
 }
 
@@ -197,9 +234,26 @@ body {
 
 .b-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 }
 
+/* Thumbs, not pointers: WCAG 2.2 asks 24px of target and a phone deserves
+   more than the artboard's desktop measure. */
+@media (max-width: 900px) {
+  .b-header {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .b-tab {
+    min-height: 32px;
+    padding: 8px 14px;
+  }
+}
+
+/* A section is a place, so a tab is a link. Styled as the artboard drew it,
+   with the underline a link would otherwise carry taken off. */
 .b-tab {
   font-family: var(--mono);
   font-size: 9.5px;
@@ -209,6 +263,13 @@ body {
   background: none;
   border: 0;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.b-tab:hover {
+  color: var(--ink);
 }
 
 .b-tab[aria-current='page'] {
@@ -264,6 +325,13 @@ body {
   background: var(--panel);
   /* Grows with the viewport: the artboard's 408px was one screen's answer. */
   height: clamp(320px, 42vh, 640px);
+}
+
+/* The box the globe is drawn in, and the box that is measured. Over the
+   whole section on a wide screen, a band of its own on a narrow one. */
+.b-map-canvas {
+  position: absolute;
+  inset: 0;
 }
 
 .b-map-caption {
@@ -325,6 +393,45 @@ body {
   color: var(--danger);
 }
 
+/* The caption was written to sit in the artboard's empty ocean, and there is
+   no empty ocean on a phone: over the globe it covered the countries it was
+   describing and collided with the count on the other side. Narrow, the same
+   three parts stack — what the map is, the map, then what it counts. */
+@media (max-width: 700px) {
+  .b-map {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px 16px 20px;
+  }
+
+  .b-map-canvas {
+    position: relative;
+    inset: auto;
+    order: 2;
+    height: clamp(260px, 46vh, 420px);
+  }
+
+  .b-map-caption {
+    position: static;
+    order: 1;
+    max-width: none;
+  }
+
+  .b-map-count {
+    position: static;
+    order: 3;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .b-map-count strong {
+    font-size: 28px;
+  }
+}
+
 /* ── kpis ──────────────────────────────────────────────────────────── */
 
 .b-kpis {
@@ -336,6 +443,27 @@ body {
 @media (max-width: 900px) {
   .b-kpis {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Two 30px figures beside each other on a 360px screen wrap their own
+   labels into three lines each. One column, slightly smaller, reads. */
+@media (max-width: 560px) {
+  .b-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .b-kpi {
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .b-kpi:last-child {
+    border-bottom: 0;
+  }
+
+  .b-kpi strong {
+    font-size: 26px;
   }
 }
 
@@ -935,6 +1063,7 @@ body {
   border: 1px solid var(--rule);
   border-radius: 2px;
   padding: 4px 6px;
+  min-height: 32px;
   cursor: pointer;
 }
 
@@ -949,4 +1078,56 @@ body {
 .b-lang-select option {
   background: var(--panel);
   color: var(--ink);
+}
+
+/* ── sections and their filters ────────────────────────────────────── */
+
+.b-section-intro {
+  padding: 18px 22px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.b-section-intro p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+  line-height: 1.4;
+  max-width: 62ch;
+}
+
+.b-section-note {
+  padding: 0 22px 14px;
+  max-width: 62ch;
+}
+
+.b-filters {
+  padding: 10px 22px 16px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.b-filter-set {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.b-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Said, not implied: where a filter cannot cut, the page says why rather
+   than showing a figure that quietly ignores it. */
+.b-filter-note {
+  margin: 12px 0 0;
+  font-size: 11.5px;
+  color: var(--warn);
+  line-height: 1.45;
+  max-width: 62ch;
 }

@@ -23,6 +23,10 @@ export function plural(count: number, one: string, many: string): string {
   return count === 1 ? one : many
 }
 
+/** The five order-size buckets the volume document publishes. */
+export const SIZE_BUCKETS = ['lt_10k', '10k_50k', '50k_200k', '200k_1m', 'gt_1m'] as const
+export type SizeBucket = (typeof SIZE_BUCKETS)[number]
+
 export type Strings = {
   readonly locale: string
   /** What the language calls itself, for the picker and for `lang`. */
@@ -58,6 +62,75 @@ export type Strings = {
     readonly network: string
     readonly verified: string
     readonly connecting: string
+  }
+
+  /** The three sections of SPEC 8, as the header names them. */
+  readonly nav: {
+    readonly label: string
+    readonly overview: string
+    readonly orders: string
+    readonly volume: string
+  }
+
+  /**
+   * What a reader can narrow a section by. Only two dimensions are published
+   * — the currency and the instance — so only two are offered, and a
+   * combination nothing was signed for says so rather than showing a zero.
+   */
+  readonly filters: {
+    readonly legend: string
+    readonly fiat: string
+    readonly instance: string
+    readonly allFiat: string
+    readonly allInstances: string
+    /** The instance publishes no orders document of its own yet. */
+    readonly unscoped: (name: string) => string
+    /** Volume carries no per-instance breakdown at all. */
+    readonly noInstanceVolume: string
+  }
+
+  readonly ordersView: {
+    readonly heading: string
+    readonly caption: string
+    readonly created: string
+    readonly completed: string
+    readonly canceled: string
+    readonly completionRate: string
+    readonly abandonmentRate: string
+    readonly openNow: string
+    readonly inProgressNow: string
+    readonly shareHeading: string
+    readonly buyShare: string
+    readonly sellShare: string
+    /** Why buy and sell are figures here and not another filter. */
+    readonly shareNote: string
+    readonly perCurrency: string
+    readonly perCurrencyNote: string
+    readonly instanceHeading: string
+    readonly instanceFee: string
+    readonly instanceLimits: string
+    readonly instanceBond: string
+    readonly instanceVersion: string
+    readonly instanceFiat: string
+    readonly instanceSeen: string
+  }
+
+  readonly volumeView: {
+    readonly heading: string
+    readonly caption: string
+    readonly total: string
+    readonly completed: string
+    readonly ticketAvg: string
+    readonly p50: string
+    readonly p90: string
+    readonly largest: string
+    readonly splitHeading: string
+    readonly buy: string
+    readonly sell: string
+    readonly sizesHeading: string
+    readonly sizes: Readonly<Record<SizeBucket, string>>
+    readonly referenceHeading: string
+    readonly referenceNote: string
   }
 
   readonly rail: {

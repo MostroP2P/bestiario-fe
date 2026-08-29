@@ -24,6 +24,79 @@ export const fr: Strings = {
     connecting: 'CONNEXION…',
   },
 
+  nav: {
+    label: 'Sections',
+    overview: 'APERÇU',
+    orders: 'ORDRES',
+    volume: 'VOLUME',
+  },
+
+  filters: {
+    legend: 'Filtres',
+    fiat: 'Devise',
+    instance: 'Instance',
+    allFiat: 'Toutes les devises',
+    allInstances: 'Tout le réseau',
+    unscoped: (name) =>
+      `${name} ne publie pas encore de document d'ordres qui lui soit propre : ce qui suit concerne donc tout le réseau.`,
+    noInstanceVolume:
+      'Le volume est publié pour le réseau et non par instance : ces chiffres ne se restreignent pas à une seule.',
+  },
+
+  ordersView: {
+    heading: 'Ordres',
+    caption:
+      "Ce que le réseau a créé dans la fenêtre choisie, et ce qu'il en est advenu.",
+    created: 'Créés',
+    completed: 'Aboutis',
+    canceled: 'Annulés',
+    completionRate: "Taux d'aboutissement",
+    abandonmentRate: "Taux d'abandon",
+    openNow: 'Ouverts en ce moment',
+    inProgressNow: 'En cours en ce moment',
+    shareHeading: 'Achat et vente',
+    buyShare: "Part d'achat",
+    sellShare: 'Part de vente',
+    shareNote:
+      "L'éditeur signe cette répartition comme une part du total, et non comme une ventilation qu'un filtre pourrait découper. Elle se lit donc ici plutôt que de s'offrir en filtre.",
+    perCurrency: 'Ordres par devise',
+    perCurrencyNote:
+      'Comptés dans le document de volume, qui est là où le réseau ventile les ordres par devise.',
+    instanceHeading: 'Ce que cette instance publie sur elle-même',
+    instanceFee: 'Commission',
+    instanceLimits: "Limites d'ordre",
+    instanceBond: 'Caution',
+    instanceVersion: 'Version',
+    instanceFiat: 'Devises déclarées',
+    instanceSeen: 'Vue pour la dernière fois',
+  },
+
+  volumeView: {
+    heading: 'Volume',
+    caption:
+      'Ce que les ordres aboutis ont déplacé : en sats, et dans les devises où ils étaient libellés.',
+    total: 'Total',
+    completed: 'Ordres aboutis',
+    ticketAvg: 'Ticket moyen',
+    p50: 'Ticket médian',
+    p90: 'Ticket p90',
+    largest: 'Ordre le plus grand',
+    splitHeading: 'Achat et vente',
+    buy: 'Acheté',
+    sell: 'Vendu',
+    sizesHeading: 'Taille des ordres',
+    sizes: {
+      lt_10k: 'moins de 10k',
+      '10k_50k': '10k – 50k',
+      '50k_200k': '50k – 200k',
+      '200k_1m': '200k – 1M',
+      gt_1m: 'plus de 1M',
+    },
+    referenceHeading: 'Dans une devise de référence',
+    referenceNote:
+      "Déduit des cours que l'éditeur détenait alors. Là où aucun n'était assez proche pour valoriser un ordre, c'est une absence et non un chiffre.",
+  },
+
   rail: {
     publisher: 'ÉMETTEUR',
     publisherNote:

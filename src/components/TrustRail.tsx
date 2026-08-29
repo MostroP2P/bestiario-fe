@@ -55,75 +55,80 @@ export function TrustRail(props: TrustRailProps) {
         </div>
       </div>
 
-      <h2 class="b-eyebrow b-rail-heading">{strings.rail.publisher}</h2>
-      <div class="b-rail-block">
-        <p class="b-mono b-rail-key" title={props.publisher}>
-          {shortKey(props.publisher)}
-        </p>
-        <p class="b-rail-note">{strings.rail.publisherNote}</p>
-      </div>
+      {/* Everything the brand is not, as one block: on a phone the shell
+          lifts it below the figures, so the reader meets the numbers and the
+          controls before the provenance behind them. */}
+      <div class="b-rail-body">
+        <h2 class="b-eyebrow b-rail-heading">{strings.rail.publisher}</h2>
+        <div class="b-rail-block">
+          <p class="b-mono b-rail-key" title={props.publisher}>
+            {shortKey(props.publisher)}
+          </p>
+          <p class="b-rail-note">{strings.rail.publisherNote}</p>
+        </div>
 
-      <h2 class="b-eyebrow b-rail-heading">{strings.rail.relays}</h2>
-      <ul class="b-relays">
-        {props.relays.length === 0 && <Skeleton width="80%" height="9px" />}
-        {props.relays.map((relay) => (
-          <li key={relay.url} class="b-relay">
-            <span class="b-relay-dot" data-state={relayState(relay)} />
-            <span class="b-relay-url">{relay.url.replace(/^wss:\/\//, '')}</span>
-            <span class="b-relay-ms">
-              {relay.newestAt === null ? '—' : formatAge(relay.newestAt, props.nowMs)}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      <h2 class="b-eyebrow b-rail-heading">{strings.rail.archive}</h2>
-      <div class="b-rail-block">
-        {!ready && (
-          <>
-            <Skeleton width="90%" height="10px" />
-            <Skeleton width="70%" height="10px" />
-          </>
-        )}
-        {ready && (
-          <>
-            <div class="b-backfill-row">
-              <span>{strings.rail.from}</span>
-              <span class="b-mono">
-                {ready.index.coverage.first_event_at.slice(0, 10)}
+        <h2 class="b-eyebrow b-rail-heading">{strings.rail.relays}</h2>
+        <ul class="b-relays">
+          {props.relays.length === 0 && <Skeleton width="80%" height="9px" />}
+          {props.relays.map((relay) => (
+            <li key={relay.url} class="b-relay">
+              <span class="b-relay-dot" data-state={relayState(relay)} />
+              <span class="b-relay-url">{relay.url.replace(/^wss:\/\//, '')}</span>
+              <span class="b-relay-ms">
+                {relay.newestAt === null ? '—' : formatAge(relay.newestAt, props.nowMs)}
               </span>
-            </div>
-            <div class="b-backfill-row">
-              <span>{strings.rail.until}</span>
-              <span class="b-mono">
-                {ready.index.coverage.last_event_at.slice(0, 10)}
-              </span>
-            </div>
-            <div class="b-backfill-row">
-              <span>{strings.rail.documents}</span>
-              <span class="b-mono">{formatCount(ready.index.documents.length)}</span>
-            </div>
-            <p class="b-rail-note">{strings.rail.archiveNote}</p>
-          </>
-        )}
-      </div>
+            </li>
+          ))}
+        </ul>
 
-      <h2 class="b-eyebrow b-rail-heading">{strings.rail.snapshot}</h2>
-      <div class="b-rail-block">
-        {!ready && <Skeleton width="85%" height="10px" />}
-        {ready && (
-          <>
-            <p class="b-mono b-rail-key">{ready.index.snapshot_id}</p>
-            <div class="b-backfill-row">
-              <span>{strings.rail.age}</span>
-              <span class="b-mono">{formatAge(ready.createdAt, props.nowMs)}</span>
-            </div>
-            <div class="b-backfill-row">
-              <span>{strings.rail.version}</span>
-              <span class="b-mono">{ready.index.publisher.version}</span>
-            </div>
-          </>
-        )}
+        <h2 class="b-eyebrow b-rail-heading">{strings.rail.archive}</h2>
+        <div class="b-rail-block">
+          {!ready && (
+            <>
+              <Skeleton width="90%" height="10px" />
+              <Skeleton width="70%" height="10px" />
+            </>
+          )}
+          {ready && (
+            <>
+              <div class="b-backfill-row">
+                <span>{strings.rail.from}</span>
+                <span class="b-mono">
+                  {ready.index.coverage.first_event_at.slice(0, 10)}
+                </span>
+              </div>
+              <div class="b-backfill-row">
+                <span>{strings.rail.until}</span>
+                <span class="b-mono">
+                  {ready.index.coverage.last_event_at.slice(0, 10)}
+                </span>
+              </div>
+              <div class="b-backfill-row">
+                <span>{strings.rail.documents}</span>
+                <span class="b-mono">{formatCount(ready.index.documents.length)}</span>
+              </div>
+              <p class="b-rail-note">{strings.rail.archiveNote}</p>
+            </>
+          )}
+        </div>
+
+        <h2 class="b-eyebrow b-rail-heading">{strings.rail.snapshot}</h2>
+        <div class="b-rail-block">
+          {!ready && <Skeleton width="85%" height="10px" />}
+          {ready && (
+            <>
+              <p class="b-mono b-rail-key">{ready.index.snapshot_id}</p>
+              <div class="b-backfill-row">
+                <span>{strings.rail.age}</span>
+                <span class="b-mono">{formatAge(ready.createdAt, props.nowMs)}</span>
+              </div>
+              <div class="b-backfill-row">
+                <span>{strings.rail.version}</span>
+                <span class="b-mono">{ready.index.publisher.version}</span>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

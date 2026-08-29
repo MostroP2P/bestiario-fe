@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
-import { cleanup, render, waitFor } from '@testing-library/preact'
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/preact'
 import { readFileSync, readdirSync } from 'node:fs'
 import type { Event, Filter } from 'nostr-tools'
 
@@ -291,14 +291,14 @@ describe('Dashboard · a window figure is not a now figure', () => {
 
   test('and moves when the window does, which a now figure would not', async () => {
     // Arrange
-    const { container, getByRole } = render(<Dashboard />)
+    const { container, getByLabelText } = render(<Dashboard />)
     await waitFor(() => {
       expect(disputesKpi(container)?.querySelector('strong')).not.toBeNull()
     })
     const before = disputesKpi(container)?.querySelector('strong')?.textContent
 
-    // Act
-    getByRole('button', { name: '24 H' }).click()
+    // Act — the window is a select now that the header carries the sections.
+    fireEvent.change(getByLabelText(en.header.windowNav), { target: { value: '24h' } })
 
     // Assert
     await waitFor(() => {

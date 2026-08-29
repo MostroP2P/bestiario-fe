@@ -30,6 +30,78 @@ export const en: Strings = {
     connecting: 'CONNECTING',
   },
 
+  nav: {
+    label: 'Sections',
+    overview: 'OVERVIEW',
+    orders: 'ORDERS',
+    volume: 'VOLUME',
+  },
+
+  filters: {
+    legend: 'Filters',
+    fiat: 'Currency',
+    instance: 'Instance',
+    allFiat: 'All currencies',
+    allInstances: 'The whole network',
+    unscoped: (name) =>
+      `${name} does not publish an orders document of its own yet, so what follows is the whole network's.`,
+    noInstanceVolume:
+      'Volume is published for the network and not per instance, so these figures do not narrow to one.',
+  },
+
+  ordersView: {
+    heading: 'Orders',
+    caption: 'What the network created in the chosen window, and what became of it.',
+    created: 'Created',
+    completed: 'Completed',
+    canceled: 'Canceled',
+    completionRate: 'Completion rate',
+    abandonmentRate: 'Abandonment rate',
+    openNow: 'Open right now',
+    inProgressNow: 'In progress right now',
+    shareHeading: 'Buying and selling',
+    buyShare: 'Buy share of orders',
+    sellShare: 'Sell share of orders',
+    shareNote:
+      'The publisher signs this split as a share of the whole, not as a breakdown a filter could cut. It is read here rather than offered as one.',
+    perCurrency: 'Orders by currency',
+    perCurrencyNote:
+      'Counted in the volume document, which is where the network breaks orders down by currency.',
+    instanceHeading: 'What this instance publishes about itself',
+    instanceFee: 'Fee',
+    instanceLimits: 'Order limits',
+    instanceBond: 'Bond',
+    instanceVersion: 'Version',
+    instanceFiat: 'Currencies declared',
+    instanceSeen: 'Last seen',
+  },
+
+  volumeView: {
+    heading: 'Volume',
+    caption:
+      'What completed orders moved: in sats, and in the currencies they were priced in.',
+    total: 'Total',
+    completed: 'Completed orders',
+    ticketAvg: 'Average ticket',
+    p50: 'Median ticket',
+    p90: 'p90 ticket',
+    largest: 'Largest order',
+    splitHeading: 'Buying and selling',
+    buy: 'Bought',
+    sell: 'Sold',
+    sizesHeading: 'Order sizes',
+    sizes: {
+      lt_10k: 'under 10k',
+      '10k_50k': '10k – 50k',
+      '50k_200k': '50k – 200k',
+      '200k_1m': '200k – 1M',
+      gt_1m: 'over 1M',
+    },
+    referenceHeading: 'In a reference currency',
+    referenceNote:
+      'Inferred from the rate snapshots the publisher held at the time. Where none was close enough to price an order, this is absence and not a figure.',
+  },
+
   rail: {
     publisher: 'PUBLISHER',
     publisherNote:
