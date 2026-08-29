@@ -155,6 +155,51 @@ test.describe('a reader on a phone', () => {
     }
   })
 
+  test('and not with the currency cross the fixtures do not publish', async ({
+    page,
+  }) => {
+    // The archive on these fixtures publishes no scoped orders document, so
+    // the cross is absent here and the page that shipped was measured without
+    // it. On mostro.world it is the widest block on the page, and every empty
+    // cell in it carries a visually hidden word — 123 of them, each
+    // `position: absolute` with no positioned ancestor, so each was laid out
+    // against the initial containing block at its static position inside a
+    // table far wider than the screen. That put the *document's* scrollable
+    // width at 1128px on a 412px phone, which no wrapper's `overflow-x` and no
+    // clip on a static ancestor could contain. This builds the same markup
+    // `CurrencyMatrix` emits and measures the page around it.
+    await open(page)
+
+    await page.evaluate(() => {
+      const codes = Array.from({ length: 13 }, (_, i) => `C${i}`)
+      const wrapper = document.createElement('div')
+      wrapper.className = 'b-matrix'
+      wrapper.tabIndex = 0
+      const head = `<tr><th scope="col"><span class="b-visually-hidden">instance</span></th>${codes
+        .map((code) => `<th scope="col">${code}</th>`)
+        .join('')}</tr>`
+      const body = Array.from({ length: 8 }, (_, row) => {
+        const cells = codes
+          .map(
+            () =>
+              `<td data-level="0"><span aria-hidden="true">·</span>` +
+              `<span class="b-visually-hidden">no orders</span></td>`,
+          )
+          .join('')
+        return `<tr><th scope="row">Mostro ${row} (82fa8cb9)</th>${cells}</tr>`
+      }).join('')
+      wrapper.innerHTML =
+        `<table><caption class="b-visually-hidden">the cross</caption>` +
+        `<thead>${head}</thead><tbody>${body}</tbody></table>`
+      document.querySelector('.b-lower-main')!.prepend(wrapper)
+    })
+
+    const measured = await widths(page)
+
+    expect(measured.scrollWidth).toBeLessThanOrEqual(measured.screen)
+    expect(measured.layout).toBeLessThanOrEqual(measured.screen)
+  })
+
   test('and does not start sliding after a rotation or a window change', async ({
     page,
   }) => {

@@ -70,17 +70,24 @@ body {
 
 /* ── shell ─────────────────────────────────────────────────────────── */
 
-/* `overflow-x: clip` is a guarantee to the reader and not a fix: the page
-   cannot be dragged sideways even if some future block overflows, and unlike
-   `hidden` it creates no scroll container, so it does not quietly turn a
-   sticky ancestor into a static one. What keeps content *reachable* is that
-   every wide block — the tables, the cross — scrolls inside its own wrapper,
-   and that the phone tests measure the page against the screen at 320, 360
-   and 390 rather than against a layout viewport that grows to fit. */
+/* `position: relative` with `overflow-x: clip` is what makes the guarantee
+   hold. `clip` alone does not clip an absolutely positioned descendant unless
+   the clipping box is also in its containing-block chain, and a static one is
+   not: the visually hidden words inside the currency cross — one per empty
+   cell, `position: absolute`, no positioned ancestor anywhere above them —
+   were laid out against the initial containing block at their static position
+   inside a table far wider than the screen, and put the document's scrollable
+   width at 1128px on a 412px phone. Positioned, this box contains them, and
+   the page cannot be dragged sideways whatever overflows inside it.
+   `clip` rather than `hidden` because it creates no scroll container, so it
+   does not quietly turn a sticky ancestor into a static one. What keeps
+   content *reachable* is unchanged: every wide block — the tables, the cross —
+   scrolls inside its own wrapper. */
 .b-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
   overflow-x: clip;
 }
 
@@ -547,9 +554,12 @@ body {
    cell. A table lays out to the same measures — `border-spacing` is the
    gutter — and says which row and column a figure belongs to, which the grid
    of boxes could not. */
+/* Positioned so the visually hidden words in its cells belong to the cross
+   and scroll with it, rather than being placed against the page. */
 .b-matrix {
   padding: 0 22px 18px;
   overflow-x: auto;
+  position: relative;
 }
 
 /* A fixed layout shares the container out among however many currencies
@@ -985,9 +995,12 @@ body {
 
 /* ── tables ────────────────────────────────────────────────────────── */
 
+/* Positioned for the same reason as `.b-matrix`: the caption and the absence
+   labels in its cells are hidden text, and hidden text is still laid out. */
 .b-table {
   padding: 0 22px 18px;
   overflow-x: auto;
+  position: relative;
 }
 
 .b-table table {
