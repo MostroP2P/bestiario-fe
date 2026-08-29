@@ -18,7 +18,7 @@ test.describe('the overview', () => {
     const kpis = page.locator('.b-kpi strong')
     await expect(kpis).toHaveCount(4)
     await expect(kpis.first()).not.toBeEmpty()
-    await expect(page.locator('.b-stream')).toHaveText('VERIFIED')
+    await expect(page.locator('.b-stream')).toHaveText('STREAM')
   })
 
   test('shows skeletons before them, never a spinner', async ({ page }) => {

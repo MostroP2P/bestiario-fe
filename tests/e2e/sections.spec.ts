@@ -15,7 +15,7 @@ const events = fixtures()
 async function open(page: Page, hash = '') {
   await serveRelay(page, events)
   await page.goto(`/${hash}`)
-  await expect(page.locator('.b-stream')).toHaveText(en.header.verified)
+  await expect(page.locator('.b-stream')).toHaveText(en.header.stream)
 }
 
 test.describe('moving between sections', () => {

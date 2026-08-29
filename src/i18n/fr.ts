@@ -20,7 +20,7 @@ export const fr: Strings = {
     language: 'Langue',
     windows: { '24h': '24 H', '7d': '7 J', '30d': '30 J', '90d': '90 J', all: 'TOUT' },
     network: 'MAINNET',
-    verified: 'VÉRIFIÉ',
+    stream: 'STREAM',
     connecting: 'CONNEXION…',
   },
 

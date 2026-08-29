@@ -92,7 +92,7 @@ export function Dashboard() {
               <span class="b-stream">
                 <i aria-hidden="true" />
                 {boot.status === 'ready'
-                  ? strings.header.verified
+                  ? strings.header.stream
                   : strings.header.connecting}
               </span>
             </div>

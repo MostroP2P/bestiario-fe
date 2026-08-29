@@ -60,7 +60,7 @@ export type Strings = {
     readonly language: string
     readonly windows: Readonly<Record<Span, string>>
     readonly network: string
-    readonly verified: string
+    readonly stream: string
     readonly connecting: string
   }
 

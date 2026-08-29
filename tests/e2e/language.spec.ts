@@ -37,7 +37,7 @@ for (const spoken of cases) {
       await expect(page.locator('.b-kpi strong').first()).not.toBeEmpty()
 
       // Assert
-      await expect(page.locator('.b-stream')).toHaveText(spoken.strings.header.verified)
+      await expect(page.locator('.b-stream')).toHaveText(spoken.strings.header.stream)
       await expect(page.locator('.b-rail')).toContainText(spoken.strings.rail.publisher)
     })
 
@@ -60,7 +60,7 @@ test.describe('a reader whose browser this site does not speak', () => {
     await page.goto('/')
     await expect(page.locator('.b-kpi strong').first()).not.toBeEmpty()
 
-    await expect(page.locator('.b-stream')).toHaveText(en.header.verified)
+    await expect(page.locator('.b-stream')).toHaveText(en.header.stream)
     await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   })
 })
@@ -85,7 +85,7 @@ test.describe('a reader with more than one language', () => {
 
     // Assert — Japanese is skipped and French is reached through its region.
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
-    await expect(page.locator('.b-stream')).toHaveText(fr.header.verified)
+    await expect(page.locator('.b-stream')).toHaveText(fr.header.stream)
   })
 
   test('is not overruled by a language it happens to have', async ({ page }) => {
@@ -148,7 +148,7 @@ test.describe('a reader whose browser guessed wrong', () => {
 
     // Assert — the page, the tab, and what a screen reader pronounces.
     await expect(page.locator('html')).toHaveAttribute('lang', 'es')
-    await expect(page.locator('.b-stream')).toHaveText(es.header.verified)
+    await expect(page.locator('.b-stream')).toHaveText(es.header.stream)
     await expect(page.locator('.b-rail')).toContainText(es.rail.publisher)
     await expect(page).toHaveTitle(es.document.title)
   })
@@ -187,6 +187,6 @@ test.describe('a reader the browser guessed right about', () => {
 
     await page.reload()
     await expect(page.locator('html')).toHaveAttribute('lang', 'en')
-    await expect(page.locator('.b-stream')).toHaveText(en.header.verified)
+    await expect(page.locator('.b-stream')).toHaveText(en.header.stream)
   })
 })
