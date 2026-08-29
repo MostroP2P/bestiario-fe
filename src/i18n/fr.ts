@@ -6,7 +6,7 @@ export const fr: Strings = {
   name: 'Français',
 
   document: {
-    title: 'bestiario — le réseau Mostro, à découvert',
+    title: 'Statistiques du réseau Mostro — bitcoin P2P sur Nostr | bestiario',
     description:
       'Statistiques du réseau Mostro d’échange de bitcoin pair à pair, lues d’événements Nostr signés et vérifiées dans votre navigateur.',
   },

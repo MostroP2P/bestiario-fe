@@ -12,7 +12,7 @@ export const en: Strings = {
   name: 'English',
 
   document: {
-    title: 'bestiario — the Mostro network, in the open',
+    title: 'Mostro network statistics — P2P bitcoin on Nostr | bestiario',
     description:
       'Statistics for the Mostro network of peer-to-peer bitcoin trading, read from signed Nostr events and verified in your browser.',
   },

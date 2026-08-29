@@ -81,6 +81,24 @@ test.describe('the head of the document', () => {
     )
   })
 
+  test('titles the page for a search engine and the card for a person', async ({
+    page,
+  }) => {
+    // The two are deliberately different sentences. A search engine matches
+    // words and reads `title`; someone deciding whether to open a link in a
+    // chat reads `og:title`. Collapsing them back into one is the regression
+    // this guards, and it is the kind that looks like tidying.
+    // Act
+    await page.goto('/')
+    const title = await page.title()
+    const card = await page.locator('meta[property="og:title"]').getAttribute('content')
+
+    // Assert
+    expect(title).toContain('Mostro network statistics')
+    expect(card).toBe('bestiario — the Mostro network, in the open')
+    expect(title).not.toBe(card)
+  })
+
   test('describes the site in structured data that parses', async ({ page }) => {
     // Only the fields asserted below: this is a shape check, not a schema.
     type LinkedData = {
