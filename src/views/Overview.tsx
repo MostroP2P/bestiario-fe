@@ -301,12 +301,15 @@ export function Overview(props: { readonly window: Span }) {
             />
           )}
         </div>
+        {/* Every market the archive published, not only the ones the map
+            could place: a currency whose country does not resolve is still
+            an active market, and the headline may not quietly drop it. */}
         <div class="b-map-count">
           <span class="b-eyebrow">{strings.map.activeMarkets}</span>
           {loading ? (
             <Skeleton width="52px" height="30px" />
           ) : (
-            <strong>{scene.currencies.length}</strong>
+            <strong>{marketWeights.length}</strong>
           )}
         </div>
 
