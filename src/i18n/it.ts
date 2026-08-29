@@ -42,7 +42,11 @@ export const it: Strings = {
     unverifiedScoped: (name, reason) =>
       `${name} pubblica un documento di ordini proprio, e non ha superato la verifica in questo browser: ${reason}. Non se ne mostra nulla: soltanto ciò che il documento delle istanze dice dell'istanza.`,
     noInstanceVolume:
-      'Il volume è pubblicato per la rete e non per istanza, quindi queste cifre non si restringono a una sola.',
+      'Per istanza si pubblica soltanto il volume totale in sats, nel documento di confronto. Gli importi per valuta, le dimensioni del ticket, la ripartizione acquisto/vendita e la conversione di riferimento sono firmati per tutta la rete, quindi si leggono come assenza finché è scelta un’istanza.',
+    noCompareRow: (name) =>
+      `Il documento di confronto di questa finestra non nomina alcun blocco per ${name}, quindi non c’è un volume proprio da mostrare — ed è assenza, non uno zero.`,
+    unverifiedCompare: (reason) =>
+      `Il documento di confronto di questa finestra non ha superato la verifica in questo browser: ${reason}. Non se ne legge nulla per istanza.`,
   },
 
   ordersView: {
@@ -108,6 +112,14 @@ export const it: Strings = {
     referenceHeading: 'In una valuta di riferimento',
     referenceNote:
       "Dedotto dalle quotazioni che l'editore aveva in quel momento. Dove nessuna era abbastanza vicina per valorizzare un ordine, questa è assenza e non una cifra.",
+    shareOfNetwork: 'Quota del volume della rete',
+    shareOfNetworkSub: 'Di quanto ha mosso tutta la rete in questa finestra',
+    devFees: 'Commissioni inviate allo sviluppo',
+    instanceCurrencies: 'Valute trattate da questa istanza',
+    instanceCurrenciesNote:
+      "Contate nel documento di ordini dell'istanza stessa: quanti ordini ha completato in ciascuna valuta. Gli importi sono pubblicati per la rete e non per istanza.",
+    instanceCurrenciesEmpty:
+      'Questa istanza non pubblica alcuna scomposizione per valuta per questa finestra.',
   },
 
   rail: {

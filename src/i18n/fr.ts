@@ -42,7 +42,11 @@ export const fr: Strings = {
     unverifiedScoped: (name, reason) =>
       `${name} publie un document d'ordres qui lui est propre, et il n'a pas passé la vérification dans ce navigateur : ${reason}. Rien n'en est montré — seulement ce que le document des instances dit de l'instance.`,
     noInstanceVolume:
-      'Le volume est publié pour le réseau et non par instance : ces chiffres ne se restreignent pas à une seule.',
+      "Par instance, seul le volume total en sats est publié, dans le document de comparaison. Les montants par devise, les tailles de ticket, la répartition achat/vente et la conversion de référence sont signés pour tout le réseau : ils se lisent donc comme une absence tant qu'une instance est choisie.",
+    noCompareRow: (name) =>
+      `Le document de comparaison de cette fenêtre ne nomme aucun bloc pour ${name} : il n'y a donc pas de volume qui lui soit propre à montrer — ce qui est une absence et non un zéro.`,
+    unverifiedCompare: (reason) =>
+      `Le document de comparaison de cette fenêtre n'a pas passé la vérification dans ce navigateur : ${reason}. Rien n'en est lu par instance.`,
   },
 
   ordersView: {
@@ -109,6 +113,14 @@ export const fr: Strings = {
     referenceHeading: 'Dans une devise de référence',
     referenceNote:
       "Déduit des cours que l'éditeur détenait alors. Là où aucun n'était assez proche pour valoriser un ordre, c'est une absence et non un chiffre.",
+    shareOfNetwork: 'Part du volume du réseau',
+    shareOfNetworkSub: 'De ce que tout le réseau a déplacé dans cette fenêtre',
+    devFees: 'Commissions envoyées au développement',
+    instanceCurrencies: 'Devises négociées par cette instance',
+    instanceCurrenciesNote:
+      "Comptées dans le document d'ordres de l'instance elle-même : combien d'ordres elle a complétés dans chaque devise. Les montants sont publiés pour le réseau et non par instance.",
+    instanceCurrenciesEmpty:
+      'Cette instance ne publie aucune ventilation par devise pour cette fenêtre.',
   },
 
   rail: {

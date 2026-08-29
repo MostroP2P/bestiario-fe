@@ -48,7 +48,11 @@ export const en: Strings = {
     unverifiedScoped: (name, reason) =>
       `${name} publishes an orders document of its own, and it did not verify in this browser: ${reason}. Nothing from it is shown — only what the instances document says about the instance.`,
     noInstanceVolume:
-      'Volume is published for the network and not per instance, so these figures do not narrow to one.',
+      'Only the total volume in sats is published per instance, in the comparison document. The per-currency amounts, ticket sizes, buy/sell split and reference conversion are signed for the whole network, so they read as absent while one instance is chosen.',
+    noCompareRow: (name) =>
+      `The comparison document for this window names no block for ${name}, so there is no volume of its own to show — which is absence, not a zero.`,
+    unverifiedCompare: (reason) =>
+      `The comparison document for this window did not verify in this browser: ${reason}. Nothing per instance is read from it.`,
   },
 
   ordersView: {
@@ -114,6 +118,14 @@ export const en: Strings = {
     referenceHeading: 'In a reference currency',
     referenceNote:
       'Inferred from the rate snapshots the publisher held at the time. Where none was close enough to price an order, this is absence and not a figure.',
+    shareOfNetwork: 'Share of network volume',
+    shareOfNetworkSub: 'Of what the whole network moved in this window',
+    devFees: 'Dev fees sent',
+    instanceCurrencies: 'Currencies this instance traded',
+    instanceCurrenciesNote:
+      "Counted in the instance's own orders document: how many orders it completed in each currency. The amounts are published for the network and not per instance.",
+    instanceCurrenciesEmpty:
+      'This instance publishes no breakdown by currency for this window.',
   },
 
   rail: {

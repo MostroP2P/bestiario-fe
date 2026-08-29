@@ -20,15 +20,7 @@
  * They are told apart by the shape of the segment, not by position.
  */
 import type { Metric } from '~/nostr/documents'
-
-/** Splits `instances.<label>.<figure>` from the right. */
-function splitLast(name: string, prefix: string): { key: string; figure: string } | null {
-  if (!name.startsWith(prefix)) return null
-  const rest = name.slice(prefix.length)
-  const dot = rest.lastIndexOf('.')
-  if (dot <= 0 || dot === rest.length - 1) return null
-  return { key: rest.slice(0, dot), figure: rest.slice(dot + 1) }
-}
+import { labelledBlocks } from '~/model/metrics'
 
 export type InstanceRow = {
   /** The label the publisher keys the block by. Not an address. */
@@ -53,14 +45,7 @@ const PUBKEY = /^[0-9a-f]{64}$/
  * this client cannot name.
  */
 export function instanceRows(metrics: readonly Metric[]): InstanceRow[] {
-  const blocks = new Map<string, Map<string, Metric>>()
-  for (const metric of metrics) {
-    const split = splitLast(metric.name, 'instances.')
-    if (!split) continue
-    const block = blocks.get(split.key) ?? new Map<string, Metric>()
-    block.set(split.figure, metric)
-    blocks.set(split.key, block)
-  }
+  const blocks = labelledBlocks(metrics, 'instances.')
 
   const rows: InstanceRow[] = []
   for (const [label, figures] of blocks) {
@@ -82,6 +67,7 @@ export function instanceRows(metrics: readonly Metric[]): InstanceRow[] {
 export type CurrencyOrders = {
   readonly code: string
   readonly created: number
+  readonly completed: number
   readonly openNow: number
 }
 
@@ -120,6 +106,7 @@ export function currencyOrders(metrics: readonly Metric[]): CurrencyOrders[] {
     .map(([code, block]) => ({
       code,
       created: numberOf(block, 'created'),
+      completed: numberOf(block, 'completed'),
       openNow: numberOf(block, 'open_now'),
     }))
 }
