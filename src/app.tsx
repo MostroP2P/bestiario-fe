@@ -15,6 +15,12 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.lang = strings.locale
+    // The tab and anything that quotes this page: index.html ships English,
+    // and a Spanish page under an English title contradicts itself.
+    document.title = strings.document.title
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute('content', strings.document.description)
   }, [strings])
 
   return (

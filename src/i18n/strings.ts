@@ -12,10 +12,39 @@
  */
 import type { Span } from '~/nostr/address'
 
+/**
+ * `one` when there is one of a thing, `many` otherwise.
+ *
+ * Every count a locale interpolates goes through this. "1 currencies not
+ * placed on the map" is the sort of thing a screen reader makes unmissable,
+ * and the English source carried it before any translation did.
+ */
+export function plural(count: number, one: string, many: string): string {
+  return count === 1 ? one : many
+}
+
 export type Strings = {
   readonly locale: string
   /** What the language calls itself, for the picker and for `lang`. */
   readonly name: string
+
+  /** The tab, and what a link to this page says when it is shared. */
+  readonly document: {
+    readonly title: string
+    readonly description: string
+  }
+
+  /**
+   * Duration units, as the abbreviations a reader of this language expects.
+   * French says `j` for a day and Italian `g`; `d` would be a foreign word
+   * abbreviated.
+   */
+  readonly units: {
+    readonly days: string
+    readonly hours: string
+    readonly minutes: string
+    readonly seconds: string
+  }
 
   readonly brand: {
     readonly tagline: string
@@ -111,7 +140,7 @@ export type Strings = {
     readonly heading: string
     readonly listLabel: string
     readonly empty: string
-    readonly asOf: string
+    readonly asOf: (when: string) => string
   }
 
   readonly absence: {

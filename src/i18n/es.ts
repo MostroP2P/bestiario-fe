@@ -1,9 +1,17 @@
-import type { Strings } from './strings'
+import { plural, type Strings } from './strings'
 
 /** Español. Traducción de `en.ts`, que es la fuente. */
 export const es: Strings = {
   locale: 'es',
   name: 'Español',
+
+  document: {
+    title: 'bestiario — la red Mostro, a la vista',
+    description:
+      'Estadísticas de la red Mostro, leídas de eventos Nostr firmados y verificadas en tu navegador.',
+  },
+
+  units: { days: 'd', hours: 'h', minutes: 'm', seconds: 's' },
 
   brand: { tagline: 'OBSERVATORIO DE LA RED' },
 
@@ -42,15 +50,18 @@ export const es: Strings = {
     illustrativeRoutes:
       'Las rutas son ilustrativas: van a anclajes sin nombre, no a mostros. El daemon todavía no ha publicado orders:…:i:<pubkey>, y sin eso nada dice qué instancia opera qué moneda. Lo medido es la moneda, su país y sus órdenes.',
     approximateInstances: (approximate, total) =>
-      `${approximate} de ${total} instancias no nombran un país, así que su punto es una dispersión y no una ubicación. Las rutas están medidas: cada una es una moneda que esa instancia operó.`,
+      `${approximate} de ${total} ${plural(total, 'instancia no nombra', 'instancias no nombran')} un país, así que su punto es una dispersión y no una ubicación. Las rutas están medidas: cada una es una moneda que esa instancia operó.`,
     describe: {
       empty: 'Sin flujo de órdenes que mostrar.',
       flows: (arcs, currencies, instances) =>
-        `${arcs} flujos de órdenes entre ${currencies} monedas y ${instances} instancias de Mostro`,
-      live: (count) => `${count} órdenes en curso`,
-      settling: (count) => `${count} órdenes recién completadas`,
-      unplacedCurrencies: (count) => `${count} monedas sin ubicar en el mapa`,
-      unplacedInstances: (count) => `${count} instancias sin ubicar en el mapa`,
+        `${arcs} ${plural(arcs, 'flujo', 'flujos')} de órdenes entre ${currencies} ${plural(currencies, 'moneda', 'monedas')} y ${instances} ${plural(instances, 'instancia', 'instancias')} de Mostro`,
+      live: (count) => `${count} ${plural(count, 'orden en curso', 'órdenes en curso')}`,
+      settling: (count) =>
+        `${count} ${plural(count, 'orden recién completada', 'órdenes recién completadas')}`,
+      unplacedCurrencies: (count) =>
+        `${count} ${plural(count, 'moneda sin ubicar', 'monedas sin ubicar')} en el mapa`,
+      unplacedInstances: (count) =>
+        `${count} ${plural(count, 'instancia sin ubicar', 'instancias sin ubicar')} en el mapa`,
     },
   },
 
@@ -114,7 +125,8 @@ export const es: Strings = {
     heading: 'DISPUTAS ABIERTAS AHORA',
     listLabel: 'Disputas abiertas',
     empty: 'Ninguna disputa abierta.',
-    asOf: 'Edades medidas por el publicador al calcular la instantánea, no ahora.',
+    asOf: (when) =>
+      `Edades medidas por el publicador al calcular la instantánea el ${when}, no ahora.`,
   },
 
   absence: {
@@ -142,5 +154,5 @@ export const es: Strings = {
   },
 
   footnote: (relays) =>
-    `Leído de ${relays} relays y verificado en este navegador contra la clave del publicador. Un valor ausente se dibuja ausente y nunca como cero; una cifra inferida se marca como tal.`,
+    `Leído de ${relays} ${plural(relays, 'relay', 'relays')} y verificado en este navegador contra la clave del publicador. Un valor ausente se dibuja ausente y nunca como cero; una cifra inferida se marca como tal.`,
 }

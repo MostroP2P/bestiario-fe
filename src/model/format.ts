@@ -34,6 +34,16 @@ function plain(text: string): Formatted {
   return { text, absence: null }
 }
 
+/** How this language abbreviates a duration. Set alongside the number locale. */
+export type DurationUnits = {
+  readonly days: string
+  readonly hours: string
+  readonly minutes: string
+  readonly seconds: string
+}
+
+let units: DurationUnits = { days: 'd', hours: 'h', minutes: 'm', seconds: 's' }
+
 /** Numbers follow the language the page is rendered in, not the browser's. */
 let numberLocale: string | undefined
 let integers = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 })
@@ -48,7 +58,8 @@ let oneDecimal = new Intl.NumberFormat(undefined, {
  * A page rendered in English for a reader whose browser is Spanish would
  * otherwise print English words around Spanish thousands separators.
  */
-export function useNumberLocale(locale: string): void {
+export function useNumberLocale(locale: string, durationUnits?: DurationUnits): void {
+  if (durationUnits) units = durationUnits
   if (locale === numberLocale) return
   numberLocale = locale
   integers = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
@@ -70,10 +81,13 @@ export function formatDuration(seconds: number): string {
   const minutes = Math.floor((total % 3_600) / 60)
   const secs = total % 60
 
-  if (days > 0) return `${days} d ${String(hours).padStart(2, '0')} h`
-  if (hours > 0) return `${hours} h ${String(minutes).padStart(2, '0')} m`
-  if (minutes > 0) return `${minutes} m ${String(secs).padStart(2, '0')} s`
-  return `${secs} s`
+  if (days > 0)
+    return `${days} ${units.days} ${String(hours).padStart(2, '0')} ${units.hours}`
+  if (hours > 0)
+    return `${hours} ${units.hours} ${String(minutes).padStart(2, '0')} ${units.minutes}`
+  if (minutes > 0)
+    return `${minutes} ${units.minutes} ${String(secs).padStart(2, '0')} ${units.seconds}`
+  return `${secs} ${units.seconds}`
 }
 
 /** A figure, by its unit. */
@@ -108,6 +122,11 @@ export function formatValue(value: MetricValue, unit: Unit): Formatted {
     case 'date':
       return typeof value === 'string' ? plain(value) : absent('noData')
   }
+}
+
+/** A plain count, grouped for the page's language. */
+export function formatCount(value: number): string {
+  return integers.format(value)
 }
 
 export function formatMetric(metric: Metric | undefined): Formatted {

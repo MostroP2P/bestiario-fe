@@ -1,9 +1,17 @@
-import type { Strings } from './strings'
+import { plural, type Strings } from './strings'
 
 /** Italiano. Traduzione di `en.ts`, che fa fede. */
 export const it: Strings = {
   locale: 'it',
   name: 'Italiano',
+
+  document: {
+    title: 'bestiario — la rete Mostro, allo scoperto',
+    description:
+      'Statistiche della rete Mostro, lette da eventi Nostr firmati e verificate nel tuo browser.',
+  },
+
+  units: { days: 'g', hours: 'h', minutes: 'min', seconds: 's' },
 
   brand: { tagline: 'OSSERVATORIO DELLA RETE' },
 
@@ -42,15 +50,18 @@ export const it: Strings = {
     illustrativeRoutes:
       'Le rotte sono illustrative: vanno verso ancoraggi senza nome, non verso le istanze Mostro. Il daemon non ha ancora pubblicato orders:…:i:<pubkey>, e senza quel dato nulla dice quale istanza tratta quale valuta. Ciò che è misurato è la valuta, il suo paese e i suoi ordini.',
     approximateInstances: (approximate, total) =>
-      `${approximate} istanze su ${total} non nominano un paese, quindi il loro punto è una dispersione e non una posizione. Le rotte sono misurate: ognuna è una valuta che quell’istanza ha trattato.`,
+      `${approximate} ${plural(total, 'istanza su', 'istanze su')} ${total} ${plural(total, 'non nomina', 'non nominano')} un paese, quindi il loro punto è una dispersione e non una posizione. Le rotte sono misurate: ognuna è una valuta che quell’istanza ha trattato.`,
     describe: {
       empty: 'Nessun flusso di ordini da mostrare.',
       flows: (arcs, currencies, instances) =>
-        `${arcs} flussi di ordini tra ${currencies} valute e ${instances} istanze Mostro`,
+        `${arcs} ${plural(arcs, 'flusso', 'flussi')} di ordini tra ${currencies} ${plural(currencies, 'valuta', 'valute')} e ${instances} ${plural(instances, 'istanza', 'istanze')} Mostro`,
       live: (count) => `${count} in corso`,
-      settling: (count) => `${count} completati di recente`,
-      unplacedCurrencies: (count) => `${count} valute non collocate sulla mappa`,
-      unplacedInstances: (count) => `${count} istanze non collocate sulla mappa`,
+      settling: (count) =>
+        `${count} ${plural(count, 'completato di recente', 'completati di recente')}`,
+      unplacedCurrencies: (count) =>
+        `${count} ${plural(count, 'valuta non collocata', 'valute non collocate')} sulla mappa`,
+      unplacedInstances: (count) =>
+        `${count} ${plural(count, 'istanza non collocata', 'istanze non collocate')} sulla mappa`,
     },
   },
 
@@ -114,7 +125,8 @@ export const it: Strings = {
     heading: 'DISPUTE APERTE ORA',
     listLabel: 'Dispute aperte',
     empty: 'Nessuna disputa aperta.',
-    asOf: 'Età misurate dall’editore al momento del calcolo dell’istantanea, non ora.',
+    asOf: (when) =>
+      `Età misurate dall’editore al momento del calcolo dell’istantanea il ${when}, non ora.`,
   },
 
   absence: {

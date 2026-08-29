@@ -62,7 +62,7 @@ export function OpenDisputes({
           })}
         </ul>
       </div>
-      {asOf && <p class="b-asof">{strings.disputes.asOf}</p>}
+      {asOf && <p class="b-asof">{strings.disputes.asOf(asOf)}</p>}
     </>
   )
 }

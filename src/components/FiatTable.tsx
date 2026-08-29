@@ -46,9 +46,7 @@ export function FiatTable({
   return (
     <div class="b-table" tabIndex={0} role="group" aria-label={strings.fiat.caption}>
       <table>
-        <caption class="b-visually-hidden">
-          Volumen por moneda en la ventana elegida
-        </caption>
+        <caption class="b-visually-hidden">{strings.fiat.caption}</caption>
         <thead>
           <tr>
             <th scope="col">{strings.fiat.currency}</th>

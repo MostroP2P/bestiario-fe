@@ -1,9 +1,17 @@
-import type { Strings } from './strings'
+import { plural, type Strings } from './strings'
 
 /** Português. Tradução de `en.ts`, que é a fonte. */
 export const pt: Strings = {
   locale: 'pt',
   name: 'Português',
+
+  document: {
+    title: 'bestiario — a rede Mostro, à vista',
+    description:
+      'Estatísticas da rede Mostro, lidas de eventos Nostr assinados e verificadas no seu navegador.',
+  },
+
+  units: { days: 'd', hours: 'h', minutes: 'm', seconds: 's' },
 
   brand: { tagline: 'OBSERVATÓRIO DA REDE' },
 
@@ -38,19 +46,23 @@ export const pt: Strings = {
     loadingGeometry: 'CARREGANDO GEOMETRIA…',
     noGeometry: (reason) => `SEM GEOMETRIA · ${reason}`,
     activeMarkets: 'MERCADOS ATIVOS',
-    unplaced: (count) => `${count} não localizadas, fora do mapa`,
+    unplaced: (count) =>
+      `${count} ${plural(count, 'não localizada', 'não localizadas')}, fora do mapa`,
     illustrativeRoutes:
       'As rotas são ilustrativas: vão para âncoras sem nome, não para mostros. O daemon ainda não publicou orders:…:i:<pubkey>, e sem ele nada diz qual instância opera qual moeda. O que é medido é a moeda, o seu país e as suas ordens.',
     approximateInstances: (approximate, total) =>
-      `${approximate} de ${total} instâncias não nomeiam um país, então o ponto delas é uma dispersão e não uma localização. As rotas são medidas: cada uma é uma moeda que essa instância operou.`,
+      `${approximate} de ${total} ${plural(total, 'instância não nomeia', 'instâncias não nomeiam')} um país, então o ponto delas é uma dispersão e não uma localização. As rotas são medidas: cada uma é uma moeda que essa instância operou.`,
     describe: {
       empty: 'Sem fluxo de ordens para mostrar.',
       flows: (arcs, currencies, instances) =>
-        `${arcs} fluxos de ordens entre ${currencies} moedas e ${instances} instâncias de Mostro`,
+        `${arcs} ${plural(arcs, 'fluxo', 'fluxos')} de ordens entre ${currencies} ${plural(currencies, 'moeda', 'moedas')} e ${instances} ${plural(instances, 'instância', 'instâncias')} de Mostro`,
       live: (count) => `${count} em andamento`,
-      settling: (count) => `${count} recém-concluídos`,
-      unplacedCurrencies: (count) => `${count} moedas ficaram fora do mapa`,
-      unplacedInstances: (count) => `${count} instâncias ficaram fora do mapa`,
+      settling: (count) =>
+        `${count} ${plural(count, 'recém-concluído', 'recém-concluídos')}`,
+      unplacedCurrencies: (count) =>
+        `${count} ${plural(count, 'moeda ficou', 'moedas ficaram')} fora do mapa`,
+      unplacedInstances: (count) =>
+        `${count} ${plural(count, 'instância ficou', 'instâncias ficaram')} fora do mapa`,
     },
   },
 
@@ -114,7 +126,8 @@ export const pt: Strings = {
     heading: 'DISPUTAS ABERTAS AGORA',
     listLabel: 'Disputas abertas',
     empty: 'Nenhuma disputa aberta.',
-    asOf: 'Idades medidas pelo publicador ao calcular o instantâneo, não agora.',
+    asOf: (when) =>
+      `Idades medidas pelo publicador ao calcular o instantâneo em ${when}, não agora.`,
   },
 
   absence: {
@@ -142,5 +155,5 @@ export const pt: Strings = {
   },
 
   footnote: (relays) =>
-    `Lido de ${relays} relays e verificado neste navegador com a chave do publicador. Um valor ausente é desenhado como ausente e nunca como zero; um número inferido é marcado como tal.`,
+    `Lido de ${relays} ${plural(relays, 'relay', 'relays')} e verificado neste navegador com a chave do publicador. Um valor ausente é desenhado como ausente e nunca como zero; um número inferido é marcado como tal.`,
 }

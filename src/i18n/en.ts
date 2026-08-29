@@ -1,4 +1,4 @@
-import type { Strings } from './strings'
+import { plural, type Strings } from './strings'
 
 /**
  * English, and the source of truth every other locale is a translation of.
@@ -10,6 +10,14 @@ import type { Strings } from './strings'
 export const en: Strings = {
   locale: 'en',
   name: 'English',
+
+  document: {
+    title: 'bestiario — the Mostro network, in the open',
+    description:
+      'Mostro network statistics, read from signed Nostr events and verified in your browser.',
+  },
+
+  units: { days: 'd', hours: 'h', minutes: 'm', seconds: 's' },
 
   brand: { tagline: 'NETWORK OBSERVATORY' },
 
@@ -48,18 +56,20 @@ export const en: Strings = {
     illustrativeRoutes:
       'The routes are illustrative: they run to unnamed anchors, not to mostros. The daemon has not published orders:…:i:<pubkey> yet, and without it nothing says which instance trades which currency. What is measured is the currency, its country and its orders.',
     approximateInstances: (approximate, total) =>
-      `${approximate} of ${total} instances name no country, so their point is a scattering and not a location. The routes are measured: each one is a currency that instance traded.`,
+      `${approximate} of ${total} ${plural(total, 'instance names', 'instances name')} no country, so their point is a scattering and not a location. The routes are measured: each one is a currency that instance traded.`,
     describe: {
       empty: 'No order flow to show.',
       flows: (arcs, currencies, instances) =>
-        `${arcs} order flows between ${currencies} currencies and ${instances} Mostro instances`,
+        `${arcs} order ${plural(arcs, 'flow', 'flows')} between ${currencies} ${plural(currencies, 'currency', 'currencies')} and ${instances} Mostro ${plural(instances, 'instance', 'instances')}`,
       live: (count) => `${count} in progress`,
       settling: (count) => `${count} recently completed`,
       // Phrased so it reads at one as well as at many: a count of 1 with a
       // plural verb ("1 currencies could not be placed") is the sort of thing
       // a screen reader makes unmissable.
-      unplacedCurrencies: (count) => `${count} currencies not placed on the map`,
-      unplacedInstances: (count) => `${count} instances not placed on the map`,
+      unplacedCurrencies: (count) =>
+        `${count} ${plural(count, 'currency', 'currencies')} not placed on the map`,
+      unplacedInstances: (count) =>
+        `${count} ${plural(count, 'instance', 'instances')} not placed on the map`,
     },
   },
 
@@ -123,7 +133,8 @@ export const en: Strings = {
     heading: 'DISPUTES OPEN NOW',
     listLabel: 'Open disputes',
     empty: 'No open disputes.',
-    asOf: 'Ages measured by the publisher when it computed the snapshot, not now.',
+    asOf: (when) =>
+      `Ages measured by the publisher when it computed the snapshot on ${when}, not now.`,
   },
 
   absence: {
@@ -151,5 +162,5 @@ export const en: Strings = {
   },
 
   footnote: (relays) =>
-    `Read from ${relays} relays and verified in this browser against the publisher's key. An absent value is drawn as absent and never as a zero; an inferred figure is marked as one.`,
+    `Read from ${relays} ${plural(relays, 'relay', 'relays')} and verified in this browser against the publisher's key. An absent value is drawn as absent and never as a zero; an inferred figure is marked as one.`,
 }

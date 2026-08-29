@@ -1,6 +1,6 @@
 import mostroIcon from '~/assets/mostro-icon.svg'
 import { Skeleton } from './Skeleton'
-import { formatAge } from '~/model/format'
+import { formatAge, formatCount } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import type { BootState } from '~/store/store'
 import type { RelayState } from '~/nostr/pool'
@@ -101,7 +101,7 @@ export function TrustRail(props: TrustRailProps) {
             </div>
             <div class="b-backfill-row">
               <span>{strings.rail.documents}</span>
-              <span class="b-mono">{ready.index.documents.length}</span>
+              <span class="b-mono">{formatCount(ready.index.documents.length)}</span>
             </div>
             <p class="b-rail-note">{strings.rail.archiveNote}</p>
           </>

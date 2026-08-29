@@ -47,7 +47,7 @@ const EMPTY_SCENE: Scene = {
 
 export function Dashboard() {
   const strings = useStrings()
-  useNumberLocale(strings.locale)
+  useNumberLocale(strings.locale, strings.units)
   const [window_, setWindow] = useState<Span>('30d')
   const [nowMs, setNowMs] = useState(() => Date.now())
   useEffect(() => {

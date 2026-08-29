@@ -65,14 +65,70 @@ test.describe('a reader whose browser this site does not speak', () => {
   })
 })
 
-test.describe('a reader who prefers a language this site speaks second', () => {
-  test.use({ locale: 'ja-JP' })
+test.describe('a reader with more than one language', () => {
+  test('gets the first one this site speaks, not the first one it has', async ({
+    page,
+  }) => {
+    // Arrange — Japanese first, then Canadian French. `locale` sets a single
+    // tag, so the list is installed before any application code runs.
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['ja-JP', 'fr-CA'],
+        configurable: true,
+      })
+    })
+    await serveRelay(page, events)
+
+    // Act
+    await page.goto('/')
+    await expect(page.locator('.b-kpi strong').first()).not.toBeEmpty()
+
+    // Assert — Japanese is skipped and French is reached through its region.
+    await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
+    await expect(page.locator('.b-stream')).toHaveText(fr.header.verified)
+  })
 
   test('is not overruled by a language it happens to have', async ({ page }) => {
-    // The browser asks for Japanese; the site does not speak it, so English.
+    // Italian is available, but this reader asked for French first.
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['fr', 'it'],
+        configurable: true,
+      })
+    })
     await serveRelay(page, events)
+
+    await page.goto('/')
+
+    await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
+  })
+
+  test('gets English when this site speaks none of them', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['ja-JP', 'ko-KR', 'zh-Hans-CN'],
+        configurable: true,
+      })
+    })
+    await serveRelay(page, events)
+
     await page.goto('/')
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  })
+})
+
+test.describe('the tab and the shared link', () => {
+  test.use({ locale: 'es-AR' })
+
+  test('follow the page, so the title does not contradict it', async ({ page }) => {
+    // index.html ships an English title; a Spanish page under it says two
+    // different things to a reader and to whoever quotes the link.
+    await serveRelay(page, events)
+    await page.goto('/')
+
+    await expect(page).toHaveTitle(es.document.title)
+    const description = page.locator('meta[name="description"]')
+    await expect(description).toHaveAttribute('content', es.document.description)
   })
 })

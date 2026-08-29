@@ -155,8 +155,10 @@ describe('WorldPulse', () => {
   test('describes itself for a reader who cannot see it', () => {
     const { container } = draw([line()])
 
-    expect(container.querySelector('svg')?.getAttribute('aria-label')).toMatch(
-      /1 order flows between 1 currencies and 1 Mostro instances/,
+    // Singular throughout at a count of one, which is what the catalogue
+    // now guarantees and what a screen reader would otherwise stumble on.
+    expect(container.querySelector('svg')?.getAttribute('aria-label')).toContain(
+      en.map.describe.flows(1, 1, 1),
     )
   })
 

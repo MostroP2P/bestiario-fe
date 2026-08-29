@@ -1,9 +1,17 @@
-import type { Strings } from './strings'
+import { plural, type Strings } from './strings'
 
 /** Français. Traduction de `en.ts`, qui fait foi. */
 export const fr: Strings = {
   locale: 'fr',
   name: 'Français',
+
+  document: {
+    title: 'bestiario — le réseau Mostro, à découvert',
+    description:
+      'Statistiques du réseau Mostro, lues d’événements Nostr signés et vérifiées dans votre navigateur.',
+  },
+
+  units: { days: 'j', hours: 'h', minutes: 'min', seconds: 's' },
 
   brand: { tagline: 'OBSERVATOIRE DU RÉSEAU' },
 
@@ -38,19 +46,23 @@ export const fr: Strings = {
     loadingGeometry: 'CHARGEMENT DE LA GÉOMÉTRIE…',
     noGeometry: (reason) => `PAS DE GÉOMÉTRIE · ${reason}`,
     activeMarkets: 'MARCHÉS ACTIFS',
-    unplaced: (count) => `${count} sans emplacement, hors carte`,
+    unplaced: (count) =>
+      `${count} ${plural(count, 'sans emplacement', 'sans emplacement')}, hors carte`,
     illustrativeRoutes:
       'Les routes sont illustratives : elles vont vers des ancrages sans nom, pas vers des mostros. Le démon n’a pas encore publié orders:…:i:<pubkey>, et sans cela rien ne dit quelle instance négocie quelle monnaie. Ce qui est mesuré, c’est la monnaie, son pays et ses ordres.',
     approximateInstances: (approximate, total) =>
-      `${approximate} instances sur ${total} ne nomment aucun pays : leur point est une dispersion et non un emplacement. Les routes sont mesurées : chacune est une monnaie que cette instance a négociée.`,
+      `${approximate} ${plural(total, 'instance sur', 'instances sur')} ${total} ${plural(total, 'ne nomme', 'ne nomment')} aucun pays : leur point est une dispersion et non un emplacement. Les routes sont mesurées : chacune est une monnaie que cette instance a négociée.`,
     describe: {
       empty: 'Aucun flux d’ordres à montrer.',
       flows: (arcs, currencies, instances) =>
-        `${arcs} flux d’ordres entre ${currencies} monnaies et ${instances} instances Mostro`,
+        `${arcs} ${plural(arcs, 'flux', 'flux')} d’ordres entre ${currencies} ${plural(currencies, 'monnaie', 'monnaies')} et ${instances} ${plural(instances, 'instance', 'instances')} Mostro`,
       live: (count) => `${count} en cours`,
-      settling: (count) => `${count} récemment terminés`,
-      unplacedCurrencies: (count) => `${count} monnaies non placées sur la carte`,
-      unplacedInstances: (count) => `${count} instances non placées sur la carte`,
+      settling: (count) =>
+        `${count} ${plural(count, 'récemment terminé', 'récemment terminés')}`,
+      unplacedCurrencies: (count) =>
+        `${count} ${plural(count, 'monnaie non placée', 'monnaies non placées')} sur la carte`,
+      unplacedInstances: (count) =>
+        `${count} ${plural(count, 'instance non placée', 'instances non placées')} sur la carte`,
     },
   },
 
@@ -114,7 +126,8 @@ export const fr: Strings = {
     heading: 'LITIGES OUVERTS MAINTENANT',
     listLabel: 'Litiges ouverts',
     empty: 'Aucun litige ouvert.',
-    asOf: 'Âges mesurés par l’émetteur au moment du calcul de l’instantané, pas maintenant.',
+    asOf: (when) =>
+      `Âges mesurés par l’émetteur au moment du calcul de l’instantané le ${when}, pas maintenant.`,
   },
 
   absence: {
@@ -142,5 +155,5 @@ export const fr: Strings = {
   },
 
   footnote: (relays) =>
-    `Lu depuis ${relays} relais et vérifié dans ce navigateur à l’aide de la clé de l’émetteur. Une valeur absente est dessinée comme absente et jamais comme un zéro ; un chiffre inféré est signalé comme tel.`,
+    `Lu depuis ${relays} ${plural(relays, 'relais', 'relais')} et vérifié dans ce navigateur à l’aide de la clé de l’émetteur. Une valeur absente est dessinée comme absente et jamais comme un zéro ; un chiffre inféré est signalé comme tel.`,
 }
