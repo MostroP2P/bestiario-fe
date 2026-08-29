@@ -165,8 +165,18 @@ describe('Dashboard · real figures', () => {
     expect(ordersKpi(container)?.querySelector('strong')?.textContent).not.toBe(
       formatCount(figure('orders.created')),
     )
-    // And the line beneath carries the rate against the created total.
+    // And the line beneath states the rate against its own denominator —
+    // the orders that ended, completed plus canceled — never the created
+    // total, which counts orders that are still open.
+    const settled = figure('orders.completed') + figure('orders.canceled')
+    expect(figure('orders.completed') / settled).toBeCloseTo(
+      figure('orders.completion_rate'),
+      6,
+    )
     expect(ordersKpi(container)?.querySelector('small')?.textContent).toContain(
+      formatCount(settled),
+    )
+    expect(ordersKpi(container)?.querySelector('small')?.textContent).not.toContain(
       formatCount(figure('orders.created')),
     )
   })

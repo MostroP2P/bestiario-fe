@@ -148,7 +148,7 @@ export const en: Strings = {
 
   kpi: {
     orders: (window) => `COMPLETED ORDERS · ${window}`,
-    ordersSub: (rate, total) => `${rate} of ${total} total`,
+    ordersSub: (rate, total) => `${rate} of ${total} settled`,
     volume: (window) => `VOLUME · ${window}`,
     volumeSub: (p50) => `ticket p50 ${p50}`,
     disputes: (window) => `DISPUTES · ${window}`,
