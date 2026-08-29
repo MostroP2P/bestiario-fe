@@ -150,6 +150,15 @@ export const pt: Strings = {
     rightNowSub: (pending) => `em andamento · ${pending} esperando ser tomadas`,
   },
 
+  matrix: {
+    heading: 'MOEDA × INSTÂNCIA · ORDENS',
+    caption: 'Ordens criadas por cada instância em cada moeda, na janela escolhida',
+    instance: 'instância',
+    cell: (instance, code, orders) => `${instance} · ${code}: ${orders}`,
+    none: 'sem ordens',
+    empty: 'Nenhuma instância publicou o seu próprio detalhamento para esta janela.',
+  },
+
   fiat: {
     heading: 'VOLUME POR MOEDA',
     caption: 'Volume por moeda na janela escolhida',

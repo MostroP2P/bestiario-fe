@@ -149,6 +149,15 @@ export const it: Strings = {
     rightNowSub: (pending) => `in corso · ${pending} in attesa di essere presi`,
   },
 
+  matrix: {
+    heading: 'VALUTA × ISTANZA · ORDINI',
+    caption: 'Ordini creati da ogni istanza in ogni valuta, nella finestra scelta',
+    instance: 'istanza',
+    cell: (instance, code, orders) => `${instance} · ${code}: ${orders}`,
+    none: 'nessun ordine',
+    empty: 'Nessuna istanza ha pubblicato la propria ripartizione per questa finestra.',
+  },
+
   fiat: {
     heading: 'VOLUME PER VALUTA',
     caption: 'Volume per valuta nella finestra scelta',

@@ -149,6 +149,15 @@ export const es: Strings = {
     rightNowSub: (pending) => `en curso · ${pending} sin tomar`,
   },
 
+  matrix: {
+    heading: 'MONEDA × INSTANCIA · ÓRDENES',
+    caption: 'Órdenes creadas por cada instancia en cada moneda, en la ventana elegida',
+    instance: 'instancia',
+    cell: (instance, code, orders) => `${instance} · ${code}: ${orders}`,
+    none: 'sin órdenes',
+    empty: 'Ninguna instancia publicó su propio desglose para esta ventana.',
+  },
+
   fiat: {
     heading: 'VOLUMEN POR MONEDA',
     caption: 'Volumen por moneda en la ventana elegida',
