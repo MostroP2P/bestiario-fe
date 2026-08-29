@@ -47,6 +47,12 @@ export const fr: Strings = {
       `Le document de comparaison de cette fenêtre ne nomme aucun bloc pour ${name} : il n'y a donc pas de volume qui lui soit propre à montrer — ce qui est une absence et non un zéro.`,
     unverifiedCompare: (reason) =>
       `Le document de comparaison de cette fenêtre n'a pas passé la vérification dans ce navigateur : ${reason}. Rien n'en est lu par instance.`,
+    noFiatBreakdown:
+      "Les chiffres en tête sont ceux de la devise : ce qu'elle a déplacé, les ordres qui l'ont fait et ses tickets, tels que le publicateur les signe dans cette devise. Les tranches de taille, la répartition achat/vente et la conversion de référence sont signées pour toutes les devises à la fois : elles se lisent comme une absence tant qu'une seule est choisie.",
+    fiatUnavailable: (code) =>
+      `L'archive ne publie rien en ${code} pour cette fenêtre : les chiffres ci-dessus sont donc une absence et non ceux du réseau. Une autre fenêtre, ou tout le réseau, peut en avoir.`,
+    instanceAndFiat:
+      "Pour une instance dans une devise, le publicateur signe un nombre d'ordres et rien d'autre : les montants sont signés pour le réseau, et par instance seulement comme un total toutes devises confondues.",
   },
 
   ordersView: {

@@ -47,6 +47,12 @@ export const it: Strings = {
       `Il documento di confronto di questa finestra non nomina alcun blocco per ${name}, quindi non c’è un volume proprio da mostrare — ed è assenza, non uno zero.`,
     unverifiedCompare: (reason) =>
       `Il documento di confronto di questa finestra non ha superato la verifica in questo browser: ${reason}. Non se ne legge nulla per istanza.`,
+    noFiatBreakdown:
+      "Le cifre in testa sono quelle della valuta: quanto ha mosso, gli ordini che l'hanno mossa e i suoi ticket, come il pubblicatore li firma in quella valuta. Le fasce di dimensione, la ripartizione acquisto/vendita e la conversione di riferimento sono firmate per tutte le valute insieme, quindi si leggono come assenza finché ne è scelta una.",
+    fiatUnavailable: (code) =>
+      `L'archivio non pubblica nulla in ${code} per questa finestra, quindi le cifre qui sopra sono assenza e non quelle della rete. Un'altra finestra, o tutta la rete, può averlo.`,
+    instanceAndFiat:
+      "Per un'istanza in una valuta il pubblicatore firma un conteggio di ordini e nulla più: gli importi sono firmati per la rete, e per istanza soltanto come totale su tutte le valute.",
   },
 
   ordersView: {

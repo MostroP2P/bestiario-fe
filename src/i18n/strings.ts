@@ -93,6 +93,12 @@ export type Strings = {
     readonly noCompareRow: (name: string) => string
     /** The comparison document did not verify in this browser. */
     readonly unverifiedCompare: (reason: string) => string
+    /** What a currency cannot cut, because it is signed for all of them. */
+    readonly noFiatBreakdown: string
+    /** The chosen currency has nothing published in this window. */
+    readonly fiatUnavailable: (code: string) => string
+    /** One instance in one currency is signed as a count and nothing else. */
+    readonly instanceAndFiat: string
   }
 
   readonly ordersView: {

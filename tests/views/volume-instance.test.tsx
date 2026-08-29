@@ -58,8 +58,24 @@ const DOCS: Record<string, WindowPayload> = {
       metric('volume.sell_sats', 'sats', 400_000),
       metric('volume.fiat.ARS.total', 'fiat', { amount: 500, code: 'ARS' }),
       count('volume.fiat.ARS.orders', 30),
+      metric('volume.fiat.ARS.ticket_avg', 'fiat', { amount: 17, code: 'ARS' }),
+      metric('volume.fiat.ARS.ticket_p50', 'fiat', { amount: 12, code: 'ARS' }),
+      metric('volume.fiat.ARS.ticket_p90', 'fiat', { amount: 40, code: 'ARS' }),
       metric('volume.fiat.VES.total', 'fiat', { amount: 20, code: 'VES' }),
       count('volume.fiat.VES.orders', 10),
+      metric('volume.fiat.COP.total', 'fiat', { amount: 90, code: 'COP' }),
+      count('volume.fiat.COP.orders', 4),
+    ],
+  },
+  // The archive is older than COP's first order: the `all` window prices it
+  // in nothing, and a reader who picked COP on `30d` arrives here with it.
+  'volume:all': {
+    range: RANGE,
+    metrics: [
+      metric('volume.sats', 'sats', 4_000_000),
+      count('volume.completed', 90),
+      metric('volume.fiat.ARS.total', 'fiat', { amount: 700, code: 'ARS' }),
+      count('volume.fiat.ARS.orders', 44),
     ],
   },
   'instances:30d': {
@@ -196,6 +212,18 @@ const valueOf = (root: Element, label: string) =>
 /** Every figure on the page, tile and pair alike. */
 const textOf = (root: Element) => root.textContent ?? ''
 
+/** Pick a currency, once the volume document has named it. */
+async function chooseFiat(container: Element, code: string) {
+  const selectFor = () =>
+    [...container.querySelectorAll('select')].find((element) =>
+      [...element.options].some((option) => option.textContent === code),
+    )
+  await waitFor(() => {
+    expect(selectFor()).toBeDefined()
+  })
+  fireEvent.change(selectFor()!, { target: { value: code } })
+}
+
 async function chooseInstance(container: Element, name: string) {
   const selectFor = () =>
     [...container.querySelectorAll('select')].find((element) =>
@@ -306,5 +334,92 @@ describe('Volume · narrowed to one instance', () => {
     })
     expect(valueOf(container, en.volumeView.total)).toBe('—')
     expect(valueOf(container, en.volumeView.shareOfNetwork)).toBe('—')
+  })
+})
+
+describe('Volume · narrowed to one currency', () => {
+  test('cuts the headline to what the publisher signs in that currency', async () => {
+    // Arrange
+    const container = await openNetwork()
+
+    // Act
+    await chooseFiat(container, 'ARS')
+
+    // Assert — its own total, its own orders and its own tickets, in ARS.
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.total)).toBe(
+        printed('fiat', { amount: 500, code: 'ARS' }),
+      )
+    })
+    expect(valueOf(container, en.volumeView.completed)).toBe('30')
+    expect(valueOf(container, en.volumeView.p50)).toBe(
+      printed('fiat', { amount: 12, code: 'ARS' }),
+    )
+    expect(valueOf(container, en.volumeView.ticketAvg)).toBe(
+      printed('fiat', { amount: 17, code: 'ARS' }),
+    )
+  })
+
+  test('never leaves the network total standing under a currency', async () => {
+    // Arrange
+    const container = await openNetwork()
+
+    // Act
+    await chooseFiat(container, 'ARS')
+
+    // Assert — no million sats, and no largest order, which is signed for
+    // every currency at once.
+    await waitFor(() => {
+      expect(textOf(container)).not.toContain(printed('sats', 1_000_000))
+    })
+    expect(tile(container, en.volumeView.largest)).toBeNull()
+    expect(textOf(container)).not.toContain(printed('sats', 600_000))
+    expect(textOf(container)).toContain(en.filters.noFiatBreakdown)
+  })
+
+  test('an instance in one currency is a count, and says so', async () => {
+    // Arrange
+    const container = await openNetwork()
+
+    // Act
+    await chooseInstance(container, 'Mostro AR')
+    await chooseFiat(container, 'ARS')
+
+    // Assert — the 22 its own document counted, and no amount claimed.
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.completed)).toBe('22')
+    })
+    expect(valueOf(container, en.volumeView.total)).toBe('—')
+    expect(textOf(container)).toContain(en.filters.instanceAndFiat)
+    expect(textOf(container)).not.toContain(printed('sats', 250_000))
+  })
+})
+
+describe('Volume · a currency this window does not have', () => {
+  test('holds the currency reading and leaves it absent, not the network', async () => {
+    // Arrange — COP is priced on `30d`, and the reader picks it there.
+    const { container, rerender } = render(<Volume window="30d" />)
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.total)).toBe(printed('sats', 1_000_000))
+    })
+    await chooseFiat(container, 'COP')
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.total)).toBe(
+        printed('fiat', { amount: 90, code: 'COP' }),
+      )
+    })
+
+    // Act — the reader changes the window, which carries the selection into
+    // a document that never priced a thing in COP.
+    rerender(<Volume window="all" />)
+
+    // Assert — absence under the currency, never the network's million.
+    await waitFor(() => {
+      expect(container.textContent).toContain(en.filters.fiatUnavailable('COP'))
+    })
+    expect(valueOf(container, en.volumeView.total)).toBe('—')
+    expect(textOf(container)).not.toContain(printed('sats', 4_000_000))
+    expect(textOf(container)).not.toContain(printed('fiat', { amount: 700, code: 'ARS' }))
+    expect(tile(container, en.volumeView.largest)).toBeNull()
   })
 })
