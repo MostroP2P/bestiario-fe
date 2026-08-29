@@ -100,7 +100,7 @@ test.describe('a reader on a phone', () => {
 
     for (const control of [
       page.getByLabel(en.header.language),
-      page.getByRole('button', { name: en.header.windows['7d'] }),
+      page.getByLabel(en.header.windowNav, { exact: true }),
     ]) {
       const box = (await control.boundingBox())!
       expect(box.height).toBeGreaterThanOrEqual(32)

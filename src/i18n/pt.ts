@@ -24,6 +24,78 @@ export const pt: Strings = {
     connecting: 'CONECTANDO',
   },
 
+  nav: {
+    label: 'Seções',
+    overview: 'RESUMO',
+    orders: 'ORDENS',
+    volume: 'VOLUME',
+  },
+
+  filters: {
+    legend: 'Filtros',
+    fiat: 'Moeda',
+    instance: 'Instância',
+    allFiat: 'Todas as moedas',
+    allInstances: 'Toda a rede',
+    unscoped: (name) =>
+      `${name} ainda não publica um documento de ordens próprio, portanto o que segue é de toda a rede.`,
+    noInstanceVolume:
+      'O volume é publicado para a rede e não por instância, portanto estas cifras não se restringem a uma só.',
+  },
+
+  ordersView: {
+    heading: 'Ordens',
+    caption: 'O que a rede criou na janela escolhida, e no que deu.',
+    created: 'Criadas',
+    completed: 'Concluídas',
+    canceled: 'Canceladas',
+    completionRate: 'Taxa de conclusão',
+    abandonmentRate: 'Taxa de abandono',
+    openNow: 'Abertas agora',
+    inProgressNow: 'Em curso agora',
+    shareHeading: 'Compra e venda',
+    buyShare: 'Proporção de compra',
+    sellShare: 'Proporção de venda',
+    shareNote:
+      'O publicador assina esta divisão como proporção do total, não como um detalhamento que um filtro possa cortar. Por isso é lida aqui e não oferecida como filtro.',
+    perCurrency: 'Ordens por moeda',
+    perCurrencyNote:
+      'Contadas no documento de volume, que é onde a rede detalha as ordens por moeda.',
+    instanceHeading: 'O que esta instância publica sobre si mesma',
+    instanceFee: 'Taxa',
+    instanceLimits: 'Limites de ordem',
+    instanceBond: 'Caução',
+    instanceVersion: 'Versão',
+    instanceFiat: 'Moedas declaradas',
+    instanceSeen: 'Vista pela última vez',
+  },
+
+  volumeView: {
+    heading: 'Volume',
+    caption:
+      'O que as ordens concluídas moveram: em sats e nas moedas em que foram cotadas.',
+    total: 'Total',
+    completed: 'Ordens concluídas',
+    ticketAvg: 'Ticket médio',
+    p50: 'Ticket mediano',
+    p90: 'Ticket p90',
+    largest: 'Maior ordem',
+    splitHeading: 'Compra e venda',
+    buy: 'Comprado',
+    sell: 'Vendido',
+    sizesHeading: 'Tamanho das ordens',
+    sizes: {
+      lt_10k: 'menos de 10k',
+      '10k_50k': '10k – 50k',
+      '50k_200k': '50k – 200k',
+      '200k_1m': '200k – 1M',
+      gt_1m: 'mais de 1M',
+    },
+    referenceHeading: 'Numa moeda de referência',
+    referenceNote:
+      'Inferido das cotações que o publicador tinha no momento. Onde nenhuma estava perto o bastante para precificar uma ordem, isto é ausência e não uma cifra.',
+  },
+
   rail: {
     publisher: 'PUBLICADOR',
     publisherNote:

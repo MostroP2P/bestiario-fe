@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { dOf, fixtures, serveRelay } from './relay'
+import { en } from '../../src/i18n/en'
 
 const events = fixtures()
 
@@ -45,13 +46,11 @@ test.describe('the overview', () => {
     const before = await orders.textContent()
 
     // Act — 24 h is a different document, not a recomputation.
-    await page.getByRole('button', { name: '24 H' }).click()
+    const window = page.getByLabel(en.header.windowNav, { exact: true })
+    await window.selectOption('24h')
 
     // Assert
-    await expect(page.getByRole('button', { name: '24 H' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
+    await expect(window).toHaveValue('24h')
     await expect(orders).not.toHaveText(before ?? '')
   })
 

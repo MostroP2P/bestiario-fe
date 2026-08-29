@@ -15,10 +15,10 @@ export function LanguagePicker() {
   const setLocale = useSetLocale()
 
   return (
-    <label class="b-lang">
-      <span class="b-visually-hidden">{strings.header.language}</span>
+    <div class="b-lang">
       <select
         class="b-lang-select"
+        aria-label={strings.header.language}
         value={strings.locale}
         onChange={(event) => {
           const chosen = event.currentTarget.value
@@ -31,6 +31,6 @@ export function LanguagePicker() {
           </option>
         ))}
       </select>
-    </label>
+    </div>
   )
 }
