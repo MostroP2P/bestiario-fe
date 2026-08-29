@@ -134,6 +134,30 @@ export function formatMetric(metric: Metric | undefined): Formatted {
   return formatValue(metric.value, metric.unit)
 }
 
+/**
+ * Two or more published counts added, or the absence of the sum.
+ *
+ * `orders.completion_rate` is completed over completed plus canceled — the
+ * orders that reached an end — and not over every order created, many of
+ * which are still open. A rate read against the wrong denominator is a false
+ * statement about the network, so the tile adds the two figures the publisher
+ * signed for rather than borrowing a total that does not belong to the rate.
+ *
+ * Nothing is guessed at: one absent side makes the whole sum absent, of the
+ * kind that side was, and a figure that is not a count is not added at all.
+ */
+export function formatSum(metrics: readonly (Metric | undefined)[]): Formatted {
+  let total = 0
+  for (const metric of metrics) {
+    if (!metric) return absent('notPublished')
+    if (metric.unit === 'missing') return absent('notMeasured')
+    if (metric.unit !== 'count' || typeof metric.value !== 'number')
+      return absent('noData')
+    total += metric.value
+  }
+  return plain(integers.format(total))
+}
+
 /** How old the data is, from a signed `created_at` in seconds. */
 export function formatAge(createdAtSeconds: number, nowMs: number): string {
   return formatDuration(Math.max(0, nowMs / 1000 - createdAtSeconds))

@@ -4,6 +4,7 @@ import {
   formatAge,
   formatDuration,
   formatMetric,
+  formatSum,
   formatValue,
 } from '~/model/format'
 import type { Metric } from '~/nostr/documents'
@@ -139,5 +140,72 @@ describe('formatValue · a document that does not fit its own unit', () => {
 
   test('a date that is not a string', () => {
     expect(formatValue(42, 'date').absence).not.toBeNull()
+  })
+})
+
+describe('formatSum · a denominator the publisher signed for, added', () => {
+  const count = (name: string, value: number | null): Metric => ({
+    name,
+    kind: 'observed',
+    unit: 'count',
+    value,
+  })
+
+  test('adds two published counts', () => {
+    // Arrange
+    const completed = count('orders.completed', 24)
+    const canceled = count('orders.canceled', 67)
+
+    // Act
+    const sum = formatSum([completed, canceled])
+
+    // Assert — 91, the orders that reached an end.
+    expect(sum.absence).toBeNull()
+    expect(sum.text).toMatch(/^91$/)
+  })
+
+  test('states the absence rather than a partial sum when one side is unpublished', () => {
+    expect(formatSum([count('orders.completed', 24), undefined]).text).toBe(ABSENT)
+    expect(formatSum([count('orders.completed', 24), undefined]).absence).toBe(
+      'notPublished',
+    )
+  })
+
+  test('states the absence rather than a partial sum when one side is null', () => {
+    const sum = formatSum([count('orders.completed', 24), count('orders.canceled', null)])
+    expect(sum.text).toBe(ABSENT)
+    expect(sum.absence).toBe('noData')
+  })
+
+  test('keeps a figure the publisher could not measure a different absence', () => {
+    const missing: Metric = {
+      name: 'orders.canceled',
+      kind: 'observed',
+      unit: 'missing',
+      value: null,
+    }
+    expect(formatSum([count('orders.completed', 24), missing]).absence).toBe(
+      'notMeasured',
+    )
+  })
+
+  test('refuses to add a count whose value is not a number', () => {
+    const wrong: Metric = {
+      name: 'orders.canceled',
+      kind: 'observed',
+      unit: 'count',
+      value: 'sixty-seven',
+    } as unknown as Metric
+    expect(formatSum([count('orders.completed', 24), wrong]).absence).toBe('noData')
+  })
+
+  test('refuses to add anything that is not a count', () => {
+    const rate: Metric = {
+      name: 'orders.completion_rate',
+      kind: 'observed',
+      unit: 'ratio',
+      value: 0.26,
+    }
+    expect(formatSum([count('orders.completed', 24), rate]).absence).not.toBeNull()
   })
 })

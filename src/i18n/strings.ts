@@ -169,7 +169,7 @@ export type Strings = {
 
   readonly kpi: {
     readonly orders: (window: string) => string
-    readonly ordersSub: (completed: string, rate: string) => string
+    readonly ordersSub: (rate: string, total: string) => string
     readonly volume: (window: string) => string
     readonly volumeSub: (p50: string) => string
     readonly disputes: (window: string) => string

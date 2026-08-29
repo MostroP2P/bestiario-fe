@@ -28,6 +28,15 @@ const PUBLISHER = getPublicKey(KEY)
 const AR_PUBKEY = 'a'.repeat(64)
 const VE_PUBKEY = 'b'.repeat(64)
 
+// The map scatters each node inside its country from one seed drawn per page
+// load, so a live seed lays the map out differently on every run — and which
+// labels clear their neighbours changes with it. Pinning the seed is what the
+// seed is for; everything downstream of it is a pure function.
+vi.mock('~/model/rng', async (importOriginal) => {
+  const actual: object = await importOriginal()
+  return { ...actual, sessionSeed: () => 0x5eed }
+})
+
 vi.mock('~/config', async (importOriginal) => {
   const actual: object = await importOriginal()
   return { ...actual, PUBLISHER_PUBKEY: getPublicKey(KEY_FOR_MOCK) }

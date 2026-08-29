@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { windowAddress, type Span } from '~/nostr/address'
 import { fiatRows, lookup, metricsOf } from '~/model/metrics'
-import { formatMetric } from '~/model/format'
+import { formatMetric, formatSum } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
 import { CurrencyMatrix } from '~/components/CurrencyMatrix'
@@ -339,10 +339,16 @@ export function Overview(props: { readonly window: Span }) {
           <>
             <Kpi
               label={strings.kpi.orders(strings.header.windows[window_])}
-              value={formatMetric(lookup(orders, 'orders.created')).text}
+              value={formatMetric(lookup(orders, 'orders.completed')).text}
+              // The rate's own denominator, and not the created total: an
+              // order still open has not failed to complete, it has not
+              // finished. `completion_rate` counts only the ones that ended.
               sub={strings.kpi.ordersSub(
-                formatMetric(lookup(orders, 'orders.completed')).text,
                 formatMetric(lookup(orders, 'orders.completion_rate')).text,
+                formatSum([
+                  lookup(orders, 'orders.completed'),
+                  lookup(orders, 'orders.canceled'),
+                ]).text,
               )}
             />
             <Kpi
