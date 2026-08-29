@@ -134,6 +134,39 @@ test.describe('a reader on a phone', () => {
     }
   })
 
+  test('keeps the currency columns readable when there are more than fit', async ({
+    page,
+  }) => {
+    // The archive on the fixtures publishes no scoped orders document, so the
+    // cross itself is absent here. What is under test is the stylesheet, and
+    // this measures it against the same markup `CurrencyMatrix` emits: with a
+    // dozen currencies on a phone, a fixed layout at `width: 100%` shared the
+    // container out and squeezed every column to a few pixels instead of
+    // letting the wrapper scroll.
+    await open(page)
+
+    const measured = await page.evaluate(() => {
+      const wrapper = document.createElement('div')
+      wrapper.className = 'b-matrix'
+      const codes = Array.from({ length: 12 }, (_, i) => `C${i}`)
+      wrapper.innerHTML = `<table><thead><tr><th></th>${codes
+        .map((code) => `<th scope="col">${code}</th>`)
+        .join('')}</tr></thead><tbody><tr><th scope="row">Mostro</th>${codes
+        .map(() => `<td data-level="0">1</td>`)
+        .join('')}</tr></tbody></table>`
+      document.querySelector('.b-lower-main')!.append(wrapper)
+      const cell = wrapper.querySelector('td')!.getBoundingClientRect().width
+      const { scrollWidth, clientWidth } = wrapper
+      wrapper.remove()
+      return { cell, scrollWidth, clientWidth }
+    })
+
+    // The artboard's 38px cell survives, and the overflow it causes is the
+    // wrapper's to scroll.
+    expect(measured.cell).toBeGreaterThanOrEqual(38)
+    expect(measured.scrollWidth).toBeGreaterThan(measured.clientWidth)
+  })
+
   test('has no detectable WCAG A or AA violations', async ({ page }) => {
     await open(page)
 
