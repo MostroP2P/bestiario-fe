@@ -52,7 +52,9 @@ export const fr: Strings = {
     fiatUnavailable: (code) =>
       `L'archive ne publie rien en ${code} pour cette fenêtre : les chiffres ci-dessus sont donc une absence et non ceux du réseau. Une autre fenêtre, ou tout le réseau, peut en avoir.`,
     instanceAndFiat:
-      "Pour une instance dans une devise, le publicateur signe un nombre d'ordres et rien d'autre : les montants sont signés pour le réseau, et par instance seulement comme un total toutes devises confondues.",
+      'Pour une instance dans une devise, le publicateur signe des comptes et des taux, et aucun montant : les montants sont signés pour le réseau, et par instance seulement comme un total toutes devises confondues.',
+    unverifiedOrders: (reason) =>
+      `Le document d'ordres de tout le réseau pour cette fenêtre n'a pas passé la vérification dans ce navigateur : ${reason}. Rien n'en est lu, la part de ce marché n'est donc pas calculée — ce qui est une preuve en échec, et non un chiffre que personne n'a publié.`,
     noFiatOrders:
       "Par devise, l'archive compte les ordres qui se sont complétés, et eux seuls : créés, annulés, en cours et la répartition achat/vente sont signés pour toutes les devises à la fois, ils se lisent donc comme une absence tant qu'une seule est choisie.",
     instanceAndFiatOrders:
@@ -133,6 +135,11 @@ export const fr: Strings = {
       "Comptées dans le document d'ordres de l'instance elle-même : combien d'ordres elle a complétés dans chaque devise. Les montants sont publiés pour le réseau et non par instance.",
     instanceCurrenciesEmpty:
       'Cette instance ne publie aucune ventilation par devise pour cette fenêtre.',
+    created: 'Ordres créés',
+    completionRate: 'Taux de complétion',
+    shareOfMarket: 'Part de ce marché',
+    shareOfMarketSub: (code) =>
+      `De ce que le réseau a complété en ${code} dans cette fenêtre`,
   },
 
   rail: {

@@ -50,10 +50,13 @@ export function Volume(props: { readonly window: Span }) {
     ]
     // The comparison document is what carries volume per instance, and it is
     // asked for only when a reader narrows to one.
-    return scopedAddress
-      ? [...base, windowAddress('compare', props.window), scopedAddress]
-      : base
-  }, [props.window, scopedAddress])
+    if (!scopedAddress) return base
+    const narrowed = [...base, windowAddress('compare', props.window), scopedAddress]
+    // Narrowed to one instance *and* one currency, the reading is counts,
+    // and what makes a count mean something is the network's own for the
+    // same currency — which is in the orders document.
+    return filters.fiat ? [...narrowed, windowAddress('orders', props.window)] : narrowed
+  }, [props.window, scopedAddress, filters.fiat])
   const { boot, documents } = useStore(needed)
 
   const volume = metricsOf(payloadOf(documents, windowAddress('volume', props.window)))
@@ -90,7 +93,9 @@ export function Volume(props: { readonly window: Span }) {
     (filters.instance
       ? !settled(windowAddress('instances', props.window)) ||
         (scopedAddress !== null && !settled(scopedAddress)) ||
-        (!filters.fiat && !settled(compareAddress))
+        (filters.fiat
+          ? !settled(windowAddress('orders', props.window))
+          : !settled(compareAddress))
       : volume.length === 0)
 
   /**
@@ -116,11 +121,47 @@ export function Volume(props: { readonly window: Span }) {
   const scopedState = scopedAddress ? stateOf(scopedAddress) : undefined
   const scopedUnverified = scopedState?.status === 'unverified'
 
-  /** The currencies the instance itself counted, from its own document. */
-  const traded = useMemo(() => {
-    if (!scopedAddress) return []
-    return currencyOrders(metricsOf(payloadOf(documents, scopedAddress)))
-  }, [documents, scopedAddress])
+  /**
+   * The whole network's orders document, which is the denominator of the
+   * market share. A failure here is the share's failure: it must not pass
+   * for a quotient nobody published.
+   */
+  const ordersAddress = windowAddress('orders', props.window)
+  const ordersState = stateOf(ordersAddress)
+
+  /** The instance's own orders document, once it has answered. */
+  const scoped = scopedAddress
+    ? metricsOf(payloadOf(documents, scopedAddress))
+    : ([] as readonly Metric[])
+
+  /** The currencies the instance itself counted, from that document. */
+  const traded = useMemo(() => currencyOrders(scoped), [scoped])
+
+  /** What the instance counted in the chosen currency, figure by figure. */
+  const scopedFiat = (name: string) =>
+    filters.fiat ? lookup(scoped, `orders.${filters.fiat}.${name}`) : undefined
+
+  /**
+   * How much of that currency's market this instance is: its completed
+   * orders over the network's, in the same currency and the same window,
+   * counted the same way in two documents. The publisher signs both halves
+   * and not the quotient, so it is inferred and says so.
+   */
+  const shareOfMarket = ((): Metric | undefined => {
+    const mine = scopedFiat('completed')?.value
+    const whole = lookup(
+      metricsOf(payloadOf(documents, ordersAddress)),
+      `orders.${filters.fiat}.completed`,
+    )?.value
+    if (typeof mine !== 'number' || typeof whole !== 'number' || whole <= 0)
+      return undefined
+    return {
+      name: 'orders.share_of_market',
+      kind: 'inferred',
+      unit: 'ratio',
+      value: mine / whole,
+    }
+  })()
 
   const currencies = useMemo(() => fiatRows(volume), [volume])
   const shown = filters.fiat
@@ -148,14 +189,6 @@ export function Volume(props: { readonly window: Span }) {
 
   const figure = (metric: Metric | undefined) => formatMetric(metric).text
 
-  /** A count the instance's own document carries, printed as any count is. */
-  const counted = (value: number | undefined) =>
-    figure(
-      value === undefined
-        ? undefined
-        : { name: 'orders.completed', kind: 'observed', unit: 'count', value },
-    )
-
   /**
    * The headline, narrowed by whatever the reader narrowed.
    *
@@ -175,14 +208,27 @@ export function Volume(props: { readonly window: Span }) {
   }[] =
     chosen && filters.fiat
       ? [
-          {
-            label: strings.volumeView.total,
-            value: figure(undefined),
-            sub: strings.header.windows[props.window],
-          },
+          // No amount is signed for this cut, in sats or in the currency.
+          // What is signed is the instance's own count of that currency,
+          // and what the count is worth beside the network's.
           {
             label: strings.volumeView.completed,
-            value: counted(traded.find((row) => row.code === filters.fiat)?.completed),
+            value: { metric: scopedFiat('completed') },
+            sub: filters.fiat,
+          },
+          {
+            label: strings.volumeView.shareOfMarket,
+            value: { metric: shareOfMarket },
+            sub: strings.volumeView.shareOfMarketSub(filters.fiat),
+          },
+          {
+            label: strings.volumeView.created,
+            value: { metric: scopedFiat('created') },
+            sub: filters.fiat,
+          },
+          {
+            label: strings.volumeView.completionRate,
+            value: { metric: scopedFiat('completion_rate') },
             sub: filters.fiat,
           },
         ]
@@ -282,7 +328,9 @@ export function Volume(props: { readonly window: Span }) {
         note={
           filters.instance
             ? filters.fiat
-              ? strings.filters.instanceAndFiat
+              ? ordersState?.status === 'unverified'
+                ? strings.filters.unverifiedOrders(ordersState.reason)
+                : strings.filters.instanceAndFiat
               : compareUnverified && compareState?.status === 'unverified'
                 ? strings.filters.unverifiedCompare(compareState.reason)
                 : chosen && !compared && !loading

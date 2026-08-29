@@ -102,12 +102,17 @@ const DOCS: Record<string, WindowPayload> = {
       metric('compare.Mostro AR (aaaa).dev_fees_sats', 'sats', 2_500),
     ],
   },
+  'orders:30d': {
+    range: RANGE,
+    metrics: [count('orders.ARS.completed', 88), count('orders.VES.completed', 4)],
+  },
   [`orders:30d:i:${AR_PUBKEY}`]: {
     range: RANGE,
     metrics: [
       count('orders.created', 30),
       count('orders.ARS.created', 28),
       count('orders.ARS.completed', 22),
+      metric('orders.ARS.completion_rate', 'ratio', 0.75),
     ],
   },
 }
@@ -386,7 +391,7 @@ describe('Volume · narrowed to one currency', () => {
     expect(textOf(container)).toContain(en.filters.noFiatBreakdown)
   })
 
-  test('an instance in one currency is a count, and says so', async () => {
+  test('an instance in one currency reads its own block, and claims no amount', async () => {
     // Arrange
     const container = await openNetwork()
 
@@ -394,13 +399,52 @@ describe('Volume · narrowed to one currency', () => {
     await chooseInstance(container, 'Mostro AR')
     await chooseFiat(container, 'ARS')
 
-    // Assert — the 22 its own document counted, and no amount claimed.
+    // Assert — everything its own document signs for ARS, and nothing else.
     await waitFor(() => {
       expect(valueOf(container, en.volumeView.completed)).toBe('22')
     })
-    expect(valueOf(container, en.volumeView.total)).toBe('—')
+    expect(valueOf(container, en.volumeView.created)).toBe('28')
+    expect(valueOf(container, en.volumeView.completionRate)).toBe(printed('ratio', 0.75))
+    expect(tile(container, en.volumeView.total)).toBeNull()
     expect(textOf(container)).toContain(en.filters.instanceAndFiat)
     expect(textOf(container)).not.toContain(printed('sats', 250_000))
+  })
+
+  test('says how much of that currency market the instance is', async () => {
+    // Arrange
+    const container = await openNetwork()
+
+    // Act
+    await chooseInstance(container, 'Mostro AR')
+    await chooseFiat(container, 'ARS')
+
+    // Assert — 22 of the 88 the network completed in ARS, worked out here
+    // and marked as worked out.
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.shareOfMarket)).toContain(
+        printed('ratio', 0.25),
+      )
+    })
+    expect(
+      tile(container, en.volumeView.shareOfMarket)?.querySelector('.b-inferred-mark'),
+    ).not.toBeNull()
+  })
+
+  test('leaves the share absent when the network published no count for it', async () => {
+    // Arrange — the instance trades VES; the network's VES count is there,
+    // but this instance's own document names no VES block at all.
+    const container = await openNetwork()
+
+    // Act
+    await chooseInstance(container, 'Mostro AR')
+    await chooseFiat(container, 'VES')
+
+    // Assert — absence on both halves, and never a zero.
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.completed)).toContain('—')
+    })
+    expect(valueOf(container, en.volumeView.shareOfMarket)).toContain('—')
+    expect(valueOf(container, en.volumeView.completed)).toContain(en.absence.notPublished)
   })
 })
 

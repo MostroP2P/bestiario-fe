@@ -58,7 +58,9 @@ export const en: Strings = {
     fiatUnavailable: (code) =>
       `The archive publishes nothing in ${code} for this window, so the figures above are absent rather than the network's. Another window, or the whole network, may have it.`,
     instanceAndFiat:
-      'For one instance in one currency the publisher signs a count of orders and nothing else — the amounts are signed for the network, and per instance only as a total across every currency.',
+      'For one instance in one currency the publisher signs counts and rates, and no amount at all — the amounts are signed for the network, and per instance only as a total across every currency.',
+    unverifiedOrders: (reason) =>
+      `The whole network's orders document for this window did not verify in this browser: ${reason}. Nothing is read from it, so the share of that market is not worked out — which is a failed proof, not a figure nobody published.`,
     noFiatOrders:
       'Per currency the archive counts the orders that completed, and only those: created, canceled, in progress and the buy/sell split are signed for every currency at once, so they read as absent while one is chosen.',
     instanceAndFiatOrders:
@@ -138,6 +140,10 @@ export const en: Strings = {
       "Counted in the instance's own orders document: how many orders it completed in each currency. The amounts are published for the network and not per instance.",
     instanceCurrenciesEmpty:
       'This instance publishes no breakdown by currency for this window.',
+    created: 'Orders created',
+    completionRate: 'Completion rate',
+    shareOfMarket: 'Share of that market',
+    shareOfMarketSub: (code) => `Of what the network completed in ${code} in this window`,
   },
 
   rail: {
