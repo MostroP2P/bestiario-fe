@@ -201,6 +201,8 @@ export type Strings = {
     readonly p50: string
     readonly p90: string
     readonly empty: string
+    /** The accessible name of a column heading that reorders the table. */
+    readonly sortBy: (column: string) => string
   }
 
   readonly pairs: {

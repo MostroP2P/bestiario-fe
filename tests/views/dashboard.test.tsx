@@ -192,9 +192,11 @@ describe('Dashboard · real figures', () => {
 
     // Assert
     await waitFor(() => {
-      const codes = [...container.querySelectorAll('.b-table tbody th')].map(
-        (n) => n.textContent,
-      )
+      // The set, not the order: the table opens on the busiest market, and
+      // which currency that is belongs to `sort-fiat`'s tests, not to this one.
+      const codes = [...container.querySelectorAll('.b-table tbody th')]
+        .map((n) => n.textContent)
+        .sort()
       expect(codes).toEqual(expected)
     })
     expect(expected.length).toBeGreaterThan(5)
