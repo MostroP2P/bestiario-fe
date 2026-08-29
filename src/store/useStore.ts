@@ -81,9 +81,19 @@ export function useStore(
 
   // The instances are named by a document, so this list arrives on the second
   // render and not the first. Re-watching the same set is free.
+  //
+  // The store outlives any one view, so a view that asked for a watch releases
+  // it on the way out: otherwise the overview's dispute subscription would
+  // outlive the overview, and a reader on another route would keep paying for
+  // traffic nothing renders. A view that named nobody holds nothing to release.
   const authorsKey = disputeAuthors.join(' ')
   useEffect(() => {
-    void store.watchDisputes(authorsKey.split(' ').filter(Boolean))
+    const authors = authorsKey.split(' ').filter(Boolean)
+    void store.watchDisputes(authors)
+    if (authors.length === 0) return
+    return () => {
+      void store.watchDisputes([])
+    }
   }, [store, authorsKey])
 
   return view

@@ -15,6 +15,8 @@
  */
 
 export type LiveDispute = {
+  /** The Nostr event id, which NIP-01 breaks a timestamp tie on. */
+  readonly eventId: string
   /** The dispute's `d` tag — its identity across status changes. */
   readonly id: string
   /** The dispute's `s` tag, as the instance wrote it. */
@@ -32,8 +34,22 @@ export type DisputeBook = {
 }
 
 /** An addressable event's identity: the author and its `d`, never the `d` alone. */
-function keyOf(dispute: LiveDispute): string {
+export function keyOf(dispute: LiveDispute): string {
   return `${dispute.instancePubkey}:${dispute.id}`
+}
+
+/**
+ * Whether `next` replaces `held` — the same two revisions of one addressable
+ * event, in the same order, whichever a relay hands over first.
+ *
+ * NIP-01: the later `created_at` wins, and on a tie the *lowest* event id
+ * does. Two revisions inside one second are ordinary — an instance settling a
+ * dispute it opened moments before — and keeping whichever arrived first
+ * would make the panel depend on which relay answered first.
+ */
+export function supersedes(next: LiveDispute, held: LiveDispute): boolean {
+  if (next.updatedAt !== held.updatedAt) return next.updatedAt > held.updatedAt
+  return next.eventId < held.eventId
 }
 
 /**
@@ -52,7 +68,7 @@ export function openDisputes(
   const newest = new Map<string, LiveDispute>()
   for (const dispute of disputes) {
     const held = newest.get(keyOf(dispute))
-    if (!held || dispute.updatedAt > held.updatedAt) newest.set(keyOf(dispute), dispute)
+    if (!held || supersedes(dispute, held)) newest.set(keyOf(dispute), dispute)
   }
 
   const open = [...newest.values()].filter(

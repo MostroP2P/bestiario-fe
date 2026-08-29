@@ -18,7 +18,7 @@ import type { Relays, RelayState } from '~/nostr/pool'
 import { verifyDocument, verifyFrom, verifyIndex, type Failure } from '~/nostr/verify'
 import type { Envelope, IndexDoc, IndexEntry } from '~/nostr/documents'
 import { disputeFrom } from '~/nostr/mostro'
-import type { LiveDispute } from '~/model/open-disputes'
+import { keyOf, supersedes, type LiveDispute } from '~/model/open-disputes'
 import { openCache, readCached, writeCached } from './cache'
 
 export type DocState =
@@ -83,8 +83,12 @@ export function createStore(relays: Relays, publisher: string): Store {
 
   let unsubscribe: (() => void) | null = null
   let disputeUnsubscribe: (() => void) | null = null
-  /** The instance set currently followed, as a stable key. */
-  let watched = ''
+  /**
+   * The instance set currently followed, as a stable key. Null until the
+   * first watch: the empty set is a set, and answering it is what tells the
+   * panel that an empty book is an answer and not a wait.
+   */
+  let watched: string | null = null
 
   const setDoc = (d: string, state: DocState) => {
     const next = new Map(documents.value)
@@ -245,25 +249,28 @@ export function createStore(relays: Relays, publisher: string): Store {
       if (!dispute) return
       // 38386 is addressable: an older revision alongside the current one is
       // a relay being normal, and must never undo a status.
-      const id = `${dispute.instancePubkey}:${dispute.id}`
-      const held = book.get(id)
-      if (held && held.updatedAt >= dispute.updatedAt) return
-      book.set(id, dispute)
+      const held = book.get(keyOf(dispute))
+      if (held && !supersedes(dispute, held)) return
+      book.set(keyOf(dispute), dispute)
       disputes.value = [...book.values()]
     }
 
-    const events = await relays.query(filter)
-    // The set may have moved while the query was in flight; the newer watch
-    // owns the signal, and this one's events belong to nobody.
-    if (watched !== key) return
-    refreshRelays()
-    for (const event of events) take(event)
-    disputesReady.value = true
-
+    // Standing before the query is awaited, and not after it: a dispute
+    // published in between would otherwise be lost until its instance
+    // touched it again, which for a settled dispute is never.
     disputeUnsubscribe = relays.subscribe(filter, (event) => {
       take(event)
       refreshRelays()
     })
+
+    const events = await relays.query(filter)
+    // The set may have moved while the query was in flight; the newer watch
+    // owns the signal and has already closed the subscription above, and this
+    // one's events belong to nobody.
+    if (watched !== key) return
+    refreshRelays()
+    for (const event of events) take(event)
+    disputesReady.value = true
   }
 
   return {
@@ -295,7 +302,7 @@ export function createStore(relays: Relays, publisher: string): Store {
       disputeUnsubscribe?.()
       disputeUnsubscribe = null
       disputesReady.value = false
-      watched = ''
+      watched = null
       relays.close()
     },
   }

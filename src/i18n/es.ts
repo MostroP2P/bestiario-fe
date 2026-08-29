@@ -206,7 +206,8 @@ export const es: Strings = {
   disputes: {
     heading: 'DISPUTAS ABIERTAS AHORA',
     listLabel: 'Disputas abiertas',
-    empty: (days) => `Ninguna disputa estuvo abierta en los últimos ${days} días.`,
+    empty: (days) =>
+      `Ninguna disputa está abierta ahora, según los eventos propios de las instancias de los últimos ${days} días.`,
     live: (days) =>
       `Disputas que cada instancia declaró iniciadas o en curso, según sus propios eventos firmados de los últimos ${days} días. Las edades se miden con tu reloj.`,
     status: { initiated: 'iniciada', 'in-progress': 'en curso' },

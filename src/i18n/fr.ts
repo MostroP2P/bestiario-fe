@@ -209,7 +209,8 @@ export const fr: Strings = {
   disputes: {
     heading: 'LITIGES OUVERTS MAINTENANT',
     listLabel: 'Litiges ouverts',
-    empty: (days) => `Aucun litige n'a été ouvert ces ${days} derniers jours.`,
+    empty: (days) =>
+      `Aucun litige n'est ouvert en ce moment, d'après les événements propres aux instances des ${days} derniers jours.`,
     live: (days) =>
       `Litiges que chaque instance a déclarés ouverts ou en cours, d'après ses propres événements signés des ${days} derniers jours. Les âges sont mesurés sur votre horloge.`,
     status: { initiated: 'ouvert', 'in-progress': 'en cours' },

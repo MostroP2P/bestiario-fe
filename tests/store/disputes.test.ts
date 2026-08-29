@@ -35,15 +35,23 @@ function disputeEvent(
 }
 
 /** A relay that answers a query with what it holds, and can push later. */
-function fakeRelays(held: readonly Event[] = []) {
+function fakeRelays(held: readonly Event[] = [], options: { stall?: boolean } = {}) {
   const filters: Filter[] = []
   let push: ((event: Event) => void) | null = null
+  let answer: (() => void) | null = null
   let closed = 0
   const relays: Relays = {
     query(filter) {
       filters.push(filter)
       const kinds = filter.kinds ?? []
-      return Promise.resolve(held.filter((event) => kinds.includes(event.kind)))
+      const events = held.filter((event) => kinds.includes(event.kind))
+      // A relay that has not answered yet: the subscription has to be
+      // standing before this settles, or a revision published in between is
+      // lost until the instance speaks again.
+      if (!options.stall) return Promise.resolve(events)
+      return new Promise<Event[]>((resolve) => {
+        answer = () => resolve(events)
+      })
     },
     subscribe(filter, onEvent) {
       filters.push(filter)
@@ -60,6 +68,8 @@ function fakeRelays(held: readonly Event[] = []) {
     relays,
     filters,
     send: (event: Event) => push?.(event),
+    isSubscribed: () => push !== null,
+    answerQuery: () => answer?.(),
     closedSubscriptions: () => closed,
   }
 }
@@ -172,6 +182,53 @@ describe('the open dispute book', () => {
     ).toHaveLength(
       2, // one query and one subscription, and no more
     )
+  })
+
+  test('is standing before the first query answers, so nothing falls in the gap', async () => {
+    // Arrange — a relay that holds one dispute and has not answered yet.
+    const opened = disputeEvent({ id: 'a', status: 'initiated', createdAt: 1_000 })
+    const pool = fakeRelays([opened], { stall: true })
+    const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
+    const watching = subject.watchDisputes(INSTANCES)
+    await Promise.resolve()
+
+    // Act — the instance publishes while the query is still in flight.
+    expect(pool.isSubscribed()).toBe(true)
+    pool.send(disputeEvent({ id: 'b', status: 'in-progress', createdAt: 1_500 }))
+    pool.answerQuery()
+    await watching
+
+    // Assert — both the pushed revision and the query's own answer are held.
+    expect(subject.disputes.value.map((dispute) => dispute.id).sort()).toEqual(['a', 'b'])
+  })
+
+  test('breaks a tie on the same second by the lowest event id', async () => {
+    // Arrange — two revisions of one dispute in the same second. The lower id
+    // is the one the protocol keeps, whichever a relay hands over first.
+    const first = disputeEvent({ id: 'a', status: 'initiated', createdAt: 1_000 })
+    const second = disputeEvent({ id: 'a', status: 'settled', createdAt: 1_000 })
+    const [low, high] = [first, second].sort((x, y) => x.id.localeCompare(y.id))
+    const pool = fakeRelays([high!])
+    const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
+    await subject.watchDisputes(INSTANCES)
+
+    // Act — the lower id arrives second, and still wins.
+    pool.send(low!)
+
+    // Assert
+    expect(subject.disputes.value[0]?.eventId).toBe(low!.id)
+  })
+
+  test('answers the empty set even when nothing has been watched yet', async () => {
+    // The instances document can be unavailable or name nobody. An empty book
+    // then is an answer, and the panel must stop being a skeleton.
+    const pool = fakeRelays()
+    const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
+    expect(subject.disputesReady.value).toBe(false)
+
+    await subject.watchDisputes([])
+
+    expect(subject.disputesReady.value).toBe(true)
   })
 
   test('stopping the store closes the dispute subscription', async () => {

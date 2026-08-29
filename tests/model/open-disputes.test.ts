@@ -12,6 +12,7 @@ const HOUR = 60 * 60 * 1000
 
 function dispute(over: Partial<LiveDispute> = {}): LiveDispute {
   return {
+    eventId: 'e'.repeat(64),
     id: 'd1',
     status: 'initiated',
     instancePubkey: 'a'.repeat(64),
@@ -106,6 +107,29 @@ describe('openDisputes', () => {
     )
 
     expect(openDisputes(many, NOW, { ...CFG, maxEntries: 50 })).toHaveLength(50)
+  })
+
+  test('breaks a tie on the same second by the lowest event id, as NIP-01 does', () => {
+    // Arrange — two revisions of one dispute, published inside one second.
+    // The protocol keeps the lexically lowest id, whatever a relay sent first.
+    const kept = dispute({ eventId: 'a'.repeat(64), status: 'settled' })
+    const discarded = dispute({ eventId: 'f'.repeat(64), status: 'initiated' })
+
+    // Act — both arrival orders.
+    const oneWay = openDisputes([kept, discarded], NOW, CFG)
+    const other = openDisputes([discarded, kept], NOW, CFG)
+
+    // Assert — the settled revision wins either way, so the row is gone.
+    expect(oneWay).toEqual([])
+    expect(other).toEqual([])
+  })
+
+  test('a tie the other way round keeps the open revision, either order', () => {
+    const open = dispute({ eventId: 'a'.repeat(64), status: 'in-progress' })
+    const settled = dispute({ eventId: 'f'.repeat(64), status: 'settled' })
+
+    expect(openDisputes([open, settled], NOW, CFG)).toHaveLength(1)
+    expect(openDisputes([settled, open], NOW, CFG)).toHaveLength(1)
   })
 
   test('keeps a dispute stamped in the future rather than hiding it', () => {

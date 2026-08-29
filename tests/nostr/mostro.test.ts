@@ -30,6 +30,7 @@ describe('disputeFrom', () => {
 
     // Assert
     expect(dispute).toEqual({
+      eventId: 'e'.repeat(64),
       id: 'efa1ad7e-1cd0-4e9f-b7f0-3fd1a1c9c0aa',
       status: 'initiated',
       instancePubkey: PUBKEY,

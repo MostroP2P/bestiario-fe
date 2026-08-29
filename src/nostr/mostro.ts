@@ -36,6 +36,7 @@ export function disputeFrom(event: Event): LiveDispute | null {
   if (!id || !status) return null
 
   return {
+    eventId: event.id,
     id,
     status,
     instancePubkey: event.pubkey,

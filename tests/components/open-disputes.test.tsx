@@ -9,6 +9,7 @@ const HOUR = 60 * 60 * 1000
 
 function dispute(over: Partial<LiveDispute> = {}): LiveDispute {
   return {
+    eventId: 'e'.repeat(64),
     id: 'efa1ad7e-1cd0-4e9f-b7f0-3fd1a1c9c0aa',
     status: 'initiated',
     instancePubkey: 'a'.repeat(64),
