@@ -17,6 +17,7 @@ export const es: Strings = {
 
   header: {
     windowNav: 'Ventana',
+    language: 'Idioma',
     windows: { '24h': '24 H', '7d': '7 D', '30d': '30 D', '90d': '90 D', all: 'TODO' },
     network: 'MAINNET',
     verified: 'VERIFICADO',

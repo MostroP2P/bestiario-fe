@@ -670,9 +670,13 @@ noticing.
 - **Light and dark**, following the system and overridable, persisted.
 - **Performance**: first contentful paint before the relay answers — the
   shell renders immediately with skeletons. No layout shift when data lands.
-- **Language**: English in v1, with every user-facing string in one module so
-  a Spanish translation is a file and not a refactor. Given Mostro's users,
-  Spanish is expected in v1.1 (§16).
+- **Language**: five — English, Spanish, Portuguese, French, Italian — with
+  every user-facing string in one module so a translation is a file and not a
+  refactor. The page opens in the language `navigator.languages` asks for,
+  falling back to English, and the header carries a picker so a reader can
+  always overrule that guess; the choice is kept in `localStorage` and
+  outranks detection on every later visit. `<html lang>`, the tab title and
+  the page description follow the language shown.
 
 ---
 

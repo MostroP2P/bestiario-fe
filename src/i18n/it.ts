@@ -17,6 +17,7 @@ export const it: Strings = {
 
   header: {
     windowNav: 'Finestra',
+    language: 'Lingua',
     windows: { '24h': '24 H', '7d': '7 G', '30d': '30 G', '90d': '90 G', all: 'TUTTO' },
     network: 'MAINNET',
     verified: 'VERIFICATO',

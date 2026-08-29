@@ -132,3 +132,61 @@ test.describe('the tab and the shared link', () => {
     await expect(description).toHaveAttribute('content', es.document.description)
   })
 })
+
+test.describe('a reader whose browser guessed wrong', () => {
+  test.use({ locale: 'de-DE' })
+
+  test('can put the page into a language they read', async ({ page }) => {
+    // Arrange — German is not spoken here, so the page opens in English.
+    await serveRelay(page, events)
+    await page.goto('/')
+    await expect(page.locator('.b-kpi strong').first()).not.toBeEmpty()
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+
+    // Act
+    await page.getByLabel(en.header.language).selectOption('es')
+
+    // Assert — the page, the tab, and what a screen reader pronounces.
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es')
+    await expect(page.locator('.b-stream')).toHaveText(es.header.verified)
+    await expect(page.locator('.b-rail')).toContainText(es.rail.publisher)
+    await expect(page).toHaveTitle(es.document.title)
+  })
+
+  test('and the choice is still theirs on the next visit', async ({ page }) => {
+    await serveRelay(page, events)
+    await page.goto('/')
+    await page.getByLabel(en.header.language).selectOption('it')
+    await expect(page.locator('html')).toHaveAttribute('lang', 'it')
+
+    // Act — a fresh load, with the same browser saying German as before.
+    await page.reload()
+
+    // Assert — the reader's correction outranks the browser, still.
+    await expect(page.locator('html')).toHaveAttribute('lang', 'it')
+    await expect(page.getByLabel(it.header.language)).toHaveValue('it')
+  })
+})
+
+test.describe('a reader the browser guessed right about', () => {
+  test.use({ locale: 'es-AR' })
+
+  test('sees the picker already on their language', async ({ page }) => {
+    await serveRelay(page, events)
+    await page.goto('/')
+
+    await expect(page.getByLabel(es.header.language)).toHaveValue('es')
+  })
+
+  test('can go back to English and stay there', async ({ page }) => {
+    await serveRelay(page, events)
+    await page.goto('/')
+
+    await page.getByLabel(es.header.language).selectOption('en')
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+
+    await page.reload()
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+    await expect(page.locator('.b-stream')).toHaveText(en.header.verified)
+  })
+})
