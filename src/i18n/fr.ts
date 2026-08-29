@@ -120,8 +120,6 @@ export const fr: Strings = {
     loadingGeometry: 'CHARGEMENT DE LA GÉOMÉTRIE…',
     noGeometry: (reason) => `PAS DE GÉOMÉTRIE · ${reason}`,
     activeMarkets: 'MARCHÉS ACTIFS',
-    unplaced: (count) =>
-      `${count} ${plural(count, 'sans emplacement', 'sans emplacement')}, hors carte`,
     illustrativeRoutes:
       'Les routes sont illustratives : elles vont vers des ancrages sans nom, pas vers des mostros. Le démon n’a pas encore publié orders:…:i:<pubkey>, et sans cela rien ne dit quelle instance négocie quelle monnaie. Ce qui est mesuré, c’est la monnaie, son pays et ses ordres.',
     approximateInstances: (approximate, total) =>

@@ -125,7 +125,6 @@ export const en: Strings = {
     loadingGeometry: 'LOADING GEOMETRY…',
     noGeometry: (reason) => `NO GEOMETRY · ${reason}`,
     activeMarkets: 'ACTIVE MARKETS',
-    unplaced: (count) => `${count} unplaced, off the map`,
     illustrativeRoutes:
       'The routes are illustrative: they run to unnamed anchors, not to mostros. The daemon has not published orders:…:i:<pubkey> yet, and without it nothing says which instance trades which currency. What is measured is the currency, its country and its orders.',
     approximateInstances: (approximate, total) =>

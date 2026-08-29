@@ -809,14 +809,6 @@ body {
   white-space: nowrap;
 }
 
-/* A place the map could not honestly draw is said, not hidden. */
-.b-unplaced {
-  color: var(--warn) !important;
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.06em;
-}
-
 /* The legend beside the map. Every currency and every mostro the map draws is
    here, including the ones whose label would not fit on the globe. */
 .b-legend {

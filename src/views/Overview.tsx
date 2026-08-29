@@ -308,11 +308,6 @@ export function Overview(props: { readonly window: Span }) {
           ) : (
             <strong>{scene.currencies.length}</strong>
           )}
-          {scene.unplaced.currencies > 0 && (
-            <small class="b-unplaced">
-              {strings.map.unplaced(scene.unplaced.currencies)}
-            </small>
-          )}
         </div>
 
         <div class="b-map-caption">
