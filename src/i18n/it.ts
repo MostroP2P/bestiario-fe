@@ -38,7 +38,9 @@ export const it: Strings = {
     allFiat: 'Tutte le valute',
     allInstances: 'Tutta la rete',
     unscoped: (name) =>
-      `${name} non pubblica ancora un documento di ordini proprio, quindi quanto segue riguarda tutta la rete.`,
+      `${name} non pubblica ancora un documento di ordini proprio, quindi qui si mostra soltanto ciò che pubblica su di sé; una cifra che il pubblicatore non scompone per istanza si legge come assenza e non come quella della rete.`,
+    unverifiedScoped: (name, reason) =>
+      `${name} pubblica un documento di ordini proprio, e non ha superato la verifica in questo browser: ${reason}. Non se ne mostra nulla: soltanto ciò che il documento delle istanze dice dell'istanza.`,
     noInstanceVolume:
       'Il volume è pubblicato per la rete e non per istanza, quindi queste cifre non si restringono a una sola.',
   },
@@ -63,11 +65,23 @@ export const it: Strings = {
       'Contati nel documento di volume, che è dove la rete distingue gli ordini per valuta.',
     instanceHeading: 'Ciò che questa istanza pubblica su di sé',
     instanceFee: 'Commissione',
-    instanceLimits: 'Limiti di ordine',
+    instanceMinOrder: 'Ordine minimo',
+    instanceMaxOrder: 'Ordine massimo',
     instanceBond: 'Cauzione',
     instanceVersion: 'Versione',
     instanceFiat: 'Valute dichiarate',
     instanceSeen: "Vista l'ultima volta",
+    instanceFirstSeen: 'Vista la prima volta',
+    instanceSilent: 'In silenzio da',
+    instanceProtocol: 'Versione del protocollo',
+    instanceNetworks: 'Reti Lightning',
+    instanceCreated: 'Ordini creati nella finestra',
+    perCurrencyNoInstance:
+      'Il documento di ordini di questa istanza non nomina alcuna valuta per questa finestra.',
+    perCurrencyNoDocument:
+      'Questa istanza non pubblica un documento di ordini proprio, quindi non c’è alcuna scomposizione per valuta da leggere per essa.',
+    shareNotPerInstance:
+      'Questa ripartizione è firmata per tutta la rete e non per istanza, quindi non si restringe a una sola.',
   },
 
   volumeView: {

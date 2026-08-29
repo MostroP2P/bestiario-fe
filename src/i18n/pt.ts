@@ -38,7 +38,9 @@ export const pt: Strings = {
     allFiat: 'Todas as moedas',
     allInstances: 'Toda a rede',
     unscoped: (name) =>
-      `${name} ainda não publica um documento de ordens próprio, portanto o que segue é de toda a rede.`,
+      `${name} ainda não publica um documento de ordens próprio, portanto aqui só se mostra o que publica sobre si mesma; uma cifra que o publicador não desdobra por instância lê-se como ausência e não como a da rede.`,
+    unverifiedScoped: (name, reason) =>
+      `${name} publica um documento de ordens próprio, e não passou a verificação neste navegador: ${reason}. Nada dele é mostrado — apenas o que o documento de instâncias diz sobre a instância.`,
     noInstanceVolume:
       'O volume é publicado para a rede e não por instância, portanto estas cifras não se restringem a uma só.',
   },
@@ -63,11 +65,23 @@ export const pt: Strings = {
       'Contadas no documento de volume, que é onde a rede detalha as ordens por moeda.',
     instanceHeading: 'O que esta instância publica sobre si mesma',
     instanceFee: 'Taxa',
-    instanceLimits: 'Limites de ordem',
+    instanceMinOrder: 'Ordem mínima',
+    instanceMaxOrder: 'Ordem máxima',
     instanceBond: 'Caução',
     instanceVersion: 'Versão',
     instanceFiat: 'Moedas declaradas',
     instanceSeen: 'Vista pela última vez',
+    instanceFirstSeen: 'Vista pela primeira vez',
+    instanceSilent: 'Em silêncio há',
+    instanceProtocol: 'Versão do protocolo',
+    instanceNetworks: 'Redes Lightning',
+    instanceCreated: 'Ordens criadas na janela',
+    perCurrencyNoInstance:
+      'O documento de ordens desta instância não nomeia nenhuma moeda para esta janela.',
+    perCurrencyNoDocument:
+      'Esta instância não publica um documento de ordens próprio, portanto não há desdobramento por moeda para ler para ela.',
+    shareNotPerInstance:
+      'Esta repartição é assinada para toda a rede e não por instância, portanto não se restringe a uma só.',
   },
 
   volumeView: {

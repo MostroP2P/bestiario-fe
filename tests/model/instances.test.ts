@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { currencyOrders, instanceRows } from '~/model/instances'
+import { currencyOrders, instanceOrders, instanceRows } from '~/model/instances'
 import { metricsOf } from '~/model/metrics'
 import type { Envelope, Metric } from '~/nostr/documents'
 
@@ -173,5 +173,53 @@ describe('currencyOrders · malformed names', () => {
     // A scoped document carries only `orders.*`, but nothing stops a future
     // one carrying more, and a stray family must not become a currency.
     expect(currencyOrders([count('volume.fiat.ARS.orders', 9)])).toEqual([])
+  })
+})
+
+describe('instanceOrders', () => {
+  const row = instanceRows([
+    text('instances.Mostro.pubkey', PUBKEY),
+    text('instances.Mostro.name', 'Mostro'),
+    count('instances.Mostro.created', 682),
+  ])[0]!
+
+  test('prefers the instance own scoped document when there is one', () => {
+    // Arrange
+    const scoped = [count('orders.created', 12), count('orders.completed', 9)]
+
+    // Act
+    const figures = instanceOrders(row, scoped)
+
+    // Assert
+    expect(figures).toBe(scoped)
+  })
+
+  test('falls back to the created count the instance block publishes', () => {
+    // Act
+    const figures = instanceOrders(row, [])
+
+    // Assert
+    expect(figures).toEqual([
+      { name: 'orders.created', kind: 'observed', unit: 'count', value: 682 },
+    ])
+  })
+
+  test('leaves every other figure absent rather than borrowing the network total', () => {
+    // Act
+    const figures = instanceOrders(row, [])
+
+    // Assert
+    expect(figures.some((metric) => metric.name === 'orders.completed')).toBe(false)
+  })
+
+  test('publishes nothing when the block carries no created count', () => {
+    // Arrange
+    const bare = instanceRows([
+      text('instances.Bare.pubkey', PUBKEY),
+      text('instances.Bare.name', 'Bare'),
+    ])[0]!
+
+    // Act & Assert
+    expect(instanceOrders(bare, [])).toEqual([])
   })
 })

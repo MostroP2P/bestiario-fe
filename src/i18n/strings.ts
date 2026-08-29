@@ -85,6 +85,8 @@ export type Strings = {
     readonly allInstances: string
     /** The instance publishes no orders document of its own yet. */
     readonly unscoped: (name: string) => string
+    /** Its own document was published, and did not verify in this browser. */
+    readonly unverifiedScoped: (name: string, reason: string) => string
     /** Volume carries no per-instance breakdown at all. */
     readonly noInstanceVolume: string
   }
@@ -108,11 +110,23 @@ export type Strings = {
     readonly perCurrencyNote: string
     readonly instanceHeading: string
     readonly instanceFee: string
-    readonly instanceLimits: string
+    readonly instanceMinOrder: string
+    readonly instanceMaxOrder: string
     readonly instanceBond: string
     readonly instanceVersion: string
     readonly instanceFiat: string
     readonly instanceSeen: string
+    readonly instanceFirstSeen: string
+    readonly instanceSilent: string
+    readonly instanceProtocol: string
+    readonly instanceNetworks: string
+    readonly instanceCreated: string
+    /** Its own document is there and names no currency for this window. */
+    readonly perCurrencyNoInstance: string
+    /** There is no document of its own to read a breakdown from. */
+    readonly perCurrencyNoDocument: string
+    /** Why the buy/sell split does not narrow to one instance. */
+    readonly shareNotPerInstance: string
   }
 
   readonly volumeView: {
