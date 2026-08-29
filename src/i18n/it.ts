@@ -39,6 +39,8 @@ export const it: Strings = {
     allInstances: 'Tutta la rete',
     unscoped: (name) =>
       `${name} non pubblica ancora un documento di ordini proprio, quindi qui si mostra soltanto ciò che pubblica su di sé; una cifra che il pubblicatore non scompone per istanza si legge come assenza e non come quella della rete.`,
+    unverifiedScoped: (name, reason) =>
+      `${name} pubblica un documento di ordini proprio, e non ha superato la verifica in questo browser: ${reason}. Non se ne mostra nulla: soltanto ciò che il documento delle istanze dice dell'istanza.`,
     noInstanceVolume:
       'Il volume è pubblicato per la rete e non per istanza, quindi queste cifre non si restringono a una sola.',
   },
@@ -75,7 +77,9 @@ export const it: Strings = {
     instanceNetworks: 'Reti Lightning',
     instanceCreated: 'Ordini creati nella finestra',
     perCurrencyNoInstance:
-      'Il pubblicatore non scompone per valuta gli ordini di questa istanza, quindi non c’è nulla da mostrare per valuta.',
+      'Il documento di ordini di questa istanza non nomina alcuna valuta per questa finestra.',
+    perCurrencyNoDocument:
+      'Questa istanza non pubblica un documento di ordini proprio, quindi non c’è alcuna scomposizione per valuta da leggere per essa.',
     shareNotPerInstance:
       'Questa ripartizione è firmata per tutta la rete e non per istanza, quindi non si restringe a una sola.',
   },

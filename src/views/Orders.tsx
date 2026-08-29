@@ -5,6 +5,7 @@ import { instanceRows, currencyOrders, instanceOrders } from '~/model/instances'
 import { formatMetric } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
+import type { Metric } from '~/nostr/documents'
 import { Figure } from '~/components/Figure'
 import { Kpi } from '~/components/Kpi'
 import { Pairs } from '~/components/Pairs'
@@ -24,22 +25,22 @@ export function Orders(props: { readonly window: Span }) {
   const strings = useStrings()
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
 
+  /** The instance's own orders document, once a reader has asked for one. */
+  const scopedAddress = filters.instance
+    ? printAddress({
+        kind: 'window',
+        report: 'orders',
+        window: props.window,
+        scope: { instance: filters.instance },
+      })
+    : null
+
   const needed = useMemo(() => {
     const base = (['orders', 'volume', 'market', 'instances'] as const).map((report) =>
       windowAddress(report, props.window),
     )
-    return filters.instance
-      ? [
-          ...base,
-          printAddress({
-            kind: 'window',
-            report: 'orders',
-            window: props.window,
-            scope: { instance: filters.instance },
-          }),
-        ]
-      : base
-  }, [props.window, filters.instance])
+    return scopedAddress ? [...base, scopedAddress] : base
+  }, [props.window, scopedAddress])
 
   const { boot, documents } = useStore(needed)
 
@@ -54,35 +55,56 @@ export function Orders(props: { readonly window: Span }) {
     [documents, props.window],
   )
 
-  const loading = boot.status === 'loading' || network.length === 0
-
   /** The instance the reader asked for, when the publisher named one. */
   const chosen = instances.find((instance) => instance.pubkey === filters.instance)
 
-  /** Its own orders document, when there is one to read. */
-  const scoped = filters.instance
-    ? metricsOf(
-        payloadOf(
-          documents,
-          printAddress({
-            kind: 'window',
-            report: 'orders',
-            window: props.window,
-            scope: { instance: filters.instance },
-          }),
-        ),
-      )
-    : []
+  /** A document has answered: with figures, with silence, or with a failure. */
+  const stateOf = (address: string) => documents.get(address)
+  const settled = (address: string) => {
+    const state = stateOf(address)
+    return state !== undefined && state.status !== 'loading'
+  }
+
+  /**
+   * What the instance's own document is doing. `unavailable` is the index
+   * not naming it at all — the archive has not published one (SPEC 14.3) —
+   * and it is the only state the fallback may read a figure under. A
+   * document still in the air has said nothing yet, and one that failed
+   * verification has said something this page must not repeat.
+   */
+  const scopedState = scopedAddress ? stateOf(scopedAddress) : undefined
+  const scopedPending = scopedAddress !== null && !settled(scopedAddress)
+  const scopedUnverified = scopedState?.status === 'unverified'
+  const scoped = scopedAddress
+    ? metricsOf(payloadOf(documents, scopedAddress))
+    : ([] as readonly Metric[])
 
   /**
    * The figures the page reads. Choosing an instance narrows every one of
    * them: what follows is that instance's or it is absent, and never the
-   * network's total wearing an instance's name.
+   * network's total wearing an instance's name — not even in the window
+   * before the instances document has named the instance the reader picked.
    */
-  const orders = chosen ? instanceOrders(chosen, scoped) : network
+  const orders = filters.instance
+    ? chosen
+      ? instanceOrders(chosen, scoped)
+      : []
+    : network
+
+  /**
+   * The figures are in when the documents this reading needs have answered.
+   * Narrowed to one instance that is the instances document and the
+   * instance's own, and never the network's totals, which this reading does
+   * not use and may be empty on a quiet window.
+   */
+  const loading =
+    boot.status === 'loading' ||
+    (filters.instance
+      ? !settled(windowAddress('instances', props.window)) || scopedPending
+      : network.length === 0)
 
   /** The market document is signed for the network, and narrows to nothing. */
-  const marketOf = (name: string) => (chosen ? undefined : lookup(market, name))
+  const marketOf = (name: string) => (filters.instance ? undefined : lookup(market, name))
 
   const perInstanceCurrencies = useMemo(() => currencyOrders(scoped), [scoped])
 
@@ -114,9 +136,14 @@ export function Orders(props: { readonly window: Span }) {
         value={filters}
         onChange={setFilters}
         note={
-          chosen && perInstanceCurrencies.length === 0
-            ? strings.filters.unscoped(chosen.name || chosen.label)
-            : undefined
+          chosen && scopedUnverified
+            ? strings.filters.unverifiedScoped(
+                chosen.name || chosen.label,
+                scopedState?.status === 'unverified' ? scopedState.reason : '',
+              )
+            : chosen && !scopedPending && scoped.length === 0
+              ? strings.filters.unscoped(chosen.name || chosen.label)
+              : undefined
         }
       />
 
@@ -162,9 +189,13 @@ export function Orders(props: { readonly window: Span }) {
               : strings.ordersView.perCurrency}
           </h2>
           <p class="b-note-why b-section-note">
-            {chosen && shownForInstance.length === 0
-              ? strings.ordersView.perCurrencyNoInstance
-              : strings.ordersView.perCurrencyNote}
+            {!chosen || loading
+              ? strings.ordersView.perCurrencyNote
+              : shownForInstance.length > 0
+                ? strings.ordersView.perCurrencyNote
+                : scoped.length > 0
+                  ? strings.ordersView.perCurrencyNoInstance
+                  : strings.ordersView.perCurrencyNoDocument}
           </p>
           <div class="b-table">
             {loading && <Skeleton width="80%" height="11px" />}

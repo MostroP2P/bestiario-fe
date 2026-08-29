@@ -243,7 +243,7 @@ describe('Orders · narrowed to one instance', () => {
     await chooseInstance(container, 'Mostro AR')
 
     // Assert
-    expect(container.textContent).toContain(en.ordersView.perCurrencyNoInstance)
+    expect(container.textContent).toContain(en.ordersView.perCurrencyNoDocument)
     expect(container.querySelector('.b-table')?.textContent).toBe('')
   })
 

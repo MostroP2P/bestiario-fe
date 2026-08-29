@@ -39,6 +39,8 @@ export const fr: Strings = {
     allInstances: 'Tout le réseau',
     unscoped: (name) =>
       `${name} ne publie pas encore de document d'ordres qui lui soit propre : seul ce qu'elle publie sur elle-même est montré ici ; un chiffre que le publicateur ne ventile pas par instance se lit comme une absence et non comme celui du réseau.`,
+    unverifiedScoped: (name, reason) =>
+      `${name} publie un document d'ordres qui lui est propre, et il n'a pas passé la vérification dans ce navigateur : ${reason}. Rien n'en est montré — seulement ce que le document des instances dit de l'instance.`,
     noInstanceVolume:
       'Le volume est publié pour le réseau et non par instance : ces chiffres ne se restreignent pas à une seule.',
   },
@@ -76,7 +78,9 @@ export const fr: Strings = {
     instanceNetworks: 'Réseaux Lightning',
     instanceCreated: 'Ordres créés dans la fenêtre',
     perCurrencyNoInstance:
-      "Le publicateur ne ventile pas par devise les ordres de cette instance : il n'y a donc rien à montrer par devise pour elle.",
+      "Le document d'ordres de cette instance ne nomme aucune devise pour cette fenêtre.",
+    perCurrencyNoDocument:
+      "Cette instance ne publie pas de document d'ordres qui lui soit propre : il n'y a donc pas de ventilation par devise à lire pour elle.",
     shareNotPerInstance:
       'Cette répartition est signée pour tout le réseau et non par instance : elle ne se restreint pas à une seule.',
   },

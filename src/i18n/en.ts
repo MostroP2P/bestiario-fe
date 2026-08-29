@@ -45,6 +45,8 @@ export const en: Strings = {
     allInstances: 'The whole network',
     unscoped: (name) =>
       `${name} does not publish an orders document of its own yet, so only what it publishes about itself is shown here; a figure the publisher does not break down per instance reads as absent rather than as the network's.`,
+    unverifiedScoped: (name, reason) =>
+      `${name} publishes an orders document of its own, and it did not verify in this browser: ${reason}. Nothing from it is shown — only what the instances document says about the instance.`,
     noInstanceVolume:
       'Volume is published for the network and not per instance, so these figures do not narrow to one.',
   },
@@ -81,7 +83,9 @@ export const en: Strings = {
     instanceNetworks: 'Lightning networks',
     instanceCreated: 'Orders created in the window',
     perCurrencyNoInstance:
-      "The publisher does not break this instance's orders down by currency, so there is nothing to show per currency for it.",
+      "This instance's own orders document names no currency for this window.",
+    perCurrencyNoDocument:
+      'This instance publishes no orders document of its own, so there is no breakdown by currency to read for it.',
     shareNotPerInstance:
       'This split is signed for the whole network and not per instance, so it does not narrow to one.',
   },

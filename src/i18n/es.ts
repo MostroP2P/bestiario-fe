@@ -39,6 +39,8 @@ export const es: Strings = {
     allInstances: 'Toda la red',
     unscoped: (name) =>
       `${name} todavía no publica un documento de órdenes propio, así que aquí solo se muestra lo que publica sobre sí misma; una cifra que el publicador no desglosa por instancia se lee como ausencia y no como la de la red.`,
+    unverifiedScoped: (name, reason) =>
+      `${name} publica un documento de órdenes propio, y no superó la verificación en este navegador: ${reason}. No se muestra nada de él: solo lo que el documento de instancias dice sobre la instancia.`,
     noInstanceVolume:
       'El volumen se publica para la red y no por instancia, así que estas cifras no se acotan a una sola.',
   },
@@ -75,7 +77,9 @@ export const es: Strings = {
     instanceNetworks: 'Redes Lightning',
     instanceCreated: 'Órdenes creadas en la ventana',
     perCurrencyNoInstance:
-      'El publicador no desglosa por moneda las órdenes de esta instancia, así que no hay nada que mostrar por moneda para ella.',
+      'El documento de órdenes de esta instancia no nombra ninguna moneda para esta ventana.',
+    perCurrencyNoDocument:
+      'Esta instancia no publica un documento de órdenes propio, así que no hay desglose por moneda que leer para ella.',
     shareNotPerInstance:
       'Este reparto se firma para toda la red y no por instancia, así que no se acota a una sola.',
   },
