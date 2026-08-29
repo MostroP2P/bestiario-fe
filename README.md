@@ -200,10 +200,15 @@ what this site does and why, and it names the tests that cover each of its
 requirements.
 
 Everything written in this repository is in English: source, comments,
-commit messages, documentation. Conversation with the maintainer may happen
-in Spanish; the artifacts do not.
+commit messages, documentation, and everything on GitHub — issue titles and
+bodies, pull requests, review comments and the replies to them. Conversation
+with the maintainer may happen in Spanish; the artifacts do not.
 
 Conventional commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:`, …).
+
+[`AGENTS.md`](AGENTS.md) is the working guide — conventions, commands, and the
+places in this codebase where a careless change is silent. It is addressed to
+coding agents and holds for everyone.
 
 ## Licence
 
