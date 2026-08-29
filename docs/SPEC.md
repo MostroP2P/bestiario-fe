@@ -99,10 +99,16 @@ test named in §12.
 |---|---|
 | Publisher pubkey | a single hex key, configured at build time (below) |
 | Event kind | `30666` (addressable, PUB §2) |
-| Read relays | `wss://relay.mostro.network`, `wss://nos.lol` |
+| Read relays | `wss://relay.mostro.network`, `wss://nos.lol`, `wss://mostro-p2p.tech` |
 
-The relays are the daemon's `[nostr].relays`; `[publish].relays` is unset, so
-publication goes to the same two.
+The first two are the daemon's `[nostr].relays`; `[publish].relays` is unset,
+so publication goes to the same two, and they are where the documents are.
+The third is a Mostro developer's relay and is read-only redundancy: it
+carries the instances' own events — kind 38383 behind the map, 38386 behind
+the dispute book — and no `30666` until the daemon publishes there too. A
+relay that holds nothing withholds nothing: this client takes the newest
+verified document per address across every relay that answers, so a third
+relay can only add.
 
 **The publisher key is a variable, not a constant of the protocol.** It is the
 key bestiario signs with, and it can be rotated; the pair of values that must

@@ -30,9 +30,23 @@ export const MOSTRO_DISPUTE_KIND = 38386
 /** Nostr metadata, used to resolve a Mostro instance's name and flag. */
 export const METADATA_KIND = 0
 
+/**
+ * Where to read from, in the order they are dialled.
+ *
+ * The first two are the daemon's own, so they are where the statistics are.
+ * The third is a Mostro developer's relay, added for redundancy: it carries
+ * the instances' own events — the orders behind the map and the disputes
+ * behind the book — and it will carry the documents too the day the daemon
+ * publishes there. Until then it is a read that costs a connection and
+ * withholds nothing, which is the only way a relay can be wrong here: a
+ * relay may keep an event from this client, it can never forge one, and
+ * every document is verified against the publisher's key and the index's
+ * hash whichever relay hands it over.
+ */
 export const DEFAULT_RELAYS: readonly string[] = [
   'wss://relay.mostro.network',
   'wss://nos.lol',
+  'wss://mostro-p2p.tech',
 ]
 
 /** SPEC 7.4. All in milliseconds, all measured against a signed `created_at`. */
