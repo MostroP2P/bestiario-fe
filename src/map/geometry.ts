@@ -1,12 +1,11 @@
 /**
  * The shape of a line between a currency and the node trading it.
  *
- * Two pieces, both pure. `arcPoints` samples the great circle between two
- * places and projects it, so a line follows the globe rather than the screen.
- * `bowPoints` then pushes that polyline sideways — which is how five orders
- * on the same route read as five lines and not as one line drawn five times.
+ * Two pieces, both pure. `arcPoints` samples the way from one place to the
+ * other *across this map* and projects it. `bowPoints` then pushes that
+ * polyline sideways — which is how five orders on the same route read as
+ * five lines and not as one line drawn five times.
  */
-import { geoInterpolate } from 'd3-geo'
 import type { LonLat } from '~/model/random-point'
 
 /** A projected screen coordinate. */
@@ -15,7 +14,19 @@ export type Point = [number, number]
 export type Projection = (lonLat: LonLat) => Point | null
 
 /**
- * `samples + 1` points along the great circle from `from` to `to`.
+ * `samples + 1` points along the way from `from` to `to`, projected.
+ *
+ * The path is walked in longitude and latitude directly, never through the
+ * antimeridian: every sample's longitude lies between the two ends' own. A
+ * great circle would instead take whichever way round the globe is shorter,
+ * and on a flat map that is a route which walks off one edge and reappears at
+ * the other — two half-lines that read as a broken drawing rather than as one
+ * journey. A reader of this map follows a line from a market to a node; it
+ * has to be a line they can follow.
+ *
+ * The cost is that a route no longer traces the shortest path over the globe.
+ * That was never what this map claims: `bowPoints` bends every route anyway,
+ * and the arc is there to say "a path between two places", not to be measured.
  *
  * Null when any sample falls outside the projection — a partially drawn line
  * would imply a route that stops in the middle of the ocean.
@@ -26,13 +37,19 @@ export function arcPoints(
   project: Projection,
   samples: number,
 ): Point[] | null {
-  const along = geoInterpolate(from, to)
+  const [fromLon, fromLat] = from
+  const [toLon, toLat] = to
   const points: Point[] = []
   for (let i = 0; i <= samples; i++) {
-    // The ends are the places themselves, not interpolations towards them:
-    // geoInterpolate at t=1 lands a floating-point hair off its own target,
-    // and a line has to terminate *at* its node, not near it.
-    const lonLat = i === 0 ? from : i === samples ? to : along(i / samples)
+    const t = i / samples
+    // The ends are the places themselves, not interpolations towards them: a
+    // line has to terminate *at* its node, not a floating-point hair off it.
+    const lonLat: LonLat =
+      i === 0
+        ? from
+        : i === samples
+          ? to
+          : [fromLon + (toLon - fromLon) * t, fromLat + (toLat - fromLat) * t]
     const projected = project(lonLat)
     if (!projected) return null
     points.push(projected)
@@ -77,26 +94,17 @@ export function bowPoints(points: readonly Point[], amount: number): Point[] {
 }
 
 /**
- * An SVG path `d` for a polyline, broken where the projection wraps.
+ * An SVG path `d` for a polyline.
  *
- * A great circle that crosses the antimeridian projects to points at one edge
- * of the map and then at the other. Joined with a line, that is a bright
- * streak straight across the world — the most conspicuous wrong thing this
- * map can draw, and the reason `maxJump` exists: a step wider than it is not
- * a segment, it is the seam, and the path lifts its pen over it.
+ * One unbroken stroke: routes are sampled across the map rather than around
+ * the globe (see `arcPoints`), so there is no seam left for the pen to lift
+ * over.
  *
  * Coordinates are rounded to a tenth of a pixel, which is below what a screen
  * can show and keeps the markup readable.
  */
-export function toPathData(points: readonly Point[], maxJump: number = Infinity): string {
-  let path = ''
-  let previous: Point | null = null
-
-  for (const point of points) {
-    const [x, y] = point
-    const wrapped = previous !== null && Math.abs(x - previous[0]) > maxJump
-    path += `${previous === null || wrapped ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
-    previous = point
-  }
-  return path
+export function toPathData(points: readonly Point[]): string {
+  return points
+    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join('')
 }

@@ -6,7 +6,7 @@ const identity = (p: [number, number]): Point | null => [p[0], p[1]]
 const nowhere = (): Point | null => null
 
 describe('arcPoints', () => {
-  test('samples the great circle from one place to the other', () => {
+  test('samples the line from one place to the other', () => {
     // Arrange / Act
     const points = arcPoints([0, 0], [10, 0], identity, 8)
 
@@ -22,12 +22,30 @@ describe('arcPoints', () => {
     expect(points.at(-1)![0]).toBeCloseTo(10, 6)
   })
 
-  test('bends towards the great circle rather than running straight', () => {
-    // Two points at the same latitude: the great circle between them bows
-    // poleward, so the middle sample must leave the parallel.
-    const points = arcPoints([-100, 50], [20, 50], identity, 16)!
+  test('stays between the two longitudes rather than taking the short way round', () => {
+    // Arrange — Buenos Aires to Sydney. The great circle between them is
+    // shorter across the Pacific, which on a flat map leaves one edge and
+    // reappears at the other.
+    const points = arcPoints([-58, -34], [151, -33], identity, 24)!
 
-    expect(points[8]![1]).toBeGreaterThan(50)
+    // Assert — every sample sits inside the span the two ends define, so the
+    // route crosses the map rather than its seam.
+    for (const [lon] of points) {
+      expect(lon).toBeGreaterThanOrEqual(-58)
+      expect(lon).toBeLessThanOrEqual(151)
+    }
+  })
+
+  test('walks its longitudes in one direction, without a jump', () => {
+    const points = arcPoints([-100, 20], [170, -10], identity, 24)!
+
+    // The widest step is the span divided by the samples: no sample may leap
+    // the width of the world, which is what a wrap looks like.
+    const steps = points.slice(1).map(([lon], i) => lon - points[i]![0])
+    for (const step of steps) {
+      expect(step).toBeGreaterThan(0)
+      expect(step).toBeLessThan(180)
+    }
   })
 
   test('gives nothing when a sample falls off the projection', () => {
@@ -94,24 +112,7 @@ describe('toPathData', () => {
     ).toBe('M0.0,0.0L10.0,5.0L20.0,0.0')
   })
 
-  test('lifts the pen where the projection wraps', () => {
-    // Arrange — a route crossing the antimeridian: the projection puts one
-    // sample at the right edge and the next at the left.
-    const points: Point[] = [
-      [900, 100],
-      [990, 110],
-      [10, 120],
-      [90, 130],
-    ]
-
-    // Act
-    const path = toPathData(points, 500)
-
-    // Assert — two strokes, not one streak across the map.
-    expect(path).toBe('M900.0,100.0L990.0,110.0M10.0,120.0L90.0,130.0')
-  })
-
-  test('joins everything when no seam is possible', () => {
+  test('joins a long step like any other, because no step is a seam now', () => {
     const points: Point[] = [
       [0, 0],
       [900, 0],
@@ -120,23 +121,11 @@ describe('toPathData', () => {
     expect(toPathData(points)).toBe('M0.0,0.0L900.0,0.0')
   })
 
-  test('does not break on a step that is merely long', () => {
-    expect(
-      toPathData(
-        [
-          [0, 0],
-          [400, 0],
-        ],
-        500,
-      ),
-    ).toBe('M0.0,0.0L400.0,0.0')
-  })
-
   test('handles a single point', () => {
-    expect(toPathData([[5, 5]], 500)).toBe('M5.0,5.0')
+    expect(toPathData([[5, 5]])).toBe('M5.0,5.0')
   })
 
   test('handles no points', () => {
-    expect(toPathData([], 500)).toBe('')
+    expect(toPathData([])).toBe('')
   })
 })

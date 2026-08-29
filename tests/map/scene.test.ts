@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { bowFor, bowSet, buildScene } from '~/map/scene'
+import { createProjection } from '~/map/projection'
 import type { Line } from '~/model/live-lines'
 import type { LonLat } from '~/model/random-point'
 import type { Point } from '~/map/geometry'
@@ -275,5 +276,32 @@ describe('bowFor · the ceiling', () => {
 
   test('is uncapped when no ceiling is given', () => {
     expect(bowFor(4000)).toBeGreaterThan(400)
+  })
+})
+
+describe('a route drawn on the real projection', () => {
+  test('crosses the map instead of walking off its edges', () => {
+    // Arrange — Buenos Aires to Sydney, the widest pair this map can hold.
+    // Over the globe the short way is across the Pacific; on the panel that
+    // would be a line leaving one edge and a dot reappearing at the other.
+    const projection = createProjection(960, 480)
+    const scene = buildScene({
+      lines: [line({ fiat: 'AUD', instancePubkey: 'node-au' })],
+      currencyAt: () => [-58, -34] as LonLat,
+      instanceAt: () => [151, -33] as LonLat,
+      instanceLabel: () => 'AU',
+      project: projection.project,
+    })
+
+    // Act
+    const xs = scene.arcs[0]!.points.map(([x]) => x)
+
+    // Assert — one westerly-to-easterly walk, no step anywhere near the
+    // width of the panel.
+    const steps = xs.slice(1).map((x, i) => x - xs[i]!)
+    for (const step of steps) {
+      expect(step).toBeGreaterThan(0)
+      expect(step).toBeLessThan(960 / 4)
+    }
   })
 })
