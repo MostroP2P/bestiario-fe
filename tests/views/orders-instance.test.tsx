@@ -57,6 +57,11 @@ const DOCS: Record<string, WindowPayload> = {
     range: RANGE,
     metrics: [count('volume.fiat.ARS.orders', 9), count('volume.fiat.VES.orders', 3)],
   },
+  // A window the archive reaches further back than ARS's first order.
+  'orders:all': { range: RANGE, metrics: [count('orders.created', 50)] },
+  'volume:all': { range: RANGE, metrics: [count('volume.fiat.VES.orders', 8)] },
+  'market:all': { range: RANGE, metrics: [] },
+  'instances:all': { range: RANGE, metrics: [] },
   'market:30d': {
     range: RANGE,
     metrics: [
@@ -339,5 +344,29 @@ describe('Orders · narrowed to one currency', () => {
     expect(tile(container, en.ordersView.canceled)).toBeNull()
     expect(container.textContent).toContain(en.filters.noFiatOrders)
     expect(container.textContent).not.toContain(printed('ratio', 0.6))
+  })
+})
+
+describe('Orders · a currency this window does not have', () => {
+  test('holds the currency reading and leaves it absent, not the network', async () => {
+    // Arrange — ARS is counted on `30d`, and the reader picks it there.
+    const { container, rerender } = render(<Orders window="30d" />)
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.created)).toBe('20')
+    })
+    await chooseFiat(container, 'ARS')
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.completed)).toBe('9')
+    })
+
+    // Act — the window changes under the selection.
+    rerender(<Orders window="all" />)
+
+    // Assert — absence under ARS, and never the 50 the network created.
+    await waitFor(() => {
+      expect(container.textContent).toContain(en.filters.fiatUnavailable('ARS'))
+    })
+    expect(valueOf(container, en.ordersView.completed)).toBe('—')
+    expect(container.textContent).not.toContain('50')
   })
 })

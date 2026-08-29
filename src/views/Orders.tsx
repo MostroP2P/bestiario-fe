@@ -124,10 +124,17 @@ export function Orders(props: { readonly window: Span }) {
 
   const figure = (metric: Metric | undefined) => formatMetric(metric).text
 
-  /** What one currency's row of the volume document counts: completions. */
-  const completedInFiat = filters.fiat
-    ? currencies.find((row) => row.code === filters.fiat)?.figures.get('orders')
+  /**
+   * What one currency's row of the volume document counts: completions.
+   * A currency chosen on one window and carried into another that never
+   * priced it has no row here, and that is absence — never the network's
+   * count wearing a currency's name.
+   */
+  const fiatRow = filters.fiat
+    ? currencies.find((row) => row.code === filters.fiat)
     : undefined
+  const completedInFiat = fiatRow?.figures.get('orders')
+  const fiatUnavailable = filters.fiat !== null && !fiatRow && !loading
 
   /** What the instance counted in that currency, in its own document. */
   const scopedFiat = (name: string) =>
@@ -245,9 +252,11 @@ export function Orders(props: { readonly window: Span }) {
               ? strings.filters.unscoped(chosen.name || chosen.label)
               : filters.instance && filters.fiat
                 ? strings.filters.instanceAndFiatOrders
-                : filters.fiat
-                  ? strings.filters.noFiatOrders
-                  : undefined
+                : fiatUnavailable && filters.fiat
+                  ? strings.filters.fiatUnavailable(filters.fiat)
+                  : filters.fiat
+                    ? strings.filters.noFiatOrders
+                    : undefined
         }
       />
 
