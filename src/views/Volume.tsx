@@ -169,7 +169,7 @@ export function Volume(props: { readonly window: Span }) {
   const tiles: {
     label: string
     value: string | { metric: Metric | undefined }
-    sub: string
+    sub: string | { metric: Metric | undefined }
   }[] =
     chosen && filters.fiat
       ? [
@@ -212,9 +212,12 @@ export function Volume(props: { readonly window: Span }) {
         : filters.fiat
           ? [
               {
+                // The amount is in its own currency and compares with
+                // nothing; the sats beside it are what the same trade is in
+                // the one unit every currency here shares.
                 label: strings.volumeView.total,
                 value: figure(fiat?.figures.get('total')),
-                sub: strings.header.windows[props.window],
+                sub: { metric: fiat?.figures.get('sats') },
               },
               {
                 label: strings.volumeView.completed,

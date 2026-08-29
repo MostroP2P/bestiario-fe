@@ -200,6 +200,7 @@ export const it: Strings = {
     caption: 'Volume per valuta nella finestra scelta',
     currency: 'valuta',
     volume: 'volume',
+    sats: 'sats',
     orders: 'ordini',
     ticketAvg: 'ticket medio',
     p50: 'p50',

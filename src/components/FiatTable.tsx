@@ -35,6 +35,7 @@ export function FiatTable({
   const columns: readonly (readonly [string, string])[] = [
     [CODE_KEY, strings.fiat.currency],
     ['total', strings.fiat.volume],
+    ['sats', strings.fiat.sats],
     ['orders', strings.fiat.orders],
     ['ticket_avg', strings.fiat.ticketAvg],
     ['ticket_p50', strings.fiat.p50],
@@ -49,7 +50,7 @@ export function FiatTable({
         {[0, 1, 2, 3, 4, 5].map((i) => (
           <SkeletonRow
             key={i}
-            widths={['52px', '92px', '54px', '78px', '64px', '64px']}
+            widths={['52px', '92px', '84px', '54px', '78px', '64px', '64px']}
           />
         ))}
       </div>

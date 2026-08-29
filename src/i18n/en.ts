@@ -208,6 +208,7 @@ export const en: Strings = {
     caption: 'Volume by currency in the chosen window',
     currency: 'currency',
     volume: 'volume',
+    sats: 'sats',
     orders: 'orders',
     ticketAvg: 'average ticket',
     p50: 'p50',
