@@ -6,9 +6,9 @@ export const fr: Strings = {
   name: 'Français',
 
   document: {
-    title: 'bestiario — le réseau Mostro, à découvert',
+    title: 'Statistiques du réseau Mostro — bitcoin P2P sur Nostr | bestiario',
     description:
-      'Statistiques du réseau Mostro, lues d’événements Nostr signés et vérifiées dans votre navigateur.',
+      'Statistiques du réseau Mostro d’échange de bitcoin pair à pair, lues d’événements Nostr signés et vérifiées dans votre navigateur.',
   },
 
   units: { days: 'j', hours: 'h', minutes: 'min', seconds: 's' },
@@ -59,6 +59,10 @@ export const fr: Strings = {
       "Par devise, l'archive compte les ordres qui se sont complétés, et eux seuls : créés, annulés, en cours et la répartition achat/vente sont signés pour toutes les devises à la fois, ils se lisent donc comme une absence tant qu'une seule est choisie.",
     instanceAndFiatOrders:
       "Ce qui suit est ce que cette instance a compté dans cette devise, dans son propre document d'ordres. Ses autres chiffres sont signés sur toutes les devises qu'elle négocie, pas sur une seule.",
+  },
+
+  overviewView: {
+    heading: 'Le réseau Mostro, à découvert',
   },
 
   ordersView: {

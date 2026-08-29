@@ -3,15 +3,183 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>bestiario — the Mostro network, in the open</title>
+
+    <!-- The tab, and the line a search result is titled with: what is being
+         described first, the name of the site last. `app.tsx` rewrites this
+         and the description the moment a locale is settled; these are the
+         English the file ships.
+
+         Deliberately not the same sentence as `og:title` below. A search
+         engine matches words; a person deciding whether to open a link in a
+         chat reads one. They are not the same reader and this is the only
+         place the site gets to address each separately. -->
+    <title>Mostro network statistics — P2P bitcoin on Nostr | bestiario</title>
     <meta
       name="description"
-      content="Mostro network statistics, read from signed Nostr events and verified in your browser."
+      content="Statistics for the Mostro network of peer-to-peer bitcoin trading, read from signed Nostr events and verified in your browser."
     />
+
+    <!-- Routing is by hash (SPEC 10.2), so every section is served by this one
+         address and there is exactly one canonical URL to name. -->
+    <link rel="canonical" href="https://mostro.world/" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#060f16" />
+
+    <!-- The card an unfurler builds when someone shares the site. Absolute
+         URLs are not optional here: a crawler resolves these against nothing. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="bestiario" />
+    <meta property="og:url" content="https://mostro.world/" />
+    <meta property="og:title" content="bestiario — the Mostro network, in the open" />
+    <meta
+      property="og:description"
+      content="Statistics for the Mostro network of peer-to-peer bitcoin trading, read from signed Nostr events and verified in your browser."
+    />
+    <meta property="og:image" content="https://mostro.world/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="bestiario, network observatory — the Mostro network, in the open."
+    />
+    <meta property="og:locale" content="en" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="bestiario — the Mostro network, in the open" />
+    <meta
+      name="twitter:description"
+      content="Statistics for the Mostro network of peer-to-peer bitcoin trading, read from signed Nostr events and verified in your browser."
+    />
+    <meta name="twitter:image" content="https://mostro.world/og.png" />
+
+    <!-- What the site is, in the vocabulary a search engine parses rather than
+         reads. It states only what the page itself states. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": "https://mostro.world/#website",
+        "url": "https://mostro.world/",
+        "name": "bestiario",
+        "alternateName": "bestiario — Mostro network observatory",
+        "description": "Statistics for the Mostro network of peer-to-peer bitcoin trading, read from signed Nostr events and verified in your browser.",
+        "inLanguage": ["en", "es", "fr", "it", "pt"],
+        "isAccessibleForFree": true,
+        "license": "https://opensource.org/licenses/MIT",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://mostro.world/#organization",
+          "name": "Mostro",
+          "url": "https://mostro.network/",
+          "logo": "https://mostro.world/apple-touch-icon.png",
+          "sameAs": ["https://github.com/MostroP2P"]
+        }
+      }
+    </script>
+
+    <!-- Styles for the pre-bundle page only. The stylesheet arrives with the
+         bundle, so without this the fallback below is unstyled text on white
+         for as long as the download takes. -->
+    <style>
+      .b-static {
+        max-width: 44rem;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+        font-family: system-ui, sans-serif;
+        line-height: 1.6;
+        color: #a9bfcc;
+      }
+      .b-static h1 {
+        font-size: 1.75rem;
+        line-height: 1.25;
+        color: #f0f7fb;
+      }
+      .b-static h2 {
+        font-size: 1.05rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #2bd9ff;
+        margin-top: 2.5rem;
+      }
+      .b-static a {
+        color: #2bd9ff;
+      }
+      body {
+        margin: 0;
+        background: #060f16;
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!--
+        The page before the bundle runs, and the page a reader without
+        JavaScript keeps. It says what the site is; it does not show figures,
+        because a figure here would be one nobody's browser verified, and this
+        site's whole argument is that it publishes no such number.
+
+        `main.tsx` empties this container before Preact mounts, so a reader is
+        never looking at two versions of the same page.
+      -->
+      <article class="b-static">
+        <h1>bestiario — the Mostro network, in the open</h1>
+        <p>
+          bestiario is a public observatory for <strong>Mostro</strong>, a peer-to-peer
+          bitcoin trading network built on <strong>Nostr</strong> and the Lightning
+          Network. It reports how much the network moved, in which currencies, through
+          which instances, and how many of its orders completed.
+        </p>
+
+        <h2>How the figures get here</h2>
+        <p>
+          Every figure comes from a statistics document that Mostro's publisher signs and
+          broadcasts as a Nostr event. Your browser fetches those events from public
+          relays, checks the signature against the publisher's key, re-hashes the payload,
+          and compares it to the hash the signed index names. Three outcomes, and this
+          site is built on keeping them apart: a figure nobody published reads as absent
+          and never as a zero, a figure worked out from other figures is marked as
+          inferred, and a document whose proof failed shows the failure and no figure at
+          all.
+        </p>
+
+        <h2>What it does not do</h2>
+        <p>
+          There is no backend, no account, no analytics and no tracker. The site is static
+          files and a WebSocket to a relay. Two things are kept in your browser's own
+          storage and nowhere else: the language you chose, and the documents it has
+          already verified, held so that a second visit is not a second download. Neither
+          is ever sent anywhere, and neither names you.
+        </p>
+
+        <h2>Sections</h2>
+        <p>
+          <strong>Overview</strong> — the live world map, the currency matrix and the
+          open-dispute book. <strong>Orders</strong> — orders created, completed and
+          canceled, per currency and per instance. <strong>Volume</strong> — amounts in
+          sats and in fiat, ticket sizes and the buy/sell split, across windows from 24
+          hours to the whole archive.
+        </p>
+
+        <h2>More</h2>
+        <p>
+          <a href="https://mostro.network/">mostro.network</a> — the project.
+          <a href="https://github.com/MostroP2P/bestiario-fe">Source code</a> — this site,
+          MIT licensed.
+        </p>
+
+        <noscript>
+          <p>
+            <strong
+              >The live figures need JavaScript: they are verified in your browser, and
+              there is no server here to verify them for you.</strong
+            >
+          </p>
+        </noscript>
+      </article>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

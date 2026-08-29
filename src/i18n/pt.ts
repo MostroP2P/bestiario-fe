@@ -6,9 +6,9 @@ export const pt: Strings = {
   name: 'Português',
 
   document: {
-    title: 'bestiario — a rede Mostro, à vista',
+    title: 'Estatísticas da rede Mostro — bitcoin P2P sobre Nostr | bestiario',
     description:
-      'Estatísticas da rede Mostro, lidas de eventos Nostr assinados e verificadas no seu navegador.',
+      'Estatísticas da rede Mostro de troca de bitcoin entre pares, lidas de eventos Nostr assinados e verificadas no seu navegador.',
   },
 
   units: { days: 'd', hours: 'h', minutes: 'm', seconds: 's' },
@@ -59,6 +59,10 @@ export const pt: Strings = {
       'Por moeda o arquivo conta as ordens que se completaram, e só essas: criadas, canceladas, em curso e a repartição compra/venda são assinadas para todas as moedas de uma vez, portanto leem-se como ausência enquanto houver uma escolhida.',
     instanceAndFiatOrders:
       'O que segue é o que esta instância contou nesta moeda, no seu próprio documento de ordens. As suas outras cifras são assinadas sobre todas as moedas que opera, não sobre uma.',
+  },
+
+  overviewView: {
+    heading: 'A rede Mostro, à vista',
   },
 
   ordersView: {

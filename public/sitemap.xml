@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  One URL, and it is the whole site.
+
+  The sections are hash routes, which a search engine folds back into the
+  document that serves them. Listing them here would claim addresses that do
+  not exist as far as a crawler is concerned.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://mostro.world/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

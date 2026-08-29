@@ -34,6 +34,16 @@ export type Strings = {
 
   /** The tab, and what a link to this page says when it is shared. */
   readonly document: {
+    /**
+     * The tab, and the line a search result is titled with.
+     *
+     * Written for the second: what is being described comes first, where a
+     * search engine weighs it most, and the name of the site comes last,
+     * where truncation costs nothing. The site's own sentence for itself is
+     * not lost — it is `overviewView.heading`, the page's `h1`, and it is
+     * the `og:title` in `index.html`, which is the title a person reads
+     * when someone shares the link rather than searches for it.
+     */
     readonly title: string
     readonly description: string
   }
@@ -105,6 +115,13 @@ export type Strings = {
     readonly noFiatOrders: string
     /** One instance in one currency, from the instance's own document. */
     readonly instanceAndFiatOrders: string
+  }
+
+  readonly overviewView: {
+    /** The page's only `h1`. Carried by every locale, shown to none of them:
+        it is what a screen reader announces the document as, and what a
+        search engine reads the page's subject off. */
+    readonly heading: string
   }
 
   readonly ordersView: {
