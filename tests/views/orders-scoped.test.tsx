@@ -71,6 +71,12 @@ const DOCS: Record<string, WindowPayload> = {
     range: RANGE,
     metrics: [count('orders.created', 40), count('orders.ARS.completed', 11)],
   },
+  // A window nothing happened in: a verified document with no metric at
+  // all, which is an answer and not a wait.
+  'orders:7d': { range: RANGE, metrics: [] },
+  'volume:7d': { range: RANGE, metrics: [] },
+  'market:7d': { range: RANGE, metrics: [] },
+  'instances:7d': { range: RANGE, metrics: [] },
   'volume:all': { range: RANGE, metrics: [] },
   'market:all': { range: RANGE, metrics: [] },
   'instances:all': { range: RANGE, metrics: [] },
@@ -80,6 +86,7 @@ const DOCS: Record<string, WindowPayload> = {
       count('orders.created', 12),
       count('orders.completed', 9),
       count('orders.ARS.created', 12),
+      count('orders.ARS.open_now', 4),
     ],
   },
 }
@@ -286,8 +293,8 @@ describe('Orders · the instance own document answers', () => {
 
 describe('Orders · one instance in one currency', () => {
   test('reads the currency block of the instance own document', async () => {
-    // Arrange — its document counts 12 created in ARS, and says nothing
-    // about what completed or is open in that currency.
+    // Arrange — its document counts 12 created and 4 open in ARS, and says
+    // nothing about what completed in that currency.
     events = await buildSnapshot(false)
     const { container } = render(<Orders window="30d" />)
 
@@ -299,8 +306,9 @@ describe('Orders · one instance in one currency', () => {
     await waitFor(() => {
       expect(valueOf(container, en.ordersView.created)).toBe('12')
     })
-    expect(valueOf(container, en.ordersView.completed)).toBe('—')
-    expect(valueOf(container, en.ordersView.openNow)).toBe('—')
+    expect(valueOf(container, en.ordersView.openNow)).toBe('4')
+    expect(valueOf(container, en.ordersView.completed)).toContain('—')
+    expect(valueOf(container, en.ordersView.completed)).toContain(en.absence.notPublished)
     expect(container.textContent).toContain(en.filters.instanceAndFiatOrders)
   })
 })
@@ -338,5 +346,38 @@ describe('Orders · a currency whose document has not answered', () => {
     await waitFor(() => {
       expect(valueOf(container, en.ordersView.completed)).toBe('11')
     })
+  })
+})
+
+describe('Orders · what a quiet window and a narrowed panel say', () => {
+  test('an empty document is an answer, not a wait', async () => {
+    // Arrange — `7d` is verified and carries no metric at all.
+    events = await buildSnapshot(false)
+    const { container } = render(<Orders window="7d" />)
+
+    // Assert — absence, said once the document has answered, rather than
+    // placeholders for a figure nobody is going to publish.
+    await waitFor(() => {
+      expect(skeletons(container)).toHaveLength(0)
+    })
+    expect(valueOf(container, en.ordersView.created)).toContain('—')
+  })
+
+  test('what is open right now, under an instance and a currency, is its own', async () => {
+    // Arrange — the network's ARS block says nothing about open orders;
+    // the instance's own says four.
+    events = await buildSnapshot(false)
+    const { container } = render(<Orders window="30d" />)
+
+    // Act
+    await chooseInstance(container, 'Mostro AR')
+    await chooseFiat(container, 'ARS')
+
+    // Assert — the panel reads the instance's document, like the tiles.
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.created)).toBe('12')
+    })
+    const pairs = [...container.querySelectorAll('.b-pair')].map((row) => row.textContent)
+    expect(pairs).toContain(`${en.ordersView.openNow}4`)
   })
 })

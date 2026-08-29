@@ -2,7 +2,6 @@ import { useMemo, useState } from 'preact/hooks'
 import { printAddress, windowAddress, type Span } from '~/nostr/address'
 import { codeBlocks, lookup, metricsOf } from '~/model/metrics'
 import { instanceRows, instanceOrders } from '~/model/instances'
-import { formatMetric } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
 import type { Metric } from '~/nostr/documents'
@@ -98,11 +97,17 @@ export function Orders(props: { readonly window: Span }) {
    * instance's own, and never the network's totals, which this reading does
    * not use and may be empty on a quiet window.
    */
+  /**
+   * The figures are in when the documents this reading needs have answered
+   * — answered, and not "carried a metric". A window the network was quiet
+   * through is an empty document and a settled one, and a skeleton over it
+   * would wait for a figure nobody is going to publish.
+   */
   const loading =
     boot.status === 'loading' ||
     (filters.instance
       ? !settled(windowAddress('instances', props.window)) || scopedPending
-      : network.length === 0)
+      : !settled(windowAddress('orders', props.window)))
 
   /**
    * The market document is signed for the network as a whole — not per
@@ -124,8 +129,6 @@ export function Orders(props: { readonly window: Span }) {
     filters.fiat ? rows.filter((row) => row.code === filters.fiat) : rows
   const shown = forFiat(currencies) as typeof currencies
   const shownForInstance = forFiat(perInstanceCurrencies) as typeof currencies
-
-  const figure = (metric: Metric | undefined) => formatMetric(metric).text
 
   /**
    * The chosen currency's own block of the network's document. A currency
@@ -175,23 +178,23 @@ export function Orders(props: { readonly window: Span }) {
   const tiles: {
     label: string
     value: string | { metric: Metric | undefined }
-    sub: string
+    sub: string | { metric: Metric | undefined }
   }[] =
     filters.instance && filters.fiat
       ? [
           {
             label: strings.ordersView.created,
-            value: figure(scopedFiat('created')),
+            value: { metric: scopedFiat('created') },
             sub: filters.fiat,
           },
           {
             label: strings.ordersView.completed,
-            value: figure(scopedFiat('completed')),
+            value: { metric: scopedFiat('completed') },
             sub: filters.fiat,
           },
           {
             label: strings.ordersView.openNow,
-            value: figure(scopedFiat('open_now')),
+            value: { metric: scopedFiat('open_now') },
             sub: filters.fiat,
           },
         ]
@@ -224,22 +227,22 @@ export function Orders(props: { readonly window: Span }) {
         : [
             {
               label: strings.ordersView.created,
-              value: figure(lookup(orders, 'orders.created')),
+              value: { metric: lookup(orders, 'orders.created') },
               sub: strings.header.windows[props.window],
             },
             {
               label: strings.ordersView.completed,
-              value: figure(lookup(orders, 'orders.completed')),
-              sub: figure(lookup(orders, 'orders.completion_rate')),
+              value: { metric: lookup(orders, 'orders.completed') },
+              sub: { metric: lookup(orders, 'orders.completion_rate') },
             },
             {
               label: strings.ordersView.canceled,
-              value: figure(lookup(orders, 'orders.canceled')),
-              sub: figure(lookup(orders, 'orders.abandonment_rate')),
+              value: { metric: lookup(orders, 'orders.canceled') },
+              sub: { metric: lookup(orders, 'orders.abandonment_rate') },
             },
             {
               label: strings.ordersView.inProgressNow,
-              value: figure(lookup(orders, 'orders.in_progress_now')),
+              value: { metric: lookup(orders, 'orders.in_progress_now') },
               sub: strings.ordersView.openNow,
             },
           ]
@@ -385,8 +388,13 @@ export function Orders(props: { readonly window: Span }) {
             rows={[
               [
                 strings.ordersView.openNow,
+                // One currency's, from whichever document this reading is
+                // of: an instance's own when one is chosen, so the
+                // network's count never lands under an instance's name.
                 filters.fiat
-                  ? networkFiat('open_now')
+                  ? filters.instance
+                    ? scopedFiat('open_now')
+                    : networkFiat('open_now')
                   : lookup(orders, 'orders.open_now'),
               ],
               [

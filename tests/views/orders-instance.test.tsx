@@ -256,10 +256,16 @@ describe('Orders · narrowed to one instance', () => {
     // Act
     await chooseInstance(container, 'Mostro AR')
 
-    // Assert — never the network's 12, 4 and 3.
-    expect(valueOf(container, en.ordersView.completed)).toBe('—')
-    expect(valueOf(container, en.ordersView.canceled)).toBe('—')
-    expect(valueOf(container, en.ordersView.inProgressNow)).toBe('—')
+    // Assert — never the network's 12, 4 and 3, and each dash says which
+    // absence it is rather than standing there bare.
+    for (const label of [
+      en.ordersView.completed,
+      en.ordersView.canceled,
+      en.ordersView.inProgressNow,
+    ]) {
+      expect(valueOf(container, label)).toContain('—')
+      expect(valueOf(container, label)).toContain(en.absence.notPublished)
+    }
   })
 
   test('stops showing the network breakdown by currency', async () => {
