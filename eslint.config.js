@@ -11,6 +11,10 @@ export default tseslint.config(
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
+      // French typography requires a narrow no-break space (U+202F) before
+      // `:` and `;`, and those strings are template literals. The character
+      // is required text, not a stray keystroke.
+      'no-irregular-whitespace': ['error', { skipStrings: true, skipTemplates: true }],
       'no-console': ['error', { allow: ['warn', 'error'] }],
     },
   },

@@ -1,0 +1,159 @@
+import { plural, type Strings } from './strings'
+
+/** Français. Traduction de `en.ts`, qui fait foi. */
+export const fr: Strings = {
+  locale: 'fr',
+  name: 'Français',
+
+  document: {
+    title: 'bestiario — le réseau Mostro, à découvert',
+    description:
+      'Statistiques du réseau Mostro, lues d’événements Nostr signés et vérifiées dans votre navigateur.',
+  },
+
+  units: { days: 'j', hours: 'h', minutes: 'min', seconds: 's' },
+
+  brand: { tagline: 'OBSERVATOIRE DU RÉSEAU' },
+
+  header: {
+    windowNav: 'Fenêtre',
+    windows: { '24h': '24 H', '7d': '7 J', '30d': '30 J', '90d': '90 J', all: 'TOUT' },
+    network: 'MAINNET',
+    verified: 'VÉRIFIÉ',
+    connecting: 'CONNEXION…',
+  },
+
+  rail: {
+    publisher: 'ÉMETTEUR',
+    publisherNote:
+      'Chaque chiffre de cette page provient d’un événement signé par cette clé et vérifié dans votre navigateur. Une signature prouve que bestiario les a publiés, pas qu’ils sont justes.',
+    relays: 'RELAIS',
+    archive: 'ARCHIVE',
+    from: 'du',
+    until: 'au',
+    documents: 'documents',
+    archiveNote:
+      'L’archive ne peut parler que de cette période. En dehors, il n’y a pas de zéros, il y a l’absence.',
+    snapshot: 'INSTANTANÉ',
+    age: 'âge',
+    version: 'bestiario',
+  },
+
+  map: {
+    heading: 'MARCHÉS DU RÉSEAU',
+    caption:
+      'Chaque point est une monnaie avec des ordres dans la fenêtre choisie, dans son pays. Sa taille et le nombre de routes qui en partent sont son volume d’ordres.',
+    loadingGeometry: 'CHARGEMENT DE LA GÉOMÉTRIE…',
+    noGeometry: (reason) => `PAS DE GÉOMÉTRIE · ${reason}`,
+    activeMarkets: 'MARCHÉS ACTIFS',
+    unplaced: (count) =>
+      `${count} ${plural(count, 'sans emplacement', 'sans emplacement')}, hors carte`,
+    illustrativeRoutes:
+      'Les routes sont illustratives : elles vont vers des ancrages sans nom, pas vers des mostros. Le démon n’a pas encore publié orders:…:i:<pubkey>, et sans cela rien ne dit quelle instance négocie quelle monnaie. Ce qui est mesuré, c’est la monnaie, son pays et ses ordres.',
+    approximateInstances: (approximate, total) =>
+      `${approximate} ${plural(total, 'instance sur', 'instances sur')} ${total} ${plural(total, 'ne nomme', 'ne nomment')} aucun pays : leur point est une dispersion et non un emplacement. Les routes sont mesurées : chacune est une monnaie que cette instance a négociée.`,
+    describe: {
+      empty: 'Aucun flux d’ordres à montrer.',
+      flows: (arcs, currencies, instances) =>
+        `${arcs} ${plural(arcs, 'flux', 'flux')} d’ordres entre ${currencies} ${plural(currencies, 'monnaie', 'monnaies')} et ${instances} ${plural(instances, 'instance', 'instances')} Mostro`,
+      live: (count) => `${count} en cours`,
+      settling: (count) =>
+        `${count} ${plural(count, 'récemment terminé', 'récemment terminés')}`,
+      unplacedCurrencies: (count) =>
+        `${count} ${plural(count, 'monnaie non placée', 'monnaies non placées')} sur la carte`,
+      unplacedInstances: (count) =>
+        `${count} ${plural(count, 'instance non placée', 'instances non placées')} sur la carte`,
+    },
+  },
+
+  kpi: {
+    orders: (window) => `ORDRES · ${window}`,
+    ordersSub: (completed, rate) => `${completed} terminés · ${rate}`,
+    volume: (window) => `VOLUME · ${window}`,
+    volumeSub: (p50) => `ticket p50 ${p50}`,
+    disputes: (window) => `LITIGES · ${window}`,
+    disputesSub: (resolved, rate) => `${resolved} résolus · ${rate} des ordres`,
+    rightNow: 'EN CE MOMENT',
+    rightNowSub: (pending) => `en cours · ${pending} en attente d’être pris`,
+  },
+
+  fiat: {
+    heading: 'VOLUME PAR MONNAIE',
+    caption: 'Volume par monnaie dans la fenêtre choisie',
+    currency: 'monnaie',
+    volume: 'volume',
+    orders: 'ordres',
+    ticketAvg: 'ticket moyen',
+    p50: 'p50',
+    p90: 'p90',
+    empty: 'Rien à signaler dans cette fenêtre.',
+  },
+
+  pairs: {
+    ordersHeading: 'ORDRES',
+    canceled: 'annulés',
+    abandonmentRate: 'taux d’abandon',
+    ticketAvg: 'ticket moyen',
+    largest: 'ordre le plus important',
+    disputesHeading: 'LITIGES · DEV FEES',
+    disputeRate: 'taux de litige',
+    resolutionMedian: 'médiane de résolution',
+    devFees: 'dev fees',
+    coverage: 'couverture',
+    impliedVolume: 'volume implicite',
+    referenceVolume: 'volume en USD',
+  },
+
+  notMeasurable: {
+    heading: 'AU-DELÀ DE CE QUI PEUT ÊTRE MESURÉ',
+    items: [
+      {
+        title: 'Utilisateurs uniques',
+        why: 'les clés sont éphémères par ordre ; compter les pubkeys compte des ordres, pas des personnes.',
+      },
+      {
+        title: 'Le sujet d’un litige',
+        why: 'l’événement de litige ne nomme pas l’ordre qui l’a provoqué.',
+      },
+      {
+        title: 'Pourquoi un ordre a été annulé',
+        why: 'les événements enregistrent le changement d’état, jamais la cause.',
+      },
+    ],
+  },
+
+  disputes: {
+    heading: 'LITIGES OUVERTS MAINTENANT',
+    listLabel: 'Litiges ouverts',
+    empty: 'Aucun litige ouvert.',
+    asOf: (when) =>
+      `Âges mesurés par l’émetteur au moment du calcul de l’instantané le ${when}, pas maintenant.`,
+  },
+
+  absence: {
+    noData: 'pas de donnée',
+    notMeasured: 'non mesuré',
+    notPublished: 'non publié',
+  },
+
+  inferred: {
+    mark: 'inf',
+    label: 'Chiffre inféré',
+    labelWith: (error) => `Chiffre inféré. ${error}`,
+  },
+
+  loading: {
+    announcement: (what) => `Chargement ${what}…`,
+    figures: 'des chiffres du réseau',
+  },
+
+  fatal: {
+    heading: 'Aucun chiffre vérifié.',
+    timeout: 'Aucun relais n’a répondu avec l’index de l’émetteur.',
+    unverified: (reason) => `L’index n’a pas passé la vérification : ${reason}.`,
+    note: 'Cette page n’affiche aucun chiffre qu’elle ne peut prouver.',
+  },
+
+  footnote: (relays) =>
+    `Lu depuis ${relays} ${plural(relays, 'relais', 'relais')} et vérifié dans ce navigateur à l’aide de la clé de l’émetteur. Une valeur absente est dessinée comme absente et jamais comme un zéro ; un chiffre inféré est signalé comme tel.`,
+}

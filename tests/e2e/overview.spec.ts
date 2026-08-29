@@ -17,7 +17,7 @@ test.describe('the overview', () => {
     const kpis = page.locator('.b-kpi strong')
     await expect(kpis).toHaveCount(4)
     await expect(kpis.first()).not.toBeEmpty()
-    await expect(page.locator('.b-stream')).toHaveText('VERIFICADO')
+    await expect(page.locator('.b-stream')).toHaveText('VERIFIED')
   })
 
   test('shows skeletons before them, never a spinner', async ({ page }) => {
@@ -32,7 +32,7 @@ test.describe('the overview', () => {
     // anywhere is a spinner.
     await expect(page.locator('.b-skeleton-map')).toBeVisible()
     await expect(page.locator('.b-skeleton').first()).toBeVisible()
-    await expect(page.getByRole('status')).toContainText('Cargando')
+    await expect(page.getByRole('status')).toContainText('Loading')
     await expect(page.locator('.b-rail')).toBeVisible()
     await expect(page.locator('.b-kpi strong')).toHaveCount(0)
   })
@@ -105,7 +105,7 @@ test.describe('inferred figures', () => {
 
   test('are distinguished by a marker and not by a colour alone', async ({ page }) => {
     await page.goto('/')
-    const row = page.locator('.b-pair', { hasText: 'volumen implícito' })
+    const row = page.locator('.b-pair', { hasText: 'implied volume' })
 
     await expect(row.locator('.b-inferred-mark')).toBeVisible()
     await expect(row.locator('.b-inferred-mark')).toContainText('inf')
@@ -117,7 +117,7 @@ test.describe('inferred figures', () => {
     // Arrange
     await page.goto('/')
     const mark = page
-      .locator('.b-pair', { hasText: 'volumen implícito' })
+      .locator('.b-pair', { hasText: 'implied volume' })
       .locator('.b-inferred-mark')
     await expect(mark).toBeVisible()
     const tooltip = mark.locator('.b-tooltip')
@@ -134,10 +134,10 @@ test.describe('inferred figures', () => {
   test('carry the assumption in their accessible name', async ({ page }) => {
     await page.goto('/')
     const mark = page
-      .locator('.b-pair', { hasText: 'volumen implícito' })
+      .locator('.b-pair', { hasText: 'implied volume' })
       .locator('.b-inferred-mark')
 
-    await expect(mark).toHaveAttribute('aria-label', /^Cifra inferida\. .+/)
+    await expect(mark).toHaveAttribute('aria-label', /^Inferred figure\. .+/)
   })
 })
 
@@ -147,12 +147,12 @@ test.describe('what the site says about its own trust', () => {
     await page.goto('/')
 
     const rail = page.locator('.b-rail')
-    await expect(rail).toContainText('PUBLICADOR')
+    await expect(rail).toContainText('PUBLISHER')
     await expect(rail).toContainText('relay.mostro.network')
-    await expect(rail).toContainText('ARCHIVO')
-    await expect(rail).toContainText('INSTANTÁNEA')
+    await expect(rail).toContainText('ARCHIVE')
+    await expect(rail).toContainText('SNAPSHOT')
     // A signature proves who published, and nothing about correctness.
-    await expect(rail).toContainText('no que sean correctas')
+    await expect(rail).toContainText('not that they are right')
   })
 
   test('shows the failure and no figure when nothing verifies', async ({ page }) => {
@@ -163,7 +163,7 @@ test.describe('what the site says about its own trust', () => {
     await page.goto('/')
 
     // Assert
-    await expect(page.getByRole('alert')).toContainText('Sin cifras verificadas')
+    await expect(page.getByRole('alert')).toContainText('No verified figures')
     await expect(page.locator('.b-kpi strong')).toHaveCount(0)
   })
 
@@ -177,7 +177,7 @@ test.describe('what the site says about its own trust', () => {
     await page.goto('/')
 
     // Assert — fatal, and no figure at all.
-    await expect(page.getByRole('alert')).toContainText('Sin cifras verificadas')
+    await expect(page.getByRole('alert')).toContainText('No verified figures')
     await expect(page.locator('.b-kpi strong')).toHaveCount(0)
   })
 })

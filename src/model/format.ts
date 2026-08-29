@@ -13,26 +13,61 @@ import type { Fiat, Metric, MetricValue, Unit } from '~/nostr/documents'
 
 export const ABSENT = '—'
 
+/**
+ * Which absence a dash stands for. A kind and not a sentence: this module
+ * formats figures and knows no language, and the words for these live with
+ * every other user-facing string.
+ */
+export type Absence = 'noData' | 'notMeasured' | 'notPublished'
+
 export type Formatted = {
   readonly text: string
-  /** What a screen reader says. Differs from `text` exactly for absence. */
-  readonly label: string
-  readonly absent: boolean
+  /** Null when the figure is present; otherwise which absence it is. */
+  readonly absence: Absence | null
 }
 
-function absent(label: string): Formatted {
-  return { text: ABSENT, label, absent: true }
+function absent(absence: Absence): Formatted {
+  return { text: ABSENT, absence }
 }
 
 function plain(text: string): Formatted {
-  return { text, label: text, absent: false }
+  return { text, absence: null }
 }
 
-const integers = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 })
-const oneDecimal = new Intl.NumberFormat(undefined, {
+/** How this language abbreviates a duration. Set alongside the number locale. */
+export type DurationUnits = {
+  readonly days: string
+  readonly hours: string
+  readonly minutes: string
+  readonly seconds: string
+}
+
+let units: DurationUnits = { days: 'd', hours: 'h', minutes: 'm', seconds: 's' }
+
+/** Numbers follow the language the page is rendered in, not the browser's. */
+let numberLocale: string | undefined
+let integers = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 })
+let oneDecimal = new Intl.NumberFormat(undefined, {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
 })
+
+/**
+ * Format numbers for `locale` from here on.
+ *
+ * A page rendered in English for a reader whose browser is Spanish would
+ * otherwise print English words around Spanish thousands separators.
+ */
+export function useNumberLocale(locale: string, durationUnits?: DurationUnits): void {
+  if (durationUnits) units = durationUnits
+  if (locale === numberLocale) return
+  numberLocale = locale
+  integers = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
+  oneDecimal = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })
+}
 
 function isFiat(value: MetricValue): value is Fiat {
   return typeof value === 'object' && value !== null && 'amount' in value
@@ -46,10 +81,13 @@ export function formatDuration(seconds: number): string {
   const minutes = Math.floor((total % 3_600) / 60)
   const secs = total % 60
 
-  if (days > 0) return `${days} d ${String(hours).padStart(2, '0')} h`
-  if (hours > 0) return `${hours} h ${String(minutes).padStart(2, '0')} m`
-  if (minutes > 0) return `${minutes} m ${String(secs).padStart(2, '0')} s`
-  return `${secs} s`
+  if (days > 0)
+    return `${days} ${units.days} ${String(hours).padStart(2, '0')} ${units.hours}`
+  if (hours > 0)
+    return `${hours} ${units.hours} ${String(minutes).padStart(2, '0')} ${units.minutes}`
+  if (minutes > 0)
+    return `${minutes} ${units.minutes} ${String(secs).padStart(2, '0')} ${units.seconds}`
+  return `${secs} ${units.seconds}`
 }
 
 /** A figure, by its unit. */
@@ -57,39 +95,42 @@ export function formatValue(value: MetricValue, unit: Unit): Formatted {
   // The unit is asked first: `missing` is a figure the publisher could not
   // measure and says why, which is a different absence from a figure that
   // is simply null. SPEC 9 asks for the difference to reach the reader.
-  if (unit === 'missing') return absent('no medido')
-  if (value === null) return absent('sin dato')
+  if (unit === 'missing') return absent('notMeasured')
+  if (value === null) return absent('noData')
 
   switch (unit) {
     case 'count':
-      return typeof value === 'number'
-        ? plain(integers.format(value))
-        : absent('sin dato')
+      return typeof value === 'number' ? plain(integers.format(value)) : absent('noData')
     case 'sats':
       // Never silently converted to BTC: a figure in sats is in sats.
       return typeof value === 'number'
         ? plain(`${integers.format(value)} sats`)
-        : absent('sin dato')
+        : absent('noData')
     case 'ratio':
       return typeof value === 'number'
         ? plain(`${oneDecimal.format(value * 100)} %`)
-        : absent('sin dato')
+        : absent('noData')
     case 'seconds':
-      return typeof value === 'number' ? plain(formatDuration(value)) : absent('sin dato')
+      return typeof value === 'number' ? plain(formatDuration(value)) : absent('noData')
     case 'fiat':
       return isFiat(value)
         ? plain(`${integers.format(value.amount)} ${value.code}`)
         : typeof value === 'number'
           ? plain(integers.format(value))
-          : absent('sin dato')
+          : absent('noData')
     case 'text':
     case 'date':
-      return typeof value === 'string' ? plain(value) : absent('sin dato')
+      return typeof value === 'string' ? plain(value) : absent('noData')
   }
 }
 
+/** A plain count, grouped for the page's language. */
+export function formatCount(value: number): string {
+  return integers.format(value)
+}
+
 export function formatMetric(metric: Metric | undefined): Formatted {
-  if (!metric) return absent('no publicado')
+  if (!metric) return absent('notPublished')
   return formatValue(metric.value, metric.unit)
 }
 

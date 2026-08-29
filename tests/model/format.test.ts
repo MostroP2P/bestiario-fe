@@ -43,23 +43,24 @@ describe('formatValue · absence', () => {
 
     expect(formatted.text).toBe(ABSENT)
     expect(formatted.text).not.toBe('0')
-    expect(formatted.absent).toBe(true)
+    expect(formatted.absence).toBe('noData')
   })
 
   test('a missing figure says it was not measured, not that it is zero', () => {
     const formatted = formatValue(null, 'missing')
 
-    expect(formatted.label).toBe('no medido')
+    expect(formatted.absence).toBe('notMeasured')
   })
 
-  test('an absent figure carries a label a screen reader can say', () => {
-    expect(formatValue(null, 'count').label).not.toBe(ABSENT)
+  test('says which absence it is, so a reader can be told', () => {
+    // A kind and not a sentence: this module knows no language.
+    expect(formatValue(null, 'count').absence).toBe('noData')
   })
 })
 
 describe('formatMetric', () => {
   test('says a figure was never published, which is not the same as null', () => {
-    expect(formatMetric(undefined).label).toBe('no publicado')
+    expect(formatMetric(undefined).absence).toBe('notPublished')
   })
 
   test('formats a real metric by its own unit', () => {
@@ -113,30 +114,30 @@ describe('formatAge', () => {
 describe('formatValue · a document that does not fit its own unit', () => {
   // A malformed document must render as absence, never crash a panel.
   test('a count that is not a number', () => {
-    expect(formatValue('twelve', 'count').absent).toBe(true)
+    expect(formatValue('twelve', 'count').absence).not.toBeNull()
   })
 
   test('sats that are not a number', () => {
-    expect(formatValue('lots', 'sats').absent).toBe(true)
+    expect(formatValue('lots', 'sats').absence).not.toBeNull()
   })
 
   test('a ratio that is not a number', () => {
-    expect(formatValue('half', 'ratio').absent).toBe(true)
+    expect(formatValue('half', 'ratio').absence).not.toBeNull()
   })
 
   test('seconds that are not a number', () => {
-    expect(formatValue('ages', 'seconds').absent).toBe(true)
+    expect(formatValue('ages', 'seconds').absence).not.toBeNull()
   })
 
   test('a fiat figure that is neither an object nor a number', () => {
-    expect(formatValue('pesos', 'fiat').absent).toBe(true)
+    expect(formatValue('pesos', 'fiat').absence).not.toBeNull()
   })
 
   test('text that is not a string', () => {
-    expect(formatValue(42, 'text').absent).toBe(true)
+    expect(formatValue(42, 'text').absence).not.toBeNull()
   })
 
   test('a date that is not a string', () => {
-    expect(formatValue(42, 'date').absent).toBe(true)
+    expect(formatValue(42, 'date').absence).not.toBeNull()
   })
 })

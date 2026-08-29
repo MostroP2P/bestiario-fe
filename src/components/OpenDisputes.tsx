@@ -1,4 +1,5 @@
 import { formatMetric } from '~/model/format'
+import { useStrings } from '~/i18n/context'
 import { SkeletonRow } from './Skeleton'
 import type { Metric } from '~/nostr/documents'
 
@@ -19,6 +20,7 @@ export function OpenDisputes({
   readonly asOf: string | null
   readonly loading: boolean
 }) {
+  const strings = useStrings()
   if (loading) {
     return (
       <div style={{ padding: '0 20px' }}>
@@ -30,7 +32,7 @@ export function OpenDisputes({
   }
 
   if (entries.length === 0) {
-    return <p class="b-empty">Ninguna disputa abierta.</p>
+    return <p class="b-empty">{strings.disputes.empty}</p>
   }
 
   return (
@@ -42,7 +44,7 @@ export function OpenDisputes({
         class="b-dispute-scroll"
         tabIndex={0}
         role="group"
-        aria-label="Disputas abiertas"
+        aria-label={strings.disputes.listLabel}
       >
         <ul class="b-dispute-list">
           {entries.map((entry) => {
@@ -60,11 +62,7 @@ export function OpenDisputes({
           })}
         </ul>
       </div>
-      {asOf && (
-        <p class="b-asof">
-          Edades medidas por el publicador al calcular la instantánea, no ahora.
-        </p>
-      )}
+      {asOf && <p class="b-asof">{strings.disputes.asOf(asOf)}</p>}
     </>
   )
 }

@@ -1,6 +1,7 @@
 import mostroIcon from '~/assets/mostro-icon.svg'
 import { Skeleton } from './Skeleton'
-import { formatAge } from '~/model/format'
+import { formatAge, formatCount } from '~/model/format'
+import { useStrings } from '~/i18n/context'
 import type { BootState } from '~/store/store'
 import type { RelayState } from '~/nostr/pool'
 
@@ -37,6 +38,7 @@ function relayState(state: RelayState): string {
 }
 
 export function TrustRail(props: TrustRailProps) {
+  const strings = useStrings()
   const ready = props.boot.status === 'ready' ? props.boot : null
 
   return (
@@ -48,24 +50,20 @@ export function TrustRail(props: TrustRailProps) {
             mostro<span>.world</span>
           </div>
           <div class="b-eyebrow" style={{ marginTop: '5px' }}>
-            OBSERVATORIO DE LA RED
+            {strings.brand.tagline}
           </div>
         </div>
       </div>
 
-      <h2 class="b-eyebrow b-rail-heading">PUBLICADOR</h2>
+      <h2 class="b-eyebrow b-rail-heading">{strings.rail.publisher}</h2>
       <div class="b-rail-block">
         <p class="b-mono b-rail-key" title={props.publisher}>
           {shortKey(props.publisher)}
         </p>
-        <p class="b-rail-note">
-          Cada cifra de esta página viene de un evento firmado por esta clave y verificado
-          en tu navegador. Una firma prueba que bestiario las publicó, no que sean
-          correctas.
-        </p>
+        <p class="b-rail-note">{strings.rail.publisherNote}</p>
       </div>
 
-      <h2 class="b-eyebrow b-rail-heading">RELAYS</h2>
+      <h2 class="b-eyebrow b-rail-heading">{strings.rail.relays}</h2>
       <ul class="b-relays">
         {props.relays.length === 0 && <Skeleton width="80%" height="9px" />}
         {props.relays.map((relay) => (
@@ -79,7 +77,7 @@ export function TrustRail(props: TrustRailProps) {
         ))}
       </ul>
 
-      <h2 class="b-eyebrow b-rail-heading">ARCHIVO</h2>
+      <h2 class="b-eyebrow b-rail-heading">{strings.rail.archive}</h2>
       <div class="b-rail-block">
         {!ready && (
           <>
@@ -90,41 +88,38 @@ export function TrustRail(props: TrustRailProps) {
         {ready && (
           <>
             <div class="b-backfill-row">
-              <span>desde</span>
+              <span>{strings.rail.from}</span>
               <span class="b-mono">
                 {ready.index.coverage.first_event_at.slice(0, 10)}
               </span>
             </div>
             <div class="b-backfill-row">
-              <span>hasta</span>
+              <span>{strings.rail.until}</span>
               <span class="b-mono">
                 {ready.index.coverage.last_event_at.slice(0, 10)}
               </span>
             </div>
             <div class="b-backfill-row">
-              <span>documentos</span>
-              <span class="b-mono">{ready.index.documents.length}</span>
+              <span>{strings.rail.documents}</span>
+              <span class="b-mono">{formatCount(ready.index.documents.length)}</span>
             </div>
-            <p class="b-rail-note">
-              El archivo solo puede hablar de este periodo. Fuera de él no hay ceros, hay
-              ausencia.
-            </p>
+            <p class="b-rail-note">{strings.rail.archiveNote}</p>
           </>
         )}
       </div>
 
-      <h2 class="b-eyebrow b-rail-heading">INSTANTÁNEA</h2>
+      <h2 class="b-eyebrow b-rail-heading">{strings.rail.snapshot}</h2>
       <div class="b-rail-block">
         {!ready && <Skeleton width="85%" height="10px" />}
         {ready && (
           <>
             <p class="b-mono b-rail-key">{ready.index.snapshot_id}</p>
             <div class="b-backfill-row">
-              <span>edad</span>
+              <span>{strings.rail.age}</span>
               <span class="b-mono">{formatAge(ready.createdAt, props.nowMs)}</span>
             </div>
             <div class="b-backfill-row">
-              <span>bestiario</span>
+              <span>{strings.rail.version}</span>
               <span class="b-mono">{ready.index.publisher.version}</span>
             </div>
           </>
