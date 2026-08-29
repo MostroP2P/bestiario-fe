@@ -9,8 +9,9 @@ import { en } from '../../src/i18n/en'
  * Stacked in source order, the provenance rail came first and every control
  * — the window tabs, the language picker — landed around 500px down the
  * page, below anything a reader would scroll to. These run at a phone's
- * viewport because that is the only place the bug existed: nothing about the
- * markup was wrong, only what the layout did with it.
+ * viewport because that is where the layout bug lived; the reading-order
+ * test below runs on the document itself, because a box that has moved on
+ * screen has not moved for anyone listening to the page.
  */
 const events = fixtures()
 const PHONE = { width: 390, height: 844 }
@@ -49,6 +50,28 @@ test.describe('a reader on a phone', () => {
     const brand = (await page.locator('.b-brand').boundingBox())!
     expect(brand.y).toBeLessThan(header.y)
     expect(header.y).toBeLessThan(railBody.y)
+  })
+
+  test('and a screen reader meets them in that same order', async ({ page }) => {
+    // Arrange — the document, not the painted boxes: CSS `order` moves a box
+    // and leaves assistive technology walking the old sequence.
+    await open(page)
+
+    // Act
+    const inReadingOrder = await page.evaluate(() => {
+      const nodes = ['.b-brand', '.b-header', '.b-rail-body'].map(
+        (selector) => document.querySelector(selector) as Element,
+      )
+      return nodes.every((node, i) => {
+        const next = nodes[i + 1]
+        if (next === undefined) return true
+        const where = node.compareDocumentPosition(next)
+        return (where & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+      })
+    })
+
+    // Assert — brand, then the controls and figures, then the provenance.
+    expect(inReadingOrder).toBe(true)
   })
 
   test('and the picker still changes the language', async ({ page }) => {
