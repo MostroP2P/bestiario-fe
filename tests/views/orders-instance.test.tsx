@@ -55,8 +55,13 @@ const DOCS: Record<string, WindowPayload> = {
   },
   'volume:30d': {
     range: RANGE,
-    metrics: [count('volume.fiat.ARS.orders', 18), count('volume.fiat.VES.orders', 2)],
+    metrics: [count('volume.fiat.ARS.orders', 9), count('volume.fiat.VES.orders', 3)],
   },
+  // A window the archive reaches further back than ARS's first order.
+  'orders:all': { range: RANGE, metrics: [count('orders.created', 50)] },
+  'volume:all': { range: RANGE, metrics: [count('volume.fiat.VES.orders', 8)] },
+  'market:all': { range: RANGE, metrics: [] },
+  'instances:all': { range: RANGE, metrics: [] },
   'market:30d': {
     range: RANGE,
     metrics: [
@@ -146,6 +151,7 @@ vi.mock('~/nostr/pool', () => ({
 }))
 
 const { en } = await import('~/i18n/en')
+const { formatMetric } = await import('~/model/format')
 const { Orders } = await import('~/views/Orders')
 const { resetStore } = await import('~/store/useStore')
 const { clearCache } = await import('~/store/cache')
@@ -161,6 +167,10 @@ beforeEach(() => {
 
 afterEach(cleanup)
 
+/** As the page prints a figure, in whatever locale the run has. */
+const printed = (unit: Metric['unit'], value: Metric['value']) =>
+  formatMetric({ name: 'x', kind: 'observed', unit, value }).text
+
 /** The tile a label names, read as the reader reads it. */
 function tile(root: Element, label: string): HTMLElement | null {
   for (const kpi of root.querySelectorAll('.b-kpi')) {
@@ -171,6 +181,18 @@ function tile(root: Element, label: string): HTMLElement | null {
 
 const valueOf = (root: Element, label: string) =>
   tile(root, label)?.querySelector('strong')?.textContent
+
+/** Pick a currency, once the volume document has named it. */
+async function chooseFiat(container: Element, code: string) {
+  const selectFor = () =>
+    [...container.querySelectorAll('select')].find((element) =>
+      [...element.options].some((option) => option.textContent === code),
+    )
+  await waitFor(() => {
+    expect(selectFor()).toBeDefined()
+  })
+  fireEvent.change(selectFor()!, { target: { value: code } })
+}
 
 async function chooseInstance(container: Element, name: string) {
   // The instances document lands a round trip after the base ones, so the
@@ -280,5 +302,79 @@ describe('Orders · narrowed to one instance', () => {
     expect(pairs.some((row) => row?.startsWith(en.ordersView.instanceMaxOrder))).toBe(
       true,
     )
+  })
+})
+
+describe('Orders · narrowed to one currency', () => {
+  test('counts what completed in that currency, and its share of the whole', async () => {
+    // Arrange
+    const { container } = render(<Orders window="30d" />)
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.created)).toBe('20')
+    })
+
+    // Act
+    await chooseFiat(container, 'ARS')
+
+    // Assert — 9 of the 12 the network completed.
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.completed)).toBe('9')
+    })
+    // Worked out here, so it says so: the marker is in the tile and its
+    // accessible name says the figure is inferred.
+    const shareTile = tile(container, en.ordersView.shareOfCompleted)!
+    expect(shareTile.querySelector('strong')?.textContent).toContain(
+      printed('ratio', 0.75),
+    )
+    const mark = shareTile.querySelector('.b-inferred-mark')
+    expect(mark).not.toBeNull()
+    expect(mark?.getAttribute('aria-label')).toBe(en.inferred.label)
+    // Reachable by keyboard and not only under a pointer.
+    expect(mark?.getAttribute('tabindex')).toBe('0')
+  })
+
+  test('offers no per-currency reading of what nothing signs per currency', async () => {
+    // Arrange
+    const { container } = render(<Orders window="30d" />)
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.created)).toBe('20')
+    })
+
+    // Act
+    await chooseFiat(container, 'ARS')
+
+    // Assert — created, canceled and in-progress are not the currency's,
+    // and the network's are not shown under it either.
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.completed)).toBe('9')
+    })
+    expect(tile(container, en.ordersView.created)).toBeNull()
+    expect(tile(container, en.ordersView.canceled)).toBeNull()
+    expect(container.textContent).toContain(en.filters.noFiatOrders)
+    expect(container.textContent).not.toContain(printed('ratio', 0.6))
+  })
+})
+
+describe('Orders · a currency this window does not have', () => {
+  test('holds the currency reading and leaves it absent, not the network', async () => {
+    // Arrange — ARS is counted on `30d`, and the reader picks it there.
+    const { container, rerender } = render(<Orders window="30d" />)
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.created)).toBe('20')
+    })
+    await chooseFiat(container, 'ARS')
+    await waitFor(() => {
+      expect(valueOf(container, en.ordersView.completed)).toBe('9')
+    })
+
+    // Act — the window changes under the selection.
+    rerender(<Orders window="all" />)
+
+    // Assert — absence under ARS, and never the 50 the network created.
+    await waitFor(() => {
+      expect(container.textContent).toContain(en.filters.fiatUnavailable('ARS'))
+    })
+    expect(valueOf(container, en.ordersView.completed)).toBe('—')
+    expect(container.textContent).not.toContain('50')
   })
 })

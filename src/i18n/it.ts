@@ -53,6 +53,10 @@ export const it: Strings = {
       `L'archivio non pubblica nulla in ${code} per questa finestra, quindi le cifre qui sopra sono assenza e non quelle della rete. Un'altra finestra, o tutta la rete, può averlo.`,
     instanceAndFiat:
       "Per un'istanza in una valuta il pubblicatore firma un conteggio di ordini e nulla più: gli importi sono firmati per la rete, e per istanza soltanto come totale su tutte le valute.",
+    noFiatOrders:
+      "Per valuta l'archivio conta gli ordini che si sono completati, e soltanto quelli: creati, annullati, in corso e la ripartizione acquisto/vendita sono firmati per tutte le valute insieme, quindi si leggono come assenza finché ne è scelta una.",
+    instanceAndFiatOrders:
+      'Quanto segue è ciò che questa istanza ha contato in questa valuta, nel suo documento di ordini. Le altre sue cifre sono firmate su tutte le valute che tratta, non su una.',
   },
 
   ordersView: {
@@ -91,7 +95,9 @@ export const it: Strings = {
     perCurrencyNoDocument:
       'Questa istanza non pubblica un documento di ordini proprio, quindi non c’è alcuna scomposizione per valuta da leggere per essa.',
     shareNotPerInstance:
-      'Questa ripartizione è firmata per tutta la rete e non per istanza, quindi non si restringe a una sola.',
+      'Questa ripartizione è firmata per tutta la rete — non per istanza né per valuta — quindi non si restringe a nessuna delle due.',
+    shareOfCompleted: 'Quota degli ordini completati',
+    shareOfCompletedSub: 'Di quanto ha completato la rete in questa finestra',
   },
 
   volumeView: {

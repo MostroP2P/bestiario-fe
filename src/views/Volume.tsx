@@ -166,7 +166,11 @@ export function Volume(props: { readonly window: Span }) {
    * as a count, in the instance's own orders document, so that is the only
    * tile that carries a figure and the rest say so.
    */
-  const tiles: { label: string; value: string; sub: string }[] =
+  const tiles: {
+    label: string
+    value: string | { metric: Metric | undefined }
+    sub: string
+  }[] =
     chosen && filters.fiat
       ? [
           {
@@ -193,8 +197,10 @@ export function Volume(props: { readonly window: Span }) {
               sub: figure(compared?.figures.get('completion_rate')),
             },
             {
+              // Worked out here and not read anywhere: handed over as the
+              // metric it is, so the tile carries the inferred marker.
               label: strings.volumeView.shareOfNetwork,
-              value: figure(share),
+              value: { metric: share },
               sub: strings.volumeView.shareOfNetworkSub,
             },
             {
