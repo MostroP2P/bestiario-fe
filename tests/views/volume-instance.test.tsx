@@ -61,6 +61,7 @@ const DOCS: Record<string, WindowPayload> = {
       metric('volume.fiat.ARS.ticket_avg', 'fiat', { amount: 17, code: 'ARS' }),
       metric('volume.fiat.ARS.ticket_p50', 'fiat', { amount: 12, code: 'ARS' }),
       metric('volume.fiat.ARS.ticket_p90', 'fiat', { amount: 40, code: 'ARS' }),
+      metric('volume.fiat.ARS.sats', 'sats', 640_000),
       metric('volume.fiat.VES.total', 'fiat', { amount: 20, code: 'VES' }),
       count('volume.fiat.VES.orders', 10),
       metric('volume.fiat.COP.total', 'fiat', { amount: 90, code: 'COP' }),
@@ -429,5 +430,44 @@ describe('Volume · a currency this window does not have', () => {
     expect(textOf(container)).not.toContain(printed('sats', 4_000_000))
     expect(textOf(container)).not.toContain(printed('fiat', { amount: 700, code: 'ARS' }))
     expect(tile(container, en.volumeView.largest)).toBeNull()
+  })
+})
+
+describe('Volume · the currency headline in sats', () => {
+  test('keeps the amount in its currency and says what it is in sats', async () => {
+    // Arrange
+    const container = await openNetwork()
+
+    // Act
+    await chooseFiat(container, 'ARS')
+
+    // Assert — the amount is ARS, and the qualifier under it is the sats
+    // the same trade moved, which is what compares with anything else.
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.total)).toBe(
+        printed('fiat', { amount: 500, code: 'ARS' }),
+      )
+    })
+    expect(
+      tile(container, en.volumeView.total)?.querySelector('small')?.textContent,
+    ).toContain(printed('sats', 640_000))
+  })
+
+  test('an archive that publishes no sats for it says so, not a zero', async () => {
+    // Arrange — VES has no sats row in this window's document.
+    const container = await openNetwork()
+
+    // Act
+    await chooseFiat(container, 'VES')
+
+    // Assert
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.total)).toBe(
+        printed('fiat', { amount: 20, code: 'VES' }),
+      )
+    })
+    const sub = tile(container, en.volumeView.total)?.querySelector('small')
+    expect(sub?.textContent).toContain('—')
+    expect(sub?.textContent).toContain(en.absence.notPublished)
   })
 })

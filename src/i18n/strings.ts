@@ -234,6 +234,8 @@ export type Strings = {
     readonly caption: string
     readonly currency: string
     readonly volume: string
+    /** The same volume in sats, which every row shares as a unit. */
+    readonly sats: string
     readonly orders: string
     readonly ticketAvg: string
     readonly p50: string

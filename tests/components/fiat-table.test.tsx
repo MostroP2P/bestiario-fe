@@ -5,10 +5,11 @@ import { StringsProvider } from '~/i18n/context'
 import { en } from '~/i18n/en'
 import type { FiatRow } from '~/model/metrics'
 import type { Metric, MetricValue } from '~/nostr/documents'
+import { formatMetric } from '~/model/format'
 
 afterEach(cleanup)
 
-function row(code: string, orders: number, total: MetricValue): FiatRow {
+function row(code: string, orders: number, total: MetricValue, sats?: number): FiatRow {
   const figures = new Map<string, Metric>([
     [
       'orders',
@@ -24,15 +25,23 @@ function row(code: string, orders: number, total: MetricValue): FiatRow {
       { name: `volume.fiat.${code}.total`, kind: 'observed', unit: 'fiat', value: total },
     ],
   ])
+  if (sats !== undefined) {
+    figures.set('sats', {
+      name: `volume.fiat.${code}.sats`,
+      kind: 'observed',
+      unit: 'sats',
+      value: sats,
+    })
+  }
   return { code, figures }
 }
 
 // Alphabetical on the way in, which is what the table must not settle for.
 const ROWS: readonly FiatRow[] = [
-  row('ARS', 4, { amount: 318_400, code: 'ARS' }),
-  row('MXN', 7, { amount: 12_150, code: 'MXN' }),
-  row('PEN', 1, { amount: 500, code: 'PEN' }),
-  row('USD', 6, { amount: 151, code: 'USD' }),
+  row('ARS', 4, { amount: 318_400, code: 'ARS' }, 900_000),
+  row('MXN', 7, { amount: 12_150, code: 'MXN' }, 400_000),
+  row('PEN', 1, { amount: 500, code: 'PEN' }, 50_000),
+  row('USD', 6, { amount: 151, code: 'USD' }, 2_000_000),
 ]
 
 function draw(rows: readonly FiatRow[] = ROWS, loading = false) {
@@ -103,7 +112,7 @@ describe('the volume-by-currency table', () => {
     draw()
 
     // Every column heads a control; none is a bare label a keyboard cannot reach.
-    expect(screen.getAllByRole('button')).toHaveLength(6)
+    expect(screen.getAllByRole('button')).toHaveLength(7)
   })
 
   test('shows skeleton rows rather than an order while the figures are in flight', () => {
@@ -116,5 +125,43 @@ describe('the volume-by-currency table', () => {
     draw([])
 
     expect(screen.getByText(en.fiat.empty)).toBeTruthy()
+  })
+})
+
+describe('the sats column', () => {
+  test('shows what each currency moved in the unit they all share', () => {
+    // Arrange / Act
+    draw()
+
+    // Assert — beside the amount in the row's own currency, not instead.
+    const printed = (unit: Metric['unit'], value: MetricValue) =>
+      formatMetric({ name: 'x', kind: 'observed', unit, value }).text
+    const ars = screen
+      .getAllByRole('row')
+      .find((row) => row.textContent?.startsWith('ARS'))!
+    expect(ars.textContent).toContain(printed('fiat', { amount: 318_400, code: 'ARS' }))
+    expect(ars.textContent).toContain(printed('sats', 900_000))
+  })
+
+  test('ranks the market by it, which the fiat amounts cannot do', () => {
+    // Arrange — USD moves the most sats and the fewest of its own units.
+    draw()
+
+    // Act
+    fireEvent.click(heading(en.fiat.sats))
+
+    // Assert
+    expect(codes()).toEqual(['USD', 'ARS', 'MXN', 'PEN'])
+  })
+
+  test('an archive that publishes no sats yet says so rather than a zero', () => {
+    // Arrange — the figure the daemon has not deployed.
+    draw([row('ARS', 4, { amount: 318_400, code: 'ARS' })])
+
+    // Assert
+    const ars = screen.getAllByRole('row')[1]!
+    expect(ars.textContent).toContain('—')
+    expect(ars.textContent).toContain(en.absence.notPublished)
+    expect(ars.textContent).not.toContain('0 sats')
   })
 })

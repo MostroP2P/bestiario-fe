@@ -13,11 +13,14 @@
  * code, so the same rows always land in the same place and the table does not
  * reshuffle under the reader between renders.
  *
- * One caveat the default encodes: the amount columns are each denominated in
+ * One caveat the default encodes: the fiat columns are each denominated in
  * their own row's currency, so ranking by them compares ARS against USD. That
  * is a real ordering of the published numbers, and the reader may ask for it,
- * but it is not a ranking of market size — which is why `orders`, a count and
- * the only figure comparable across rows, is what the table opens on.
+ * but it is not a ranking of market size. `orders` and `sats` are the two
+ * columns that do compare across rows, and the table opens on `orders`: the
+ * archive published no sats per currency until recently, and a default that
+ * sorts on a column an older archive leaves absent would open the table on
+ * the alphabet.
  */
 import type { FiatRow } from '~/model/metrics'
 import type { Metric } from '~/nostr/documents'

@@ -200,6 +200,7 @@ export const pt: Strings = {
     caption: 'Volume por moeda na janela escolhida',
     currency: 'moeda',
     volume: 'volume',
+    sats: 'sats',
     orders: 'ordens',
     ticketAvg: 'ticket médio',
     p50: 'p50',

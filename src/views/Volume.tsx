@@ -161,15 +161,17 @@ export function Volume(props: { readonly window: Span }) {
    *
    * Each filter cuts the tiles to what the publisher signs for that cut and
    * to nothing else. One currency is signed in that currency — a total, a
-   * count and the three tickets — and no longer in sats. One instance is
-   * signed in sats, in the comparison document. Both at once is signed only
-   * as a count, in the instance's own orders document, so that is the only
-   * tile that carries a figure and the rest say so.
+   * count and the three tickets — and, since the daemon added it, in sats
+   * as well: the same trade in the one unit every currency shares, which
+   * an older archive leaves absent. One instance is signed in sats, in the
+   * comparison document. Both at once is signed only as a count, in the
+   * instance's own orders document, so that is the only tile that carries
+   * a figure and the rest say so.
    */
   const tiles: {
     label: string
     value: string | { metric: Metric | undefined }
-    sub: string
+    sub: string | { metric: Metric | undefined }
   }[] =
     chosen && filters.fiat
       ? [
@@ -212,9 +214,12 @@ export function Volume(props: { readonly window: Span }) {
         : filters.fiat
           ? [
               {
+                // The amount is in its own currency and compares with
+                // nothing; the sats beside it are what the same trade is in
+                // the one unit every currency here shares.
                 label: strings.volumeView.total,
                 value: figure(fiat?.figures.get('total')),
-                sub: strings.header.windows[props.window],
+                sub: { metric: fiat?.figures.get('sats') },
               },
               {
                 label: strings.volumeView.completed,

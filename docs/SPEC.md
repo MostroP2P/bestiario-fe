@@ -457,9 +457,15 @@ the current archive — and the one that needs the most editing:
 - Size distribution as a histogram over the five published buckets.
 - Buy/sell split.
 - **Per-fiat table**, one row per currency, built by grouping metric names
-  on the `volume.fiat.<CODE>.<figure>` pattern: total, orders, ticket
+  on the `volume.fiat.<CODE>.<figure>` pattern: total, sats, orders, ticket
   avg/p50/p90. Sortable, and the currency is a first-class column rather
-  than a suffix in a metric name.
+  than a suffix in a metric name. `sats` is what the same trade came to in
+  the one unit every currency shares — the only figure in the row, beside
+  the order count, that ranks a market against the others rather than
+  against itself — and the per-currency `sats` sum to `volume.sats`. An
+  archive published before the daemon carried the figure leaves it absent,
+  so nothing may depend on its presence: the table opens on `orders`, not
+  on a column that may not be there.
 - **Reference currency** (`volume.in.USD.*`): inferred, so it renders in the
   inferred style with its `error` text, and — on the current archive — as
   absence, because it is `missing`.
