@@ -341,10 +341,10 @@ export function Overview(props: { readonly window: Span }) {
           <>
             <Kpi
               label={strings.kpi.orders(strings.header.windows[window_])}
-              value={formatMetric(lookup(orders, 'orders.created')).text}
+              value={formatMetric(lookup(orders, 'orders.completed')).text}
               sub={strings.kpi.ordersSub(
-                formatMetric(lookup(orders, 'orders.completed')).text,
                 formatMetric(lookup(orders, 'orders.completion_rate')).text,
+                formatMetric(lookup(orders, 'orders.created')).text,
               )}
             />
             <Kpi

@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, waitFor } from '@testing-library/preact'
 import { readFileSync, readdirSync } from 'node:fs'
 import type { Event, Filter } from 'nostr-tools'
 import { finalizeEvent, generateSecretKey } from 'nostr-tools/pure'
+import { formatCount } from '../../src/model/format'
 
 const DIR = 'tests/fixtures/snapshot'
 const fixtures: Event[] = readdirSync(DIR)
@@ -136,6 +137,38 @@ describe('Dashboard · real figures', () => {
       expect(values.length).toBe(4)
       expect(values[0]).toMatch(/\d/)
     })
+  })
+
+  test('the orders tile leads with what completed, not with what was created', async () => {
+    // Arrange — a created order is only an offer; what the network actually
+    // did is the completed count, so that is the figure the tile leads with.
+    const metrics = (
+      JSON.parse(fixtures.find((e) => dOf(e) === 'orders:30d')!.content) as {
+        payload: { metrics: { name: string; value: number }[] }
+      }
+    ).payload.metrics
+    const figure = (name: string) => metrics.find((m) => m.name === name)!.value
+    const ordersKpi = (root: Element) =>
+      [...root.querySelectorAll('.b-kpi')].find((kpi) =>
+        kpi.querySelector('.b-eyebrow')?.textContent?.startsWith('ORDERS'),
+      )
+
+    // Act
+    const { container } = render(<Dashboard />)
+
+    // Assert
+    await waitFor(() => {
+      expect(ordersKpi(container)?.querySelector('strong')?.textContent).toBe(
+        formatCount(figure('orders.completed')),
+      )
+    })
+    expect(ordersKpi(container)?.querySelector('strong')?.textContent).not.toBe(
+      formatCount(figure('orders.created')),
+    )
+    // And the line beneath carries the rate against the created total.
+    expect(ordersKpi(container)?.querySelector('small')?.textContent).toContain(
+      formatCount(figure('orders.created')),
+    )
   })
 
   test('heads the panel with the currency × instance cross', async () => {
