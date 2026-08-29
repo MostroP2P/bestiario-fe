@@ -3,7 +3,7 @@ import { DEFAULT_RELAYS, PUBLISHER_PUBKEY } from '~/config'
 import { useNumberLocale } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { useStore } from '~/store/useStore'
-import { TrustRail } from '~/components/TrustRail'
+import { TrustBrand, TrustRail } from '~/components/TrustRail'
 import { LanguagePicker } from '~/components/LanguagePicker'
 import { WindowPicker } from '~/components/WindowPicker'
 import { LoadingAnnouncement } from '~/components/Skeleton'
@@ -60,13 +60,11 @@ export function Dashboard() {
         </p>
       )}
 
+      {/* Written in reading order — brand, figures, provenance — so a screen
+          reader walks the page the way a phone shows it. The desktop grid
+          puts the rail body back in the left column under the brand. */}
       <div class="b-shell">
-        <TrustRail
-          boot={boot}
-          relays={relays}
-          publisher={PUBLISHER_PUBKEY}
-          nowMs={nowMs}
-        />
+        <TrustBrand />
 
         <div class="b-main">
           <div class="b-header">
@@ -104,6 +102,13 @@ export function Dashboard() {
           {location.route === 'orders' && <Orders window={location.window} />}
           {location.route === 'volume' && <Volume window={location.window} />}
         </div>
+
+        <TrustRail
+          boot={boot}
+          relays={relays}
+          publisher={PUBLISHER_PUBKEY}
+          nowMs={nowMs}
+        />
       </div>
 
       <p class="b-footnote">{strings.footnote(DEFAULT_RELAYS.length)}</p>

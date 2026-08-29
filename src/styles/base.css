@@ -86,49 +86,29 @@ body {
   color: var(--ink);
   display: grid;
   grid-template-columns: 214px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+/* The rail is written as two siblings around the main column so the DOM says
+   what a phone shows: brand, figures, provenance. Here the grid puts the two
+   halves back in the left column, the body stretching to the bottom so the
+   column keeps one unbroken background. */
+.b-brand {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.b-rail {
+  grid-column: 1;
+  grid-row: 2 / -1;
 }
 
 /* The column the figures live in. `min-width: 0` so a wide table scrolls
    inside it rather than stretching the grid. */
 .b-main {
+  grid-column: 2;
+  grid-row: 1 / -1;
   min-width: 0;
-}
-
-/* On a phone the two columns become one, and the order matters: stacked as
-   written, a reader met the whole provenance rail — publisher, relays,
-   archive, snapshot — before the first figure, and the header holding the
-   window tabs and the language picker sat 500px down the page where nobody
-   found it. The brand stays at the top; the rest of the rail goes below the
-   figures it is evidence for. */
-@media (max-width: 900px) {
-  .b-shell {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* The rail stops being a box so its two halves can be ordered
-     independently; each carries the rail's own background instead. */
-  .b-rail {
-    display: contents;
-  }
-
-  .b-brand {
-    order: 1;
-    background: var(--rail);
-    border-bottom: 1px solid var(--rule);
-    padding: 16px 18px;
-  }
-
-  .b-main {
-    order: 2;
-  }
-
-  .b-rail-body {
-    order: 3;
-    background: var(--rail);
-    border-top: 1px solid var(--rule);
-    padding: 4px 0 28px;
-  }
 }
 
 /* ── rail ──────────────────────────────────────────────────────────── */
@@ -136,14 +116,43 @@ body {
 .b-rail {
   background: var(--rail);
   border-right: 1px solid var(--rule);
-  padding: 20px 0 28px;
+  padding: 0 0 28px;
 }
 
+/* The brand carries the rail's own background: it is the top of the rail on a
+   desktop and the top of the page on a phone, and it is no longer inside the
+   box that paints it. */
 .b-brand {
-  padding: 0 18px 18px;
+  background: var(--rail);
+  border-right: 1px solid var(--rule);
+  padding: 20px 18px 18px;
   display: flex;
   align-items: center;
   gap: 11px;
+}
+
+/* On a phone the two columns become one. Stacked as written, a reader met the
+   whole provenance rail — publisher, relays, archive, snapshot — before the
+   first figure, and the header holding the window tabs and the language
+   picker sat 500px down the page where nobody found it. The document now
+   carries that order itself, so here the grid simply collapses: no `order`,
+   nothing for a screen reader to disagree with. */
+@media (max-width: 900px) {
+  .b-shell {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .b-brand {
+    border-bottom: 1px solid var(--rule);
+    padding: 16px 18px;
+  }
+
+  .b-rail {
+    border-right: 0;
+    border-top: 1px solid var(--rule);
+    padding: 4px 0 28px;
+  }
 }
 
 .b-brand img {
