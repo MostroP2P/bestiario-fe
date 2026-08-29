@@ -138,15 +138,20 @@
           Every figure comes from a statistics document that Mostro's publisher signs and
           broadcasts as a Nostr event. Your browser fetches those events from public
           relays, checks the signature against the publisher's key, re-hashes the payload,
-          and compares it to the hash the signed index names. A document that fails any of
-          those checks is not shown — it reads as absent, never as a zero.
+          and compares it to the hash the signed index names. Three outcomes, and this
+          site is built on keeping them apart: a figure nobody published reads as absent
+          and never as a zero, a figure worked out from other figures is marked as
+          inferred, and a document whose proof failed shows the failure and no figure at
+          all.
         </p>
 
         <h2>What it does not do</h2>
         <p>
           There is no backend, no account, no analytics and no tracker. The site is static
-          files and a WebSocket to a relay. The only thing it stores is the language you
-          chose, in your own browser.
+          files and a WebSocket to a relay. Two things are kept in your browser's own
+          storage and nowhere else: the language you chose, and the documents it has
+          already verified, held so that a second visit is not a second download. Neither
+          is ever sent anywhere, and neither names you.
         </p>
 
         <h2>Sections</h2>
