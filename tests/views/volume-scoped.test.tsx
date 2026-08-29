@@ -58,8 +58,22 @@ const sats = (name: string, value: number): Metric => ({
   value,
 })
 
+const ORDERS = 'orders:30d'
+
 const DOCS: Record<string, WindowPayload> = {
-  'volume:30d': { range: RANGE, metrics: [sats('volume.sats', 1_000_000)] },
+  'volume:30d': {
+    range: RANGE,
+    metrics: [
+      sats('volume.sats', 1_000_000),
+      {
+        name: 'volume.fiat.ARS.total',
+        kind: 'observed',
+        unit: 'fiat',
+        value: { amount: 500, code: 'ARS' },
+      },
+      count('volume.fiat.ARS.orders', 30),
+    ],
+  },
   'instances:30d': {
     range: RANGE,
     metrics: [
@@ -79,6 +93,15 @@ const DOCS: Record<string, WindowPayload> = {
     range: RANGE,
     metrics: [count('orders.created', 30), count('orders.ARS.completed', 22)],
   },
+  // The denominator of the market share: what the whole network completed
+  // in the same currency and the same window.
+  [ORDERS]: { range: RANGE, metrics: [count('orders.ARS.completed', 88)] },
+}
+
+/** What a tampered document carries instead: a figure nobody signed. */
+const TAMPERED: Record<string, readonly Metric[]> = {
+  [COMPARE]: [sats('compare.Mostro AR.volume_sats', 999)],
+  [ORDERS]: [count('orders.ARS.completed', 999)],
 }
 
 let events: Event[] = []
@@ -87,11 +110,11 @@ let held: Promise<void> | null = null
 let release: () => void = () => {}
 
 /**
- * Sign the snapshot. With `tamper`, the scoped document is published with a
+ * Sign the snapshot. The document `tampered` names is published with a
  * payload the index's hash does not cover — a document that fails
  * verification in the browser, which is not the same as one that is absent.
  */
-async function buildSnapshot(tamper: boolean): Promise<Event[]> {
+async function buildSnapshot(tampered: string | null): Promise<Event[]> {
   const now = Math.floor(Date.now() / 1000)
   const documents: { d: string; hash: string; revision: number; updated_at: string }[] =
     []
@@ -100,10 +123,7 @@ async function buildSnapshot(tamper: boolean): Promise<Event[]> {
   for (const [d, payload] of Object.entries(DOCS)) {
     const hash = await sha256Hex(canonicalPayload(payload))
     documents.push({ d, hash, revision: 1, updated_at: RANGE.until })
-    const published =
-      tamper && d === COMPARE
-        ? { ...payload, metrics: [sats('compare.Mostro AR.volume_sats', 999)] }
-        : payload
+    const published = d === tampered ? { ...payload, metrics: TAMPERED[d] } : payload
     signed.push(
       finalizeEvent(
         {
@@ -207,10 +227,22 @@ async function chooseInstance(container: Element, name: string) {
   fireEvent.change(select, { target: { value: option.value } })
 }
 
+/** Pick a currency, once the volume document has named it. */
+async function chooseFiat(container: Element, code: string) {
+  const selectFor = () =>
+    [...container.querySelectorAll('select')].find((element) =>
+      [...element.options].some((option) => option.textContent === code),
+    )
+  await waitFor(() => {
+    expect(selectFor()).toBeDefined()
+  })
+  fireEvent.change(selectFor()!, { target: { value: code } })
+}
+
 describe('Volume · the comparison document answers', () => {
   test('says nothing about the instance until the document has answered', async () => {
     // Arrange — the round that carries per-instance volume is held.
-    events = await buildSnapshot(false)
+    events = await buildSnapshot(null)
     held = new Promise<void>((resolve) => {
       release = resolve
     })
@@ -239,7 +271,7 @@ describe('Volume · the comparison document answers', () => {
 
   test('repeats nothing from a comparison document that failed verification', async () => {
     // Arrange — published with a payload the index's hash does not cover.
-    events = await buildSnapshot(true)
+    events = await buildSnapshot(COMPARE)
     const { container } = render(<Volume window="30d" />)
     await waitFor(() => {
       expect(valueOf(container, en.volumeView.total)).toBe(printed('sats', 1_000_000))
@@ -256,5 +288,32 @@ describe('Volume · the comparison document answers', () => {
       en.filters.unverifiedCompare('hash'),
     )
     expect(container.textContent).not.toContain(printed('sats', 999))
+  })
+})
+
+describe("Volume · the market share's denominator", () => {
+  test("says the network's orders document failed, rather than calling the share unpublished", async () => {
+    // Arrange — the whole network's count for the window is published with
+    // a payload the index's hash does not cover.
+    events = await buildSnapshot(ORDERS)
+    const { container } = render(<Volume window="30d" />)
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.total)).toBe(printed('sats', 1_000_000))
+    })
+
+    // Act — one instance, in one currency: the reading the share is part of.
+    await chooseInstance(container, 'Mostro AR')
+    await chooseFiat(container, 'ARS')
+
+    // Assert — the failure is said, with its reason, and the denominator it
+    // carried is never read.
+    await waitFor(() => {
+      expect(valueOf(container, en.volumeView.completed)).toBe('22')
+    })
+    expect(container.querySelector('.b-filter-note')?.textContent).toBe(
+      en.filters.unverifiedOrders('hash'),
+    )
+    expect(valueOf(container, en.volumeView.shareOfMarket)).toContain('—')
+    expect(container.textContent).not.toContain(printed('ratio', 22 / 999))
   })
 })

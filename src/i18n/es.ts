@@ -53,6 +53,8 @@ export const es: Strings = {
       `El archivo no publica nada en ${code} para esta ventana, así que las cifras de arriba son ausencia y no las de la red. Otra ventana, o toda la red, puede tenerlo.`,
     instanceAndFiat:
       'Para una instancia en una moneda el publicador firma conteos y tasas, y ningún importe: los importes se firman para la red, y por instancia solo como un total de todas las monedas.',
+    unverifiedOrders: (reason) =>
+      `El documento de órdenes de toda la red para esta ventana no superó la verificación en este navegador: ${reason}. No se lee nada de él, así que la cuota de ese mercado no se calcula — y eso es una prueba fallida, no una cifra que nadie publicó.`,
     noFiatOrders:
       'Por moneda el archivo cuenta las órdenes que se completaron, y solo esas: creadas, canceladas, en curso y el reparto compra/venta se firman para todas las monedas a la vez, así que se leen como ausencia mientras haya una elegida.',
     instanceAndFiatOrders:

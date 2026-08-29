@@ -59,6 +59,8 @@ export const en: Strings = {
       `The archive publishes nothing in ${code} for this window, so the figures above are absent rather than the network's. Another window, or the whole network, may have it.`,
     instanceAndFiat:
       'For one instance in one currency the publisher signs counts and rates, and no amount at all — the amounts are signed for the network, and per instance only as a total across every currency.',
+    unverifiedOrders: (reason) =>
+      `The whole network's orders document for this window did not verify in this browser: ${reason}. Nothing is read from it, so the share of that market is not worked out — which is a failed proof, not a figure nobody published.`,
     noFiatOrders:
       'Per currency the archive counts the orders that completed, and only those: created, canceled, in progress and the buy/sell split are signed for every currency at once, so they read as absent while one is chosen.',
     instanceAndFiatOrders:

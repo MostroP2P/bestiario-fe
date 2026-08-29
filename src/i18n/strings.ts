@@ -99,6 +99,8 @@ export type Strings = {
     readonly fiatUnavailable: (code: string) => string
     /** One instance in one currency is signed as a count and nothing else. */
     readonly instanceAndFiat: string
+    /** The network's orders document — the share's denominator — failed. */
+    readonly unverifiedOrders: (reason: string) => string
     /** What of the orders route a currency cannot cut. */
     readonly noFiatOrders: string
     /** One instance in one currency, from the instance's own document. */

@@ -121,6 +121,14 @@ export function Volume(props: { readonly window: Span }) {
   const scopedState = scopedAddress ? stateOf(scopedAddress) : undefined
   const scopedUnverified = scopedState?.status === 'unverified'
 
+  /**
+   * The whole network's orders document, which is the denominator of the
+   * market share. A failure here is the share's failure: it must not pass
+   * for a quotient nobody published.
+   */
+  const ordersAddress = windowAddress('orders', props.window)
+  const ordersState = stateOf(ordersAddress)
+
   /** The instance's own orders document, once it has answered. */
   const scoped = scopedAddress
     ? metricsOf(payloadOf(documents, scopedAddress))
@@ -142,7 +150,7 @@ export function Volume(props: { readonly window: Span }) {
   const shareOfMarket = ((): Metric | undefined => {
     const mine = scopedFiat('completed')?.value
     const whole = lookup(
-      metricsOf(payloadOf(documents, windowAddress('orders', props.window))),
+      metricsOf(payloadOf(documents, ordersAddress)),
       `orders.${filters.fiat}.completed`,
     )?.value
     if (typeof mine !== 'number' || typeof whole !== 'number' || whole <= 0)
@@ -318,7 +326,9 @@ export function Volume(props: { readonly window: Span }) {
         note={
           filters.instance
             ? filters.fiat
-              ? strings.filters.instanceAndFiat
+              ? ordersState?.status === 'unverified'
+                ? strings.filters.unverifiedOrders(ordersState.reason)
+                : strings.filters.instanceAndFiat
               : compareUnverified && compareState?.status === 'unverified'
                 ? strings.filters.unverifiedCompare(compareState.reason)
                 : chosen && !compared && !loading

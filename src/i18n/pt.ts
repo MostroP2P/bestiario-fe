@@ -53,6 +53,8 @@ export const pt: Strings = {
       `O arquivo não publica nada em ${code} para esta janela, portanto as cifras acima são ausência e não as da rede. Outra janela, ou toda a rede, pode tê-lo.`,
     instanceAndFiat:
       'Para uma instância numa moeda o publicador assina contagens e taxas, e nenhum montante: os montantes são assinados para a rede, e por instância apenas como um total de todas as moedas.',
+    unverifiedOrders: (reason) =>
+      `O documento de ordens de toda a rede para esta janela não passou a verificação neste navegador: ${reason}. Nada é lido dele, portanto a quota desse mercado não é calculada — e isso é uma prova falhada, não uma cifra que ninguém publicou.`,
     noFiatOrders:
       'Por moeda o arquivo conta as ordens que se completaram, e só essas: criadas, canceladas, em curso e a repartição compra/venda são assinadas para todas as moedas de uma vez, portanto leem-se como ausência enquanto houver uma escolhida.',
     instanceAndFiatOrders:
