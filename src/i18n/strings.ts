@@ -179,6 +179,19 @@ export type Strings = {
     readonly rightNowSub: (pending: string) => string
   }
 
+  readonly matrix: {
+    readonly heading: string
+    readonly caption: string
+    /** Heads the name column, for a reader who cannot see it is names. */
+    readonly instance: string
+    /** A cell, as the pointer and the keyboard both reach it. */
+    readonly cell: (instance: string, code: string, orders: number) => string
+    /** A pair with no orders in the window. Absence, not a zero. */
+    readonly none: string
+    /** No instance published a breakdown of its own for this window. */
+    readonly empty: string
+  }
+
   readonly fiat: {
     readonly heading: string
     readonly caption: string

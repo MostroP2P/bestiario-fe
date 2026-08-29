@@ -114,6 +114,40 @@ describe('Dashboard · real figures', () => {
     })
   })
 
+  test('heads the panel with the currency × instance cross', async () => {
+    // Arrange / Act
+    const { container } = render(<Dashboard />)
+
+    // Assert — the cross is the first block of the panel, as artboard 2a
+    // has it, and it is filled from the scoped orders documents.
+    await waitFor(() => {
+      const heads = [...container.querySelectorAll('.b-section-head')].map(
+        (n) => n.textContent,
+      )
+      expect(heads[0]).toBe(en.matrix.heading)
+    })
+  })
+
+  test('says no instance published a breakdown rather than drawing zeros', async () => {
+    // This archive carries no `orders:<window>:i:<pubkey>` document. A grid
+    // of zeros would say every instance traded nothing, which is a claim
+    // nobody published; the absence is stated instead.
+    const scoped = fixtures.filter((event) => dOf(event).includes(':i:'))
+    expect(scoped).toEqual([])
+
+    // Act
+    const { container } = render(<Dashboard />)
+
+    // Assert
+    await waitFor(() => {
+      const empties = [...container.querySelectorAll('.b-empty')].map(
+        (n) => n.textContent,
+      )
+      expect(empties).toContain(en.matrix.empty)
+    })
+    expect(container.querySelector('.b-matrix')).toBeNull()
+  })
+
   test('lists every currency the network traded, from volume.fiat', async () => {
     // Arrange — read the expected set out of the very document the view
     // renders, so this asserts the grouping and not a snapshot of the market.

@@ -17,6 +17,7 @@ import { fiatRows, indexedFamily, lookup, metricsOf } from '~/model/metrics'
 import { formatMetric } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
+import { CurrencyMatrix } from '~/components/CurrencyMatrix'
 import { FiatTable } from '~/components/FiatTable'
 import { OpenDisputes } from '~/components/OpenDisputes'
 import { Kpi } from '~/components/Kpi'
@@ -29,6 +30,7 @@ import { placeAnchors, placeCurrencies, placeMostros } from '~/map/placements'
 import { ANCHOR_COUNT, flowLines } from '~/map/flows'
 import { networkLines, tradedCurrencies } from '~/map/network'
 import { currencyOrders, instanceRows } from '~/model/instances'
+import { currencyMatrix } from '~/model/matrix'
 import { printAddress } from '~/nostr/address'
 import { createProjection } from '~/map/projection'
 import { buildScene, MAX_BOW_OF_HEIGHT, type Scene } from '~/map/scene'
@@ -108,6 +110,9 @@ export function Overview(props: { readonly window: Span }) {
 
   /** The cross is published: every line stands for a figure that was signed. */
   const measuredRoutes = trades.length > 0
+
+  /** The same cross the map is drawn from, read as a grid. */
+  const matrix = useMemo(() => currencyMatrix(instances, trades), [instances, trades])
 
   const loading = boot.status === 'loading' || orders.length === 0
   const currencies = useMemo(() => fiatRows(volume), [volume])
@@ -322,6 +327,12 @@ export function Overview(props: { readonly window: Span }) {
 
       <div class="b-lower">
         <div class="b-lower-main">
+          {/* The cross of artboard 2a, and the first block of the panel: it
+              is the only place the site says which instance trades which
+              currency, and it is the figure behind the map above it. */}
+          <h2 class="b-eyebrow b-section-head">{strings.matrix.heading}</h2>
+          <CurrencyMatrix matrix={matrix} loading={loading} />
+
           <h2 class="b-eyebrow b-section-head">{strings.fiat.heading}</h2>
           <FiatTable rows={currencies} loading={loading} />
 

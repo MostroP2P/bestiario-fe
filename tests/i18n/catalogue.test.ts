@@ -86,6 +86,9 @@ describe('a translation is a translation', () => {
     '.header.network',
     '.rail.version',
     '.rail.relays',
+    // A name, a code and a count with a separator between them: the same
+    // line in every language that does not put a space before its colon.
+    '.matrix.cell',
     '.fiat.p50',
     '.fiat.p90',
     '.pairs.devFees',

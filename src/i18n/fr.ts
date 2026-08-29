@@ -151,6 +151,16 @@ export const fr: Strings = {
     rightNowSub: (pending) => `en cours · ${pending} en attente d’être pris`,
   },
 
+  matrix: {
+    heading: 'MONNAIE × INSTANCE · ORDRES',
+    caption:
+      'Ordres créés par chaque instance dans chaque monnaie, dans la fenêtre choisie',
+    instance: 'instance',
+    cell: (instance, code, orders) => `${instance} · ${code} : ${orders}`,
+    none: 'aucun ordre',
+    empty: 'Aucune instance n’a publié sa propre ventilation pour cette fenêtre.',
+  },
+
   fiat: {
     heading: 'VOLUME PAR MONNAIE',
     caption: 'Volume par monnaie dans la fenêtre choisie',
