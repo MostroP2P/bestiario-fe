@@ -217,8 +217,6 @@ export const fr: Strings = {
     sats: 'sats',
     orders: 'ordres',
     ticketAvg: 'ticket moyen',
-    p50: 'p50',
-    p90: 'p90',
     sortBy: (column) => `Trier par ${column}`,
     empty: 'Rien à signaler dans cette fenêtre.',
   },

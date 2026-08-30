@@ -221,8 +221,6 @@ export const en: Strings = {
     sats: 'sats',
     orders: 'orders',
     ticketAvg: 'average ticket',
-    p50: 'p50',
-    p90: 'p90',
     sortBy: (column) => `Sort by ${column}`,
     empty: 'Nothing to report in this window.',
   },

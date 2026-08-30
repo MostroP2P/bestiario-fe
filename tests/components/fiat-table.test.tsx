@@ -112,7 +112,7 @@ describe('the volume-by-currency table', () => {
     draw()
 
     // Every column heads a control; none is a bare label a keyboard cannot reach.
-    expect(screen.getAllByRole('button')).toHaveLength(7)
+    expect(screen.getAllByRole('button')).toHaveLength(5)
   })
 
   test('shows skeleton rows rather than an order while the figures are in flight', () => {

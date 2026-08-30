@@ -38,8 +38,6 @@ export function FiatTable({
     ['sats', strings.fiat.sats],
     ['orders', strings.fiat.orders],
     ['ticket_avg', strings.fiat.ticketAvg],
-    ['ticket_p50', strings.fiat.p50],
-    ['ticket_p90', strings.fiat.p90],
   ]
 
   const sorted = useMemo(() => sortFiatRows(rows, sort), [rows, sort])
@@ -48,10 +46,7 @@ export function FiatTable({
     return (
       <div class="b-table">
         {[0, 1, 2, 3, 4, 5].map((i) => (
-          <SkeletonRow
-            key={i}
-            widths={['52px', '92px', '84px', '54px', '78px', '64px', '64px']}
-          />
+          <SkeletonRow key={i} widths={['52px', '92px', '84px', '54px', '78px']} />
         ))}
       </div>
     )
