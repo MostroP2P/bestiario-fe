@@ -20,6 +20,43 @@ export function lookup(metrics: readonly Metric[], name: string): Metric | undef
   return metrics.find((metric) => metric.name === name)
 }
 
+/**
+ * The dispute statuses a dispute does not leave, as the daemon names them
+ * under `disputes.status.<status>` (bestiario `docs/SPEC.md` §6.7).
+ */
+export const DISPUTE_OUTCOMES = [
+  'seller_refunded',
+  'settled',
+  'released',
+  'cooperatively_canceled',
+] as const
+
+/**
+ * The `disputes.status.*` figures of the disputes opened in the window that
+ * have since reached an outcome — the terms of a sum for [`formatSum`].
+ *
+ * This is not `disputes.resolved`. That figure counts every dispute whose
+ * outcome landed in the window, whenever it was opened, so after a backlog
+ * clears it exceeds `disputes.opened` and a tile that puts the two side by
+ * side reads as "80 opened, 118 of them resolved". The status breakdown is
+ * of the opened cohort itself, and can never exceed it.
+ *
+ * Only the statuses the document actually names are summed. The outcome
+ * vocabulary has grown — `cooperatively_canceled` arrived with mostro-core
+ * 0.15.1 — and a publisher that predates a status folded those cases into
+ * another one, so its sum is complete without it. A document naming none of
+ * them has not published the breakdown at all, and the sum says so instead
+ * of adding up nothing to a zero.
+ */
+export function disputeOutcomes(
+  metrics: readonly Metric[],
+): readonly (Metric | undefined)[] {
+  const published = DISPUTE_OUTCOMES.map((status) =>
+    lookup(metrics, `disputes.status.${status}`),
+  ).filter((metric): metric is Metric => metric !== undefined)
+  return published.length > 0 ? published : [undefined]
+}
+
 /** Figures published per currency, grouped by code. */
 export type FiatRow = {
   readonly code: string

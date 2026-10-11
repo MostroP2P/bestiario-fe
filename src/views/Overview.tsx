@@ -13,7 +13,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { windowAddress, type Span } from '~/nostr/address'
-import { fiatRows, lookup, metricsOf } from '~/model/metrics'
+import { disputeOutcomes, fiatRows, lookup, metricsOf } from '~/model/metrics'
 import { formatMetric, formatSum } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
@@ -372,8 +372,13 @@ export function Overview(props: { readonly window: Span }) {
             <Kpi
               label={strings.kpi.disputes(strings.header.windows[window_])}
               value={formatMetric(lookup(disputes, 'disputes.opened')).text}
+              // The cohort's own outcomes, not `disputes.resolved`: that one
+              // is dated by the outcome and counts disputes opened before the
+              // window, so it can exceed the figure above it. It has its own
+              // row in the pairs panel below, where it is not read as a
+              // share of this tile.
               sub={strings.kpi.disputesSub(
-                formatMetric(lookup(disputes, 'disputes.resolved')).text,
+                formatSum(disputeOutcomes(disputes)).text,
                 formatMetric(lookup(disputes, 'disputes.rate')).text,
               )}
             />
@@ -421,6 +426,7 @@ export function Overview(props: { readonly window: Span }) {
               loading={loading}
               rows={[
                 [strings.pairs.disputeRate, lookup(disputes, 'disputes.rate')],
+                [strings.pairs.resolved, lookup(disputes, 'disputes.resolved')],
                 [
                   strings.pairs.resolutionMedian,
                   lookup(disputes, 'disputes.resolution_p50'),

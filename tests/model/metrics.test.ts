@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { fiatRows, indexedFamily, lookup, metricsOf } from '~/model/metrics'
+import {
+  disputeOutcomes,
+  fiatRows,
+  indexedFamily,
+  lookup,
+  metricsOf,
+} from '~/model/metrics'
 import type { Envelope, Metric } from '~/nostr/documents'
 
 function payloadOf(file: string) {
@@ -115,5 +121,57 @@ describe('indexedFamily', () => {
 
   test('is empty for a family nothing published', () => {
     expect(indexedFamily(disputes, 'disputes.closed')).toEqual([])
+  })
+})
+
+describe('disputeOutcomes · the opened cohort, by how it ended', () => {
+  const count = (name: string, value: number): Metric => ({
+    name,
+    kind: 'observed',
+    unit: 'count',
+    value,
+  })
+  const status = (status: string, value: number) =>
+    count(`disputes.status.${status}`, value)
+
+  test('selects the terminal statuses and nothing else', () => {
+    // Arrange — `initiated` and `in_progress` are still open; `resolved` is
+    // dated by the outcome and counts disputes opened before the window.
+    const metrics = [
+      count('disputes.opened', 80),
+      status('initiated', 3),
+      status('in_progress', 12),
+      status('seller_refunded', 50),
+      status('settled', 10),
+      status('released', 4),
+      status('cooperatively_canceled', 1),
+      count('disputes.resolved', 118),
+    ]
+
+    // Act
+    const terms = disputeOutcomes(metrics)
+
+    // Assert
+    expect(terms.map((metric) => metric?.name)).toEqual([
+      'disputes.status.seller_refunded',
+      'disputes.status.settled',
+      'disputes.status.released',
+      'disputes.status.cooperatively_canceled',
+    ])
+  })
+
+  test('sums only what the publisher names, so an older vocabulary is still complete', () => {
+    // Arrange — a document from before `cooperatively_canceled` existed, like
+    // the snapshot fixture: those cases were published as `seller_refunded`.
+    const terms = disputeOutcomes(disputes)
+
+    // Assert — three terms, none of them a stand-in for the missing one.
+    expect(terms).toHaveLength(3)
+    expect(terms.every((metric) => metric !== undefined)).toBe(true)
+    expect(lookup(disputes, 'disputes.status.cooperatively_canceled')).toBeUndefined()
+  })
+
+  test('is one absent term, not an empty sum, when no outcome is published', () => {
+    expect(disputeOutcomes([count('disputes.opened', 80)])).toEqual([undefined])
   })
 })
