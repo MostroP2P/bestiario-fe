@@ -239,5 +239,5 @@ coding agents and holds for everyone.
 
 ## Licence
 
-[MIT](LICENSE), the same licence
+[GNU General Public License v3.0](LICENSE), the same licence
 [bestiario](https://github.com/MostroP2P/bestiario) declares for the daemon.
