@@ -427,6 +427,35 @@ describe('Dashboard · a window figure is not a now figure', () => {
     expect(disputesKpi(container)?.querySelector('strong')?.textContent).not.toBe(before)
   })
 
+  test('reads its "closed" figure off the opened cohort, never off disputes.resolved', async () => {
+    // Arrange — in the 7d document the two differ: `resolved` is dated by
+    // the outcome and counts disputes opened before the window, which is
+    // how a tile came to say "80 opened · 118 resolved".
+    const outcomes = ['seller_refunded', 'settled', 'released', 'cooperatively_canceled']
+    const closed = metricsOfWindow('disputes', '7d')
+      .filter((m) => outcomes.includes(m.name.replace('disputes.status.', '')))
+      .reduce((sum, m) => sum + m.value, 0)
+    const resolved = figure('disputes', '7d', 'disputes.resolved')
+    expect(closed).not.toBe(resolved)
+    const { container, getByLabelText } = render(<Dashboard />)
+    await waitFor(() => {
+      expect(disputesKpi(container)?.querySelector('strong')).not.toBeNull()
+    })
+
+    // Act
+    fireEvent.change(getByLabelText(en.header.windowNav), { target: { value: '7d' } })
+
+    // Assert
+    await waitFor(() => {
+      expect(disputesKpi(container)?.querySelector('small')?.textContent).toContain(
+        en.kpi.disputesSub(asCount(closed), '').split(' ·')[0],
+      )
+    })
+    expect(disputesKpi(container)?.querySelector('small')?.textContent).not.toContain(
+      en.kpi.disputesSub(asCount(resolved), '').split(' ·')[0],
+    )
+  })
+
   test('asks every instance the archive names for its own dispute events', async () => {
     // Arrange / Act
     render(<Dashboard />)

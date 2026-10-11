@@ -235,7 +235,12 @@ export type Strings = {
     readonly volume: (window: string) => string
     readonly volumeSub: (p50: string) => string
     readonly disputes: (window: string) => string
-    readonly disputesSub: (resolved: string, rate: string) => string
+    /**
+     * `closed` is how many of the tile's own disputes have an outcome, never
+     * `disputes.resolved`: that is dated by the outcome and can exceed the
+     * tile, which reads as nonsense under it.
+     */
+    readonly disputesSub: (closed: string, rate: string) => string
     readonly rightNow: string
     readonly rightNowSub: (pending: string) => string
   }
@@ -275,6 +280,8 @@ export type Strings = {
     readonly largest: string
     readonly disputesHeading: string
     readonly disputeRate: string
+    /** `disputes.resolved`: outcomes dated in the window, whenever opened. */
+    readonly resolved: string
     readonly resolutionMedian: string
     readonly devFees: string
     readonly coverage: string
