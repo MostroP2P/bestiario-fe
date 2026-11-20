@@ -454,6 +454,29 @@ do not move.
 canceled, completion and abandonment rates, open and in-progress now, and
 the deltas. The chart is stacked completed/canceled over created.
 
+**Time to complete** — how long a trade takes once it is taken — closes the
+headline of the network reading: `timing.time_to_complete_p50` as the
+figure, qualified by `timing.time_to_complete_p90` and by
+`timing.time_to_complete_samples`, the number of trades it rests on, which
+is shown whenever the figure is. The publisher signs these (bestiario
+`docs/SPEC.md` §6.4) as a median and a p90 and deliberately no mean, which
+one trade held in a dispute would set; the page says _median_, not
+_average_. An empty sample is `0` with `missing` percentiles and renders
+as a count of zero beside a dash, never as `0 s`; a snapshot from before
+the publisher signed them carries none of the records and renders as not
+published.
+
+They are signed in the network's `orders:<w>` only — no instance-scoped
+document and no currency block carries them — so no narrowed reading shows
+them: an instance reading keeps its in-progress tile in that place, and a
+note says the durations do not narrow. A note beside the figure states its
+coverage: only trades whose take bestiario observed live are timed, which
+is why fewer are timed than completed; sell orders taken with an invoice
+are not timed yet (MostroP2P/mostro#1129); and a trade that went to
+dispute counts its whole dispute time, so in a small sample one alone can
+set the median. The same document signs `time_to_fill`, `full_cycle` and
+`time_to_cancel` in the same shape; they are not shown yet.
+
 ### 8.3 Volume — `#/volume`
 
 `volume:<w>` plus its series. The largest document family — 82 metrics on
