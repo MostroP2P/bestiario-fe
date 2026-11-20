@@ -104,6 +104,13 @@ export const es: Strings = {
       'Este reparto se firma para toda la red — no por instancia ni por moneda — así que no se acota a ninguna de las dos.',
     shareOfCompleted: 'Proporción de las completadas',
     shareOfCompletedSub: 'De lo que completó la red en esta ventana',
+    timeToComplete: 'Tiempo hasta completar',
+    timeToCompleteP90: 'p90',
+    timeToCompleteTimed: 'intercambios medidos',
+    timingNote:
+      'La mediana del tiempo que pasa desde que se toma un intercambio hasta que se completa, sobre los intercambios cuya toma bestiario vio en vivo — por eso hay menos medidos que completados. Las órdenes de venta tomadas con una factura aún no se miden, y un intercambio que pasó por una disputa cuenta todo el tiempo de la disputa, así que con pocas muestras uno solo puede fijar la mediana.',
+    timingNotNarrowed:
+      'Los tiempos de intercambio se firman para toda la red — no por instancia ni por moneda — así que no se acotan a ninguna de las dos.',
   },
 
   volumeView: {

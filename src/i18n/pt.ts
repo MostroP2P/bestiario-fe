@@ -104,6 +104,13 @@ export const pt: Strings = {
       'Esta repartição é assinada para toda a rede — nem por instância nem por moeda — portanto não se restringe a nenhuma das duas.',
     shareOfCompleted: 'Proporção das completadas',
     shareOfCompletedSub: 'Do que a rede completou nesta janela',
+    timeToComplete: 'Tempo até concluir',
+    timeToCompleteP90: 'p90',
+    timeToCompleteTimed: 'trocas medidas',
+    timingNote:
+      'A mediana do tempo entre uma troca ser aceita e a sua conclusão, sobre as trocas cuja aceitação o bestiario viu ao vivo — por isso há menos medidas do que concluídas. Ordens de venda aceitas com uma fatura ainda não são medidas, e uma troca que passou por uma disputa conta todo o tempo da disputa, então numa amostra pequena uma só pode definir a mediana.',
+    timingNotNarrowed:
+      'Os tempos de troca são assinados para toda a rede — nem por instância nem por moeda — portanto não se restringem a nenhuma das duas.',
   },
 
   volumeView: {

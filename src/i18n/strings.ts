@@ -163,6 +163,16 @@ export type Strings = {
     /** A currency's share of what the network completed. */
     readonly shareOfCompleted: string
     readonly shareOfCompletedSub: string
+    /** How long a trade takes once taken: the median, SPEC 8.2. */
+    readonly timeToComplete: string
+    /** The p90 beside it, as the tile's qualifier reads it. */
+    readonly timeToCompleteP90: string
+    /** After the count of trades the figures rest on. */
+    readonly timeToCompleteTimed: string
+    /** What the figure covers: live-observed takes, the missing paths, disputes. */
+    readonly timingNote: string
+    /** Why the durations do not narrow to an instance or a currency. */
+    readonly timingNotNarrowed: string
   }
 
   readonly volumeView: {

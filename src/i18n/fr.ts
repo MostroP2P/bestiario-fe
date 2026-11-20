@@ -105,6 +105,13 @@ export const fr: Strings = {
       'Cette répartition est signée pour tout le réseau — ni par instance ni par devise — elle ne se restreint donc à aucune des deux.',
     shareOfCompleted: 'Part des ordres complétés',
     shareOfCompletedSub: 'De ce que le réseau a complété dans cette fenêtre',
+    timeToComplete: 'Délai de réalisation',
+    timeToCompleteP90: 'p90',
+    timeToCompleteTimed: 'échanges mesurés',
+    timingNote:
+      'Le délai médian entre la prise d’un échange et sa réalisation, sur les échanges dont bestiario a vu la prise en direct — c’est pourquoi on en mesure moins qu’il n’y en a de réalisés. Les ordres de vente pris avec une facture ne sont pas encore mesurés, et un échange passé par un litige compte toute la durée du litige ; sur un petit échantillon, un seul peut donc fixer la médiane.',
+    timingNotNarrowed:
+      'Les délais d’échange sont signés pour tout le réseau — ni par instance ni par devise — ils ne se restreignent donc à aucune des deux.',
   },
 
   volumeView: {
