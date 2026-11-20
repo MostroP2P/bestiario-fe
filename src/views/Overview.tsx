@@ -419,6 +419,12 @@ export function Overview(props: { readonly window: Span }) {
                 ],
                 [strings.pairs.ticketAvg, lookup(volume, 'volume.ticket_avg')],
                 [strings.pairs.largest, lookup(volume, 'volume.largest')],
+                // The network's own: `orders:<w>` is the only document that
+                // signs a duration, and this route reads the network's.
+                [
+                  strings.pairs.timeToComplete,
+                  lookup(orders, 'timing.time_to_complete_p50'),
+                ],
               ]}
             />
             <Pairs
@@ -428,7 +434,7 @@ export function Overview(props: { readonly window: Span }) {
                 [strings.pairs.disputeRate, lookup(disputes, 'disputes.rate')],
                 [strings.pairs.resolved, lookup(disputes, 'disputes.resolved')],
                 [
-                  strings.pairs.resolutionMedian,
+                  strings.pairs.resolutionTypical,
                   lookup(disputes, 'disputes.resolution_p50'),
                 ],
                 [strings.pairs.devFees, lookup(fees, 'dev_fees.total_sats')],

@@ -258,7 +258,16 @@ describe('Volume · narrowed to one instance', () => {
 
     // Assert
     expect(valueOf(container, en.volumeView.completed)).toBe('40')
-    expect(valueOf(container, en.volumeView.p50)).toBe(printed('sats', 12_000))
+    expect(valueOf(container, en.volumeView.ticketTypical)).toBe(printed('sats', 12_000))
+  })
+
+  test('says what the 9-in-10 ticket is, rather than printing a bare figure', async () => {
+    // Arrange / Act
+    const container = await openNetwork()
+
+    // Assert
+    const sub = tile(container, en.volumeView.ticketTypical)?.querySelector('small')
+    expect(sub?.textContent).toBe(en.volumeView.ticketNineInTen(printed('sats', 30_000)))
   })
 
   test('shows the instance own volume from the comparison document', async () => {
@@ -306,7 +315,7 @@ describe('Volume · narrowed to one instance', () => {
     await waitFor(() => {
       expect(valueOf(container, en.volumeView.total)).toBe(printed('sats', 250_000))
     })
-    expect(tile(container, en.volumeView.p50)).toBeNull()
+    expect(tile(container, en.volumeView.ticketTypical)).toBeNull()
     expect(tile(container, en.volumeView.largest)).toBeNull()
     expect(textOf(container)).not.toContain(printed('sats', 600_000))
     expect(textOf(container)).not.toContain(printed('sats', 400_000))
@@ -366,7 +375,7 @@ describe('Volume · narrowed to one currency', () => {
       )
     })
     expect(valueOf(container, en.volumeView.completed)).toBe('30')
-    expect(valueOf(container, en.volumeView.p50)).toBe(
+    expect(valueOf(container, en.volumeView.ticketTypical)).toBe(
       printed('fiat', { amount: 12, code: 'ARS' }),
     )
     expect(valueOf(container, en.volumeView.ticketAvg)).toBe(

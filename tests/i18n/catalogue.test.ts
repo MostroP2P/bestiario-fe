@@ -79,6 +79,16 @@ describe('every catalogue', () => {
   })
 })
 
+describe('a figure is said in words', () => {
+  test.each(locales)('%s never shows a reader a percentile code', (tag, strings) => {
+    // `p50` and `p90` are the publisher's metric names, not words a reader
+    // knows. The page says "typical" and "9 in 10" instead.
+    for (const { path, value } of walk(strings)) {
+      expect(value, `${tag}${path}`).not.toMatch(/\bp\d{2}\b/i)
+    }
+  })
+})
+
 describe('a translation is a translation', () => {
   const shared = new Set([
     // Names, units and codes that are the same word everywhere.
