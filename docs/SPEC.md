@@ -426,6 +426,13 @@ The one screen a reader who wants a number, not a study, can stop at.
   `index.coverage`, so a short archive reads as a short archive rather than
   as a quiet network.
 
+- The pairs panel under the currency tables: ORDERS (canceled,
+  abandonment rate, average ticket, largest order, and the typical time to
+  complete, `timing.time_to_complete_p50` from the network `orders:<w>`)
+  beside DISPUTES · DEV FEES. The time to complete renders an empty sample
+  as not measured and a snapshot from before it was published as not
+  published (`tests/views/overview-timing.test.tsx`).
+
 - The open dispute book. Not a published figure and not governed by the
   window selector: it is read from the instances' own dispute events —
   Mostro's kind `38386`, `d` the dispute id and `s` its status — kept to the
@@ -456,12 +463,14 @@ the deltas. The chart is stacked completed/canceled over created.
 
 **Time to complete** — how long a trade takes once it is taken — closes the
 headline of the network reading: `timing.time_to_complete_p50` as the
-figure, qualified by `timing.time_to_complete_p90` and by
+figure, labelled the typical time to complete, qualified by
+`timing.time_to_complete_p90`, said as the time 9 in 10 trades finish
+within, and by
 `timing.time_to_complete_samples`, the number of trades it rests on, which
 is shown whenever the figure is. The publisher signs these (bestiario
 `docs/SPEC.md` §6.4) as a median and a p90 and deliberately no mean, which
-one trade held in a dispute would set; the page says _median_, not
-_average_. An empty sample is `0` with `missing` percentiles and renders
+one trade held in a dispute would set; the page says _typical_, never
+_average_, and its note says half finish faster and half slower. An empty sample is `0` with `missing` percentiles and renders
 as a count of zero beside a dash, never as `0 s`; a snapshot from before
 the publisher signed them carries none of the records and renders as not
 published.
@@ -474,7 +483,7 @@ coverage: only trades whose take bestiario observed live are timed, which
 is why fewer are timed than completed; sell orders taken with an invoice
 are not timed yet (MostroP2P/mostro#1129); and a trade that went to
 dispute counts its whole dispute time, so in a small sample one alone can
-set the median. The same document signs `time_to_fill`, `full_cycle` and
+set the figure. The same document signs `time_to_fill`, `full_cycle` and
 `time_to_cancel` in the same shape; they are not shown yet.
 
 ### 8.3 Volume — `#/volume`
@@ -482,7 +491,8 @@ set the median. The same document signs `time_to_fill`, `full_cycle` and
 `volume:<w>` plus its series. The largest document family — 82 metrics on
 the current archive — and the one that needs the most editing:
 
-- Headline: `volume.sats`, ticket average / p50 / p90, largest order.
+- Headline: `volume.sats`, ticket average, the typical ticket (p50) with
+  the 9-in-10 ticket (p90) beneath it, largest order.
 - Size distribution as a histogram over the five published buckets.
 - Buy/sell split.
 - **Per-fiat table**, one row per currency, built by grouping metric names
@@ -556,6 +566,14 @@ per unit.
 
 Locale: numbers are formatted with `Intl.NumberFormat` in the reader's
 locale; the *canonicalisation* of §5 never touches a formatter.
+
+Percentiles are said in words. `p50` and `p90` are the publisher's metric
+names, and no reader is assumed to know them: a `_p50` figure is labelled
+*typical* (the typical ticket, the typical time to complete), and a `_p90`
+figure is stated as what it means, *9 in 10* at or under it. Where a note
+explains the typical figure, it says what it is — half are below it, half
+above — rather than naming the statistic. No catalogue string carries a
+percentile code (`tests/i18n/catalogue.test.ts`).
 
 ---
 
