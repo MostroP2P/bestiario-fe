@@ -118,7 +118,7 @@ test.describe('narrowing a section', () => {
     ).toHaveAttribute('aria-label', en.inferred.label)
     await expect(tile(en.volumeView.devFees).locator('strong')).not.toHaveText('—')
     // The percentiles and the largest order are network-wide, and go.
-    await expect(tile(en.volumeView.p50)).toHaveCount(0)
+    await expect(tile(en.volumeView.ticketTypical)).toHaveCount(0)
     await expect(page.locator('.b-filter-note')).toHaveText(en.filters.noInstanceVolume)
   })
 

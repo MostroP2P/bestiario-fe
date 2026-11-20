@@ -273,9 +273,11 @@ export function Volume(props: { readonly window: Span }) {
                 sub: filters.fiat,
               },
               {
-                label: strings.volumeView.p50,
+                label: strings.volumeView.ticketTypical,
                 value: figure(fiat?.figures.get('ticket_p50')),
-                sub: figure(fiat?.figures.get('ticket_p90')),
+                sub: strings.volumeView.ticketNineInTen(
+                  figure(fiat?.figures.get('ticket_p90')),
+                ),
               },
               {
                 label: strings.volumeView.ticketAvg,
@@ -295,9 +297,11 @@ export function Volume(props: { readonly window: Span }) {
                 sub: figure(lookup(volume, 'volume.ticket_avg')),
               },
               {
-                label: strings.volumeView.p50,
+                label: strings.volumeView.ticketTypical,
                 value: figure(lookup(volume, 'volume.ticket_p50')),
-                sub: figure(lookup(volume, 'volume.ticket_p90')),
+                sub: strings.volumeView.ticketNineInTen(
+                  figure(lookup(volume, 'volume.ticket_p90')),
+                ),
               },
               {
                 label: strings.volumeView.largest,

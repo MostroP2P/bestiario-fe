@@ -221,7 +221,7 @@ async function chooseInstance(container: Element, name: string) {
 const TILE = () => en.ordersView.timeToComplete
 
 describe('Orders · time to complete', () => {
-  test('leads the network reading with the median, the p90 and how many were timed', async () => {
+  test('leads the network reading with the typical time, the 9-in-10 time and how many were timed', async () => {
     // Arrange / Act
     const { container } = render(<Orders window="30d" />)
 
@@ -230,7 +230,7 @@ describe('Orders · time to complete', () => {
       expect(valueOf(container, TILE())).toBe(printed('seconds', 486))
     })
     const sub = tile(container, TILE())?.querySelector('small')?.textContent ?? ''
-    expect(sub).toContain(en.ordersView.timeToCompleteP90)
+    expect(sub).toContain(en.ordersView.timeToCompleteNineInTen)
     expect(sub).toContain(printed('seconds', 1630))
     expect(sub).toContain(`${printed('count', 20)} ${en.ordersView.timeToCompleteTimed}`)
   })

@@ -165,8 +165,8 @@ export type Strings = {
     readonly shareOfCompletedSub: string
     /** How long a trade takes once taken: the median, SPEC 8.2. */
     readonly timeToComplete: string
-    /** The p90 beside it, as the tile's qualifier reads it. */
-    readonly timeToCompleteP90: string
+    /** Before the p90 beside it: the time 9 in 10 trades finish within. */
+    readonly timeToCompleteNineInTen: string
     /** After the count of trades the figures rest on. */
     readonly timeToCompleteTimed: string
     /** What the figure covers: live-observed takes, the missing paths, disputes. */
@@ -181,8 +181,10 @@ export type Strings = {
     readonly total: string
     readonly completed: string
     readonly ticketAvg: string
-    readonly p50: string
-    readonly p90: string
+    /** The median ticket, said as the typical one. */
+    readonly ticketTypical: string
+    /** The p90 ticket: 9 in 10 completed orders are at or under `amount`. */
+    readonly ticketNineInTen: (amount: string) => string
     readonly largest: string
     readonly splitHeading: string
     readonly buy: string
@@ -243,7 +245,7 @@ export type Strings = {
     readonly orders: (window: string) => string
     readonly ordersSub: (rate: string, total: string) => string
     readonly volume: (window: string) => string
-    readonly volumeSub: (p50: string) => string
+    readonly volumeSub: (typical: string) => string
     readonly disputes: (window: string) => string
     /**
      * `closed` is how many of the tile's own disputes have an outcome, never
@@ -288,11 +290,14 @@ export type Strings = {
     readonly abandonmentRate: string
     readonly ticketAvg: string
     readonly largest: string
+    /** `timing.time_to_complete_p50`, said as the typical time. */
+    readonly timeToComplete: string
     readonly disputesHeading: string
     readonly disputeRate: string
     /** `disputes.resolved`: outcomes dated in the window, whenever opened. */
     readonly resolved: string
-    readonly resolutionMedian: string
+    /** `disputes.resolution_p50`, said as the typical time. */
+    readonly resolutionTypical: string
     readonly devFees: string
     readonly coverage: string
     readonly impliedVolume: string

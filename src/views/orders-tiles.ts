@@ -128,7 +128,7 @@ export function ordersTiles(input: TileInput): readonly Tile[] {
                 label: strings.ordersView.timeToComplete,
                 value: { metric: completion.p50 },
                 sub: [
-                  strings.ordersView.timeToCompleteP90,
+                  strings.ordersView.timeToCompleteNineInTen,
                   { metric: completion.p90 },
                   '·',
                   { metric: completion.samples },
