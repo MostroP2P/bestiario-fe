@@ -104,6 +104,13 @@ export const it: Strings = {
       'Questa ripartizione è firmata per tutta la rete — non per istanza né per valuta — quindi non si restringe a nessuna delle due.',
     shareOfCompleted: 'Quota degli ordini completati',
     shareOfCompletedSub: 'Di quanto ha completato la rete in questa finestra',
+    timeToComplete: 'Tempo di completamento',
+    timeToCompleteP90: 'p90',
+    timeToCompleteTimed: 'scambi misurati',
+    timingNote:
+      'La mediana del tempo tra la presa di uno scambio e il suo completamento, sugli scambi la cui presa bestiario ha visto in diretta — per questo ne sono misurati meno di quanti ne sono completati. Gli ordini di vendita presi con una fattura non sono ancora misurati, e uno scambio finito in disputa conta tutto il tempo della disputa, quindi in un campione piccolo uno solo può fissare la mediana.',
+    timingNotNarrowed:
+      'I tempi degli scambi sono firmati per tutta la rete — non per istanza né per valuta — quindi non si restringono a nessuna delle due.',
   },
 
   volumeView: {

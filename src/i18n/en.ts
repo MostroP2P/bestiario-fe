@@ -110,6 +110,13 @@ export const en: Strings = {
       'This split is signed for the whole network — not per instance and not per currency — so it does not narrow to either.',
     shareOfCompleted: 'Share of completed orders',
     shareOfCompletedSub: 'Of what the network completed in this window',
+    timeToComplete: 'Time to complete',
+    timeToCompleteP90: 'p90',
+    timeToCompleteTimed: 'trades timed',
+    timingNote:
+      'The median time from a trade being taken to its completion, over the trades whose take bestiario saw live — which is why fewer are timed than completed. Sell orders taken with an invoice are not timed yet, and a trade that went to dispute counts its whole dispute time, so in a small sample one alone can set the median.',
+    timingNotNarrowed:
+      'Trade times are signed for the whole network — not per instance and not per currency — so they do not narrow to either.',
   },
 
   volumeView: {

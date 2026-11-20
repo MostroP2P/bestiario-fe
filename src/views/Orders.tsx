@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'preact/hooks'
 import { printAddress, windowAddress, type Span } from '~/nostr/address'
 import { codeBlocks, lookup, metricsOf } from '~/model/metrics'
+import { duration } from '~/model/timing'
+import { ordersTiles } from './orders-tiles'
 import { instanceRows, instanceOrders } from '~/model/instances'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
@@ -165,87 +167,18 @@ export function Orders(props: { readonly window: Span }) {
     }
   })()
 
-  /**
-   * The headline, narrowed by whatever the reader narrowed.
-   *
-   * Only what the publisher signs for a cut may stand under it. Per currency
-   * the archive counts completions and nothing else — `volume.fiat.<CODE>.orders`
-   * sums to `volume.completed` exactly — so created, canceled and in-progress
-   * have no per-currency reading and are not offered one. An instance in one
-   * currency is the richest cut of all, because its own document breaks its
-   * orders down by currency: created, completed and open right now.
-   */
-  const tiles: {
-    label: string
-    value: string | { metric: Metric | undefined }
-    sub: string | { metric: Metric | undefined }
-  }[] =
-    filters.instance && filters.fiat
-      ? [
-          {
-            label: strings.ordersView.created,
-            value: { metric: scopedFiat('created') },
-            sub: filters.fiat,
-          },
-          {
-            label: strings.ordersView.completed,
-            value: { metric: scopedFiat('completed') },
-            sub: filters.fiat,
-          },
-          {
-            label: strings.ordersView.openNow,
-            value: { metric: scopedFiat('open_now') },
-            sub: filters.fiat,
-          },
-        ]
-      : filters.fiat
-        ? [
-            {
-              label: strings.ordersView.created,
-              value: { metric: networkFiat('created') },
-              sub: filters.fiat,
-            },
-            {
-              label: strings.ordersView.completed,
-              value: { metric: completedInFiat },
-              sub: filters.fiat,
-            },
-            {
-              label: strings.ordersView.canceled,
-              value: { metric: networkFiat('canceled') },
-              sub: filters.fiat,
-            },
-            {
-              // Worked out here and not read anywhere, so it is handed over
-              // as the metric it is: marked inferred, and saying so to a
-              // reader who reaches it by keyboard as well as by pointer.
-              label: strings.ordersView.shareOfCompleted,
-              value: { metric: shareOfCompleted },
-              sub: strings.ordersView.shareOfCompletedSub,
-            },
-          ]
-        : [
-            {
-              label: strings.ordersView.created,
-              value: { metric: lookup(orders, 'orders.created') },
-              sub: strings.header.windows[props.window],
-            },
-            {
-              label: strings.ordersView.completed,
-              value: { metric: lookup(orders, 'orders.completed') },
-              sub: { metric: lookup(orders, 'orders.completion_rate') },
-            },
-            {
-              label: strings.ordersView.canceled,
-              value: { metric: lookup(orders, 'orders.canceled') },
-              sub: { metric: lookup(orders, 'orders.abandonment_rate') },
-            },
-            {
-              label: strings.ordersView.inProgressNow,
-              value: { metric: lookup(orders, 'orders.in_progress_now') },
-              sub: strings.ordersView.openNow,
-            },
-          ]
+  const tiles = ordersTiles({
+    strings,
+    window: props.window,
+    instance: filters.instance,
+    fiat: filters.fiat,
+    orders,
+    scopedFiat,
+    networkFiat,
+    completedInFiat,
+    shareOfCompleted,
+    completion: duration(network, 'time_to_complete'),
+  })
 
   return (
     <>
@@ -380,6 +313,13 @@ export function Orders(props: { readonly window: Span }) {
             {filters.instance || filters.fiat
               ? strings.ordersView.shareNotPerInstance
               : strings.ordersView.shareNote}
+          </p>
+
+          <h2 class="b-eyebrow b-section-head">{strings.ordersView.timeToComplete}</h2>
+          <p class="b-note-why b-section-note">
+            {filters.instance || filters.fiat
+              ? strings.ordersView.timingNotNarrowed
+              : strings.ordersView.timingNote}
           </p>
 
           <Pairs
