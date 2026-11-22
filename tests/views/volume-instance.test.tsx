@@ -524,3 +524,21 @@ describe('Volume · the currency headline in sats', () => {
     expect(sub?.textContent).toContain(en.absence.notPublished)
   })
 })
+
+describe('Volume · the reference currency', () => {
+  test('lists the converted total and no average ticket, which nobody signs', async () => {
+    // Arrange / Act
+    const container = await openNetwork()
+
+    // Assert — `volume.in.<CODE>.ticket_avg` is not published, on purpose
+    // (NOSTR-CLIENT §8.3): a mean over the priced orders alone would read as
+    // the typical trade. A row for it could only ever say "not published".
+    const heading = [...container.querySelectorAll('h2')].find(
+      (element) => element.textContent === en.volumeView.referenceHeading,
+    )
+    const labels = [
+      ...(heading?.parentElement?.querySelectorAll('.b-pair > span:first-child') ?? []),
+    ].map((label) => label.textContent)
+    expect(labels).toEqual([en.volumeView.total])
+  })
+})
