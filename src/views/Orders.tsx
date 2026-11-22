@@ -8,6 +8,7 @@ import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
 import type { Metric } from '~/nostr/documents'
 import { Figure } from '~/components/Figure'
+import { SwapTag } from '~/components/SwapTag'
 import { Kpi } from '~/components/Kpi'
 import { Pairs } from '~/components/Pairs'
 import { FilterBar, NO_FILTERS, type Filters } from '~/components/FilterBar'
@@ -254,7 +255,10 @@ export function Orders(props: { readonly window: Span }) {
               !chosen &&
               shown.map((row) => (
                 <p key={row.code} class="b-pair" style={{ margin: 0 }}>
-                  <span class="b-mono">{row.code}</span>
+                  <span class="b-mono">
+                    {row.code}
+                    <SwapTag code={row.code} />
+                  </span>
                   <span>
                     <Figure metric={row.figures.get('completed')} />
                   </span>
@@ -264,7 +268,10 @@ export function Orders(props: { readonly window: Span }) {
               chosen &&
               shownForInstance.map((currency) => (
                 <p key={currency.code} class="b-pair" style={{ margin: 0 }}>
-                  <span class="b-mono">{currency.code}</span>
+                  <span class="b-mono">
+                    {currency.code}
+                    <SwapTag code={currency.code} />
+                  </span>
                   <span>
                     <Figure metric={currency.figures.get('completed')} />
                   </span>

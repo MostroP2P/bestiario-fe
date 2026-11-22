@@ -749,6 +749,15 @@ body {
   line-height: 1.45;
 }
 
+/* A code that is a swap, not a currency: said in words, not by colour. */
+.b-swap-tag {
+  margin-left: 6px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
 /* ── feed ──────────────────────────────────────────────────────────── */
 
 .b-feed-head {

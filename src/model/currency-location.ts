@@ -28,9 +28,10 @@ const REGIONAL_CURRENCIES: Readonly<Record<string, RegionId>> = {
 
 /**
  * Codes that are not a country's money. Each would otherwise be misread by
- * the prefix rule — BTC as Bhutan, SAT as Saudi Arabia, USDT as the United
- * States — and a line drawn from any of them would be a claim about a place
- * that has nothing to do with the order.
+ * the prefix rule — BTC as Bhutan, SAT as Saudi Arabia, DOC as the
+ * Dominican Republic, USDT as the United States — and a line drawn from any
+ * of them would be a claim about a place that has nothing to do with the
+ * order.
  */
 const NON_FIAT: ReadonlySet<string> = new Set([
   'BTC',
@@ -43,6 +44,9 @@ const NON_FIAT: ReadonlySet<string> = new Set([
   'DAI',
   'USDT',
   'USDC',
+  'DOC',
+  'LBTC',
+  'RBTC',
 ])
 
 const UNKNOWN: Placement = { kind: 'unknown' }
