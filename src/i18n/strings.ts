@@ -181,7 +181,7 @@ export type Strings = {
     readonly total: string
     readonly completed: string
     readonly ticketAvg: string
-    /** The median ticket, said as the typical one. */
+    /** The median ticket (`ticket_p50`). Named as the median, never "typical". */
     readonly ticketTypical: string
     /** The p90 ticket: 9 in 10 completed orders are at or under `amount`. */
     readonly ticketNineInTen: (amount: string) => string
@@ -295,7 +295,7 @@ export type Strings = {
     readonly completed: string
     /** The Lightning side, in sats. */
     readonly sats: string
-    /** `ticket_p50`, said as the typical swap. */
+    /** `ticket_p50`, the median swap. */
     readonly typical: string
     /** `ticket_p90`, said as the size nine in ten stay under. */
     readonly nineInTen: string
@@ -318,13 +318,13 @@ export type Strings = {
     readonly abandonmentRate: string
     readonly ticketAvg: string
     readonly largest: string
-    /** `timing.time_to_complete_p50`, said as the typical time. */
+    /** `timing.time_to_complete_p50`, the median time. */
     readonly timeToComplete: string
     readonly disputesHeading: string
     readonly disputeRate: string
     /** `disputes.resolved`: outcomes dated in the window, whenever opened. */
     readonly resolved: string
-    /** `disputes.resolution_p50`, said as the typical time. */
+    /** `disputes.resolution_p50`, the median time. */
     readonly resolutionTypical: string
     readonly devFees: string
     readonly coverage: string

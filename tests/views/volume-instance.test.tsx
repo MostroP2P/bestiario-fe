@@ -532,7 +532,7 @@ describe('Volume · the reference currency', () => {
 
     // Assert — `volume.in.<CODE>.ticket_avg` is not published, on purpose
     // (NOSTR-CLIENT §8.3): a mean over the priced orders alone would read as
-    // the typical trade. A row for it could only ever say "not published".
+    // the usual trade. A row for it could only ever say "not published".
     const heading = [...container.querySelectorAll('h2')].find(
       (element) => element.textContent === en.volumeView.referenceHeading,
     )
