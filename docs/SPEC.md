@@ -505,6 +505,22 @@ the current archive — and the one that needs the most editing:
   archive published before the daemon carried the figure leaves it absent,
   so nothing may depend on its presence: the table opens on `orders`, not
   on a column that may not be there.
+- **Swaps**, apart from the currencies. A BTC-pegged code — `BTC`, `LBTC`,
+  `RBTC`, in any casing — is not a currency: such an order swaps Lightning
+  sats for bitcoin on-chain, on Liquid or on Rootstock, and Mostro counts
+  its fiat side in sats of the asset (protocol §11.9), which the publisher
+  signs with unit `sats`. Those rows leave the per-fiat table for a swaps
+  block: one row per rail with its completed count, Lightning sats, typical
+  swap and 9-in-10 swap. `total` is left out, being the other rail's side
+  of the same trades. A note under the block gives the swap count, so the
+  per-fiat table plus the swaps still add up to the completed figure; when
+  a rail did not publish its count, the note says why the swaps are apart
+  and gives no number. A reader narrowed to a swap code sees the swaps
+  block alone. Stablecoins (`USDT`, `USDC`, `DOC`) are priced as the dollar
+  they track, in whole coins (§11.8), and stay in the per-fiat table. The
+  Orders view keeps swap codes in its per-currency list, marked "swap" in
+  words, and the map places none of these codes in a country
+  (`tests/model/swaps.test.ts`, `tests/components/currency-volume.test.tsx`).
 - **Reference currency** (`volume.in.USD.*`): inferred, so it renders in the
   inferred style with its `error` text, and — on the current archive — as
   absence, because it is `missing`.
