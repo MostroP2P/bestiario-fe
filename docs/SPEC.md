@@ -523,7 +523,11 @@ the current archive — and the one that needs the most editing:
   (`tests/model/swaps.test.ts`, `tests/components/currency-volume.test.tsx`).
 - **Reference currency** (`volume.in.USD.*`): inferred, so it renders in the
   inferred style with its `error` text, and — on the current archive — as
-  absence, because it is `missing`.
+  absence, because it is `missing`. The block is the total alone. The
+  publisher signs no `volume.in.<CODE>.ticket_avg`, on purpose: a mean over
+  the orders that happened to have a rate would read as the typical trade on
+  the network (bestiario's NOSTR-CLIENT §8.3). A row for it could only ever
+  say "not published" (`tests/views/volume-instance.test.tsx`).
 
 The `volume.fiat.<CODE>.<figure>` and `volume.in.<CODE>.<figure>` groupings
 are the only place the site parses a metric name. That parsing lives in one
