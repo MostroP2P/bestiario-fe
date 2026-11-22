@@ -284,6 +284,34 @@ export type Strings = {
     readonly sortBy: (column: string) => string
   }
 
+  /**
+   * Swaps between Lightning and bitcoin on another rail: the BTC-pegged
+   * rows of the per-currency family, shown apart from the currencies.
+   */
+  readonly swaps: {
+    readonly heading: string
+    readonly caption: string
+    readonly rail: string
+    readonly completed: string
+    /** The Lightning side, in sats. */
+    readonly sats: string
+    /** `ticket_p50`, said as the typical swap. */
+    readonly typical: string
+    /** `ticket_p90`, said as the size nine in ten stay under. */
+    readonly nineInTen: string
+    readonly rails: {
+      readonly onchain: string
+      readonly liquid: string
+      readonly rootstock: string
+    }
+    /** Why the swaps are not in the currency table, with their count. */
+    readonly note: (count: string) => string
+    /** The same, when a rail did not publish its count. */
+    readonly noteUncounted: string
+    /** The short label beside a swap code in a list of currencies. */
+    readonly tag: string
+  }
+
   readonly pairs: {
     readonly ordersHeading: string
     readonly canceled: string

@@ -18,7 +18,7 @@ import { formatMetric, formatSum } from '~/model/format'
 import { useStrings } from '~/i18n/context'
 import { payloadOf, useStore } from '~/store/useStore'
 import { CurrencyMatrix } from '~/components/CurrencyMatrix'
-import { FiatTable } from '~/components/FiatTable'
+import { CurrencyVolume } from '~/components/CurrencyVolume'
 import { OpenDisputes } from '~/components/OpenDisputes'
 import { Kpi } from '~/components/Kpi'
 import { Pairs } from '~/components/Pairs'
@@ -404,8 +404,7 @@ export function Overview(props: { readonly window: Span }) {
           <h2 class="b-eyebrow b-section-head">{strings.matrix.heading}</h2>
           <CurrencyMatrix matrix={matrix} loading={matrixLoading} />
 
-          <h2 class="b-eyebrow b-section-head">{strings.fiat.heading}</h2>
-          <FiatTable rows={currencies} loading={loading} />
+          <CurrencyVolume rows={currencies} loading={loading} />
 
           <div class="b-split">
             <Pairs

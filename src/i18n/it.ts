@@ -226,6 +226,26 @@ export const it: Strings = {
     empty: 'Niente da segnalare in questa finestra.',
   },
 
+  swaps: {
+    heading: 'SWAP',
+    caption: 'Swap tra Lightning e bitcoin su un’altra rete nella finestra scelta',
+    rail: 'scambiato con',
+    completed: 'swap',
+    sats: 'sats',
+    typical: 'swap tipico',
+    nineInTen: '9 su 10 sotto',
+    rails: {
+      onchain: 'Bitcoin on-chain',
+      liquid: 'Bitcoin su Liquid',
+      rootstock: 'Bitcoin su Rootstock',
+    },
+    note: (count) =>
+      `${count} degli ordini completati sono stati swap di sats Lightning per bitcoin su un’altra rete. Sono contati qui e non nella tabella delle valute; le due insieme danno gli ordini completati.`,
+    noteUncounted:
+      'Gli swap di sats Lightning per bitcoin su un’altra rete sono contati qui e non nella tabella delle valute; le due insieme danno gli ordini completati.',
+    tag: 'swap',
+  },
+
   pairs: {
     ordersHeading: 'ORDINI',
     canceled: 'annullati',

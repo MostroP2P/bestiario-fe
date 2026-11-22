@@ -10,7 +10,7 @@ import { payloadOf, useStore } from '~/store/useStore'
 import type { Metric } from '~/nostr/documents'
 import { Kpi } from '~/components/Kpi'
 import { Pairs } from '~/components/Pairs'
-import { FiatTable } from '~/components/FiatTable'
+import { CurrencyVolume } from '~/components/CurrencyVolume'
 import { FilterBar, NO_FILTERS, type Filters } from '~/components/FilterBar'
 import { SkeletonKpi } from '~/components/Skeleton'
 
@@ -395,8 +395,7 @@ export function Volume(props: { readonly window: Span }) {
             </>
           ) : (
             <>
-              <h2 class="b-eyebrow b-section-head">{strings.fiat.heading}</h2>
-              <FiatTable rows={shown} loading={loading} />
+              <CurrencyVolume rows={shown} loading={loading} />
             </>
           )}
         </div>
