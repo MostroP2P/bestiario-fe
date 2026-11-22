@@ -427,7 +427,7 @@ The one screen a reader who wants a number, not a study, can stop at.
   as a quiet network.
 
 - The pairs panel under the currency tables: ORDERS (canceled,
-  abandonment rate, average ticket, largest order, and the typical time to
+  abandonment rate, average ticket, largest order, and the median time to
   complete, `timing.time_to_complete_p50` from the network `orders:<w>`)
   beside DISPUTES · DEV FEES. The time to complete renders an empty sample
   as not measured and a snapshot from before it was published as not
@@ -463,13 +463,13 @@ the deltas. The chart is stacked completed/canceled over created.
 
 **Time to complete** — how long a trade takes once it is taken — closes the
 headline of the network reading: `timing.time_to_complete_p50` as the
-figure, labelled the typical time to complete, qualified by
+figure, labelled the median time to complete, qualified by
 `timing.time_to_complete_p90`, said as the time 9 in 10 trades finish
 within, and by
 `timing.time_to_complete_samples`, the number of trades it rests on, which
 is shown whenever the figure is. The publisher signs these (bestiario
 `docs/SPEC.md` §6.4) as a median and a p90 and deliberately no mean, which
-one trade held in a dispute would set; the page says _typical_, never
+one trade held in a dispute would set; the page says _median_, never
 _average_, and its note says half finish faster and half slower. An empty sample is `0` with `missing` percentiles and renders
 as a count of zero beside a dash, never as `0 s`; a snapshot from before
 the publisher signed them carries none of the records and renders as not
@@ -491,7 +491,7 @@ set the figure. The same document signs `time_to_fill`, `full_cycle` and
 `volume:<w>` plus its series. The largest document family — 82 metrics on
 the current archive — and the one that needs the most editing:
 
-- Headline: `volume.sats`, ticket average, the typical ticket (p50) with
+- Headline: `volume.sats`, ticket average, the median ticket (p50) with
   the 9-in-10 ticket (p90) beneath it, largest order.
 - Size distribution as a histogram over the five published buckets.
 - Buy/sell split.
@@ -510,7 +510,7 @@ the current archive — and the one that needs the most editing:
   sats for bitcoin on-chain, on Liquid or on Rootstock, and Mostro counts
   its fiat side in sats of the asset (protocol §11.9), which the publisher
   signs with unit `sats`. Those rows leave the per-fiat table for a swaps
-  block: one row per rail with its completed count, Lightning sats, typical
+  block: one row per rail with its completed count, Lightning sats, median
   swap and 9-in-10 swap. `total` is left out, being the other rail's side
   of the same trades. A note under the block gives the swap count, so the
   per-fiat table plus the swaps still add up to the completed figure; when
@@ -525,7 +525,7 @@ the current archive — and the one that needs the most editing:
   inferred style with its `error` text, and — on the current archive — as
   absence, because it is `missing`. The block is the total alone. The
   publisher signs no `volume.in.<CODE>.ticket_avg`, on purpose: a mean over
-  the orders that happened to have a rate would read as the typical trade on
+  the orders that happened to have a rate would read as the usual trade on
   the network (bestiario's NOSTR-CLIENT §8.3). A row for it could only ever
   say "not published" (`tests/views/volume-instance.test.tsx`).
 
@@ -589,11 +589,12 @@ locale; the *canonicalisation* of §5 never touches a formatter.
 
 Percentiles are said in words. `p50` and `p90` are the publisher's metric
 names, and no reader is assumed to know them: a `_p50` figure is labelled
-*typical* (the typical ticket, the typical time to complete), and a `_p90`
+the *median* (the median ticket, the median time to complete), and a `_p90`
 figure is stated as what it means, *9 in 10* at or under it. Where a note
-explains the typical figure, it says what it is — half are below it, half
-above — rather than naming the statistic. No catalogue string carries a
-percentile code (`tests/i18n/catalogue.test.ts`).
+explains the median, it also says what it means — half are below it, half
+above. The word *typical* is not used: readers took it for the average, which
+sits in the next row. No catalogue string carries a percentile code or
+*typical* in any language (`tests/i18n/catalogue.test.ts`).
 
 ---
 
