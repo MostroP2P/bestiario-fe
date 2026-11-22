@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { readFileSync } from 'node:fs'
 import {
+  codeBlocks,
   disputeOutcomes,
   fiatRows,
   indexedFamily,
@@ -57,7 +58,7 @@ describe('fiatRows', () => {
     const expected = [
       ...new Set(
         volume
-          .map((metric) => /^volume\.fiat\.([A-Z]{3})\./.exec(metric.name)?.[1])
+          .map((metric) => /^volume\.fiat\.([^.]+)\./.exec(metric.name)?.[1])
           .filter((code): code is string => code !== undefined),
       ),
     ].sort()
@@ -93,12 +94,60 @@ describe('fiatRows', () => {
     expect(fiatRows(odd)).toEqual([])
   })
 
+  test('keeps a currency whose code is longer than three letters', () => {
+    // Mostro trades USDT, USDC, LBTC and RBTC; a three-letter-only pattern
+    // dropped them and the table no longer added up to the completed count.
+    const metrics: Metric[] = [
+      { name: 'volume.fiat.USD.orders', kind: 'observed', unit: 'count', value: 69 },
+      { name: 'volume.fiat.USDT.orders', kind: 'observed', unit: 'count', value: 58 },
+      { name: 'volume.fiat.USDC.orders', kind: 'observed', unit: 'count', value: 5 },
+      { name: 'volume.fiat.RBTC.sats', kind: 'observed', unit: 'sats', value: 1_000 },
+    ]
+
+    const rows = fiatRows(metrics)
+
+    expect(rows.map((row) => row.code)).toEqual(['RBTC', 'USD', 'USDC', 'USDT'])
+    expect(rows.find((row) => row.code === 'USDT')?.figures.get('orders')?.value).toBe(58)
+  })
+
   test('does not mistake the reference currency for a traded one', () => {
     // `volume.in.USD.*` is inferred and is a different family; every row
     // here comes from `volume.fiat.*`, which is observed.
     for (const row of fiatRows(volume)) {
       expect(row.figures.get('total')?.kind, row.code).toBe('observed')
     }
+  })
+})
+
+describe('codeBlocks', () => {
+  const count = (name: string, value: number): Metric => ({
+    name,
+    kind: 'observed',
+    unit: 'count',
+    value,
+  })
+
+  test('opens a block for a code longer than three letters', () => {
+    const metrics = [
+      count('orders.completed', 1444),
+      count('orders.COP.completed', 386),
+      count('orders.USDT.completed', 58),
+    ]
+
+    const blocks = codeBlocks(metrics, 'orders.')
+
+    expect(blocks.map((block) => block.code)).toEqual(['COP', 'USDT'])
+    expect(blocks[1]!.figures.get('completed')?.value).toBe(58)
+  })
+
+  test('still opens no block for a figure of the family itself', () => {
+    const metrics = [
+      count('orders.completion_rate', 1),
+      count('orders.ars.created', 1),
+      count('orders.TOOLONG.created', 1),
+    ]
+
+    expect(codeBlocks(metrics, 'orders.')).toEqual([])
   })
 })
 

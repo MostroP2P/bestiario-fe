@@ -124,10 +124,19 @@ describe('currencyOrders', () => {
     const metrics = [
       count('orders.completion_rate', 1),
       count('orders.ars.created', 1),
-      count('orders.ARSX.created', 1),
+      count('orders.TOOLONG.created', 1),
     ]
 
     expect(currencyOrders(metrics)).toEqual([])
+  })
+
+  test('reads a code longer than three letters, like a stablecoin', () => {
+    const metrics = [count('orders.USDT.created', 4), count('orders.RBTC.completed', 1)]
+
+    expect(currencyOrders(metrics)).toEqual([
+      { code: 'RBTC', created: 0, completed: 1, openNow: 0 },
+      { code: 'USDT', created: 4, completed: 0, openNow: 0 },
+    ])
   })
 
   test('orders the currencies, so the map is stable', () => {
