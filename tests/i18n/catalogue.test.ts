@@ -82,10 +82,36 @@ describe('every catalogue', () => {
 describe('a figure is said in words', () => {
   test.each(locales)('%s never shows a reader a percentile code', (tag, strings) => {
     // `p50` and `p90` are the publisher's metric names, not words a reader
-    // knows. The page says "typical" and "9 in 10" instead.
+    // knows. The page says "median" and "9 in 10" instead.
     for (const { path, value } of walk(strings)) {
       expect(value, `${tag}${path}`).not.toMatch(/\bp\d{2}\b/i)
     }
+  })
+})
+
+describe('a p50 figure is the median', () => {
+  // "Typical" was read as the average, and the average ticket sits in the
+  // row next to it. The median is named as what it is, in every language.
+  const TYPICAL = /\b(typical|típic[oa]s?|tipic[oa]s?|typiques?)\b/i
+  const MEDIAN = /median|mediana|médian/i
+
+  test.each(locales)('%s never calls a figure typical', (tag, strings) => {
+    for (const { path, value } of walk(strings)) {
+      expect(value, `${tag}${path}`).not.toMatch(TYPICAL)
+    }
+  })
+
+  test.each(locales)('%s labels every p50 figure as the median', (tag, strings) => {
+    const labels = [
+      strings.volumeView.ticketTypical,
+      strings.kpi.volumeSub('X'),
+      strings.ordersView.timeToComplete,
+      strings.ordersView.timingNote,
+      strings.swaps.typical,
+      strings.pairs.timeToComplete,
+      strings.pairs.resolutionTypical,
+    ]
+    for (const label of labels) expect(label, tag).toMatch(MEDIAN)
   })
 })
 

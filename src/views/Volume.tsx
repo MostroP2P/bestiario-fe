@@ -428,7 +428,7 @@ export function Volume(props: { readonly window: Span }) {
             // No average ticket here: the publisher leaves
             // `volume.in.<CODE>.ticket_avg` out on purpose (NOSTR-CLIENT
             // §8.3), since a mean over the priced orders alone would read as
-            // the typical trade on the network.
+            // the usual trade on the network.
             rows={[[strings.volumeView.total, networkOnly('volume.in.USD.total')]]}
           />
           <p class="b-note-why b-section-note">{strings.volumeView.referenceNote}</p>
