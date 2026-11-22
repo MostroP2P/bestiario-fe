@@ -63,7 +63,17 @@ export type FiatRow = {
   readonly figures: ReadonlyMap<string, Metric>
 }
 
-const FIAT_NAME = /^volume\.fiat\.([A-Z]{3})\.(.+)$/
+/**
+ * A currency code as the documents write one: the code the order carried,
+ * in uppercase. Usually three letters, but Mostro trades pegged codes that
+ * are longer — `USDT`, `USDC`, `LBTC`, `RBTC` — and a three-letter pattern
+ * dropped them, so the per-currency table stopped adding up to the
+ * completed count. Figure names are lowercase, so `completion_rate` or
+ * `created` still cannot pass for a code.
+ */
+export const CURRENCY_CODE = /^[A-Z]{3,5}$/
+
+const FIAT_NAME = /^volume\.fiat\.([A-Z]{3,5})\.(.+)$/
 
 /**
  * `volume.fiat.<CODE>.<figure>` grouped into one row per currency, ordered by
@@ -115,9 +125,6 @@ export function labelledBlocks(
   return blocks
 }
 
-/** A currency code as the documents write one: three uppercase letters. */
-const CODE = /^[A-Z]{3}$/
-
 /**
  * The currency blocks of a family — `orders.ARS.completed`,
  * `orders.EUR.created` — one per code, with the figures as they were
@@ -133,7 +140,7 @@ export function codeBlocks(
   prefix: string,
 ): { code: string; figures: ReadonlyMap<string, Metric> }[] {
   return [...labelledBlocks(metrics, prefix).entries()]
-    .filter(([code]) => CODE.test(code))
+    .filter(([code]) => CURRENCY_CODE.test(code))
     .map(([code, figures]) => ({ code, figures }))
 }
 
