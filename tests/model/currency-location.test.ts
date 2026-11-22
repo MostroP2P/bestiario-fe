@@ -74,4 +74,13 @@ describe('currencyPlacement · not a country currency', () => {
     expect(currencyPlacement('USDT')).toEqual({ kind: 'unknown' })
     expect(currencyPlacement('USDC')).toEqual({ kind: 'unknown' })
   })
+
+  test('refuses DOC, a dollar stablecoin the prefix rule would read as the Dominican Republic', () => {
+    expect(currencyPlacement('DOC')).toEqual({ kind: 'unknown' })
+  })
+
+  test('refuses bitcoin on Liquid and Rootstock, which belong to no country', () => {
+    expect(currencyPlacement('LBTC')).toEqual({ kind: 'unknown' })
+    expect(currencyPlacement('RBTC')).toEqual({ kind: 'unknown' })
+  })
 })
