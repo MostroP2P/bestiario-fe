@@ -20,7 +20,7 @@
  * They are told apart by the shape of the segment, not by position.
  */
 import type { Metric } from '~/nostr/documents'
-import { labelledBlocks } from '~/model/metrics'
+import { CURRENCY_CODE, labelledBlocks } from '~/model/metrics'
 
 export type InstanceRow = {
   /** The label the publisher keys the block by. Not an address. */
@@ -71,9 +71,6 @@ export type CurrencyOrders = {
   readonly openNow: number
 }
 
-/** A currency code as the documents write one: three uppercase letters. */
-const CODE = /^[A-Z]{3}$/
-
 /**
  * The currencies one instance traded, from its scoped orders document.
  *
@@ -89,7 +86,7 @@ export function currencyOrders(metrics: readonly Metric[]): CurrencyOrders[] {
     const dot = rest.indexOf('.')
     if (dot <= 0) continue
     const code = rest.slice(0, dot)
-    if (!CODE.test(code)) continue
+    if (!CURRENCY_CODE.test(code)) continue
     const figure = rest.slice(dot + 1)
     const block = blocks.get(code) ?? new Map<string, Metric>()
     block.set(figure, metric)
