@@ -254,12 +254,11 @@ describe('Dashboard · real figures', () => {
     // about now, and no instance has said anything about its orders.
     const { container } = render(<Dashboard />)
 
-    // Everything has answered once the table lists the window's currencies
-    // and the instances' live layer has spoken (the dispute book is empty).
+    // The count only leaves its skeleton once the instances have answered
+    // for their orders, so it is the barrier the map's emptiness waits on.
     await waitFor(() => {
       expect(container.querySelectorAll('.b-table tbody th').length).toBeGreaterThan(5)
-      const said = [...container.querySelectorAll('.b-empty')].map((n) => n.textContent)
-      expect(said).toContain(en.disputes.empty(2))
+      expect(container.querySelector('.b-map-count strong')).not.toBeNull()
     })
     expect(container.querySelector('.b-map-count strong')?.textContent).toBe('0')
     expect(container.querySelectorAll('[data-layer="currencies"] > g')).toHaveLength(0)
@@ -307,6 +306,21 @@ describe('Dashboard · real figures', () => {
     expect(container.querySelector('.b-map-canvas svg')).toBeNull()
   })
 
+  test('draws the map even when the window has no orders document', async () => {
+    // Arrange — the map is about now; a window the archive has nothing for
+    // must not hold it as a skeleton.
+    served = fixtures.filter((e) => dOf(e) !== 'orders:30d')
+
+    // Act
+    const { container } = render(<Dashboard />)
+
+    // Assert
+    await waitFor(() => {
+      expect(container.querySelector('.b-map-canvas svg')).not.toBeNull()
+    })
+    expect(container.querySelector('.b-map-count strong')?.textContent).toBe('0')
+  })
+
   test('asks every instance the archive names for its own order events', async () => {
     // Arrange / Act
     render(<Dashboard />)
@@ -345,10 +359,11 @@ describe('Dashboard · real figures', () => {
     const { container } = render(<Dashboard />)
 
     // Assert
+    // The count only leaves its skeleton once the instances have answered
+    // for their orders, so it is the barrier the map's emptiness waits on.
     await waitFor(() => {
       expect(container.querySelectorAll('.b-table tbody th').length).toBeGreaterThan(5)
-      const said = [...container.querySelectorAll('.b-empty')].map((n) => n.textContent)
-      expect(said).toContain(en.disputes.empty(2))
+      expect(container.querySelector('.b-map-count strong')).not.toBeNull()
     })
     expect(container.querySelectorAll('[data-layer="currencies"] > g')).toHaveLength(0)
   })

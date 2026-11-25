@@ -149,3 +149,34 @@ describe('the live order layer', () => {
     expect(pool.closedSubscriptions()).toBe(1)
   })
 })
+
+describe('a watch that comes back to the same instances', () => {
+  test('never lets a query from an earlier watch overwrite the current one', async () => {
+    // Arrange — the first query for these instances is slow and answers with
+    // an order the current watch has since seen canceled.
+    const answers: ((events: Event[]) => void)[] = []
+    const relays: Relays = {
+      query: (filter) =>
+        filter.kinds?.includes(MOSTRO_ORDER_KIND)
+          ? new Promise<Event[]>((resolve) => answers.push(resolve))
+          : Promise.resolve([]),
+      subscribe: () => () => {},
+      states: (): RelayState[] => [],
+      close() {},
+    }
+    const subject = createStore(relays, PUBLISHER_PUBKEY)
+    void subject.watchInstances(INSTANCES)
+    void subject.watchInstances([])
+    const current = subject.watchInstances(INSTANCES)
+    answers[1]!([orderEvent({ id: 'a', status: 'canceled', createdAt: 2_000 })])
+    await current
+
+    // Act — the first watch's query finally answers.
+    answers[0]!([orderEvent({ id: 'a', status: 'in-progress', createdAt: 1_000 })])
+    await Promise.resolve()
+    await Promise.resolve()
+
+    // Assert
+    expect(subject.orders.value.map((order) => order.status)).toEqual(['canceled'])
+  })
+})

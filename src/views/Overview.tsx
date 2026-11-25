@@ -200,8 +200,12 @@ export function Overview(props: { readonly window: Span }) {
   }, [flows])
 
   /** An empty map is only news once the instances are named and have answered. */
+  // Not `loading`: that waits on the window's orders document, and the map
+  // is about now, whatever the archive holds for the window.
   const marketsLoading =
-    loading || !settled(windowAddress('instances', window_)) || !ordersReady
+    boot.status === 'loading' ||
+    !settled(windowAddress('instances', window_)) ||
+    !ordersReady
 
   const graceMinutes = Math.round(MAP.graceMs / 60_000)
 

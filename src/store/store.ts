@@ -110,6 +110,12 @@ export function createStore(relays: Relays, publisher: string): Store {
    * panel that an empty book is an answer and not a wait.
    */
   let watched: string | null = null
+  /**
+   * Advances on every watch. A query answers for the watch that sent it, and
+   * a watch that comes back to the same set is still a newer watch: its key
+   * matches, its generation does not.
+   */
+  let generation = 0
 
   const setDoc = (d: string, state: DocState) => {
     const next = new Map(documents.value)
@@ -242,7 +248,7 @@ export function createStore(relays: Relays, publisher: string): Store {
    * trades must not send them all to fill a panel about now.
    */
   async function follow<T extends Revision>(
-    key: string,
+    owner: number,
     authors: readonly string[],
     kind: number,
     windowMs: number,
@@ -284,7 +290,7 @@ export function createStore(relays: Relays, publisher: string): Store {
     // The set may have moved while the query was in flight; the newer watch
     // owns the signal and has already closed the subscription above, and this
     // one's events belong to nobody.
-    if (watched !== key) return
+    if (owner !== generation) return
     refreshRelays()
     for (const event of events) take(event)
     ready.value = true
@@ -299,6 +305,7 @@ export function createStore(relays: Relays, publisher: string): Store {
     const key = [...authors].sort().join(' ')
     if (key === watched) return
     watched = key
+    const owner = ++generation
 
     closeLive()
     disputes.value = []
@@ -314,7 +321,7 @@ export function createStore(relays: Relays, publisher: string): Store {
 
     await Promise.all([
       follow(
-        key,
+        owner,
         authors,
         MOSTRO_DISPUTE_KIND,
         DISPUTES.windowMs,
@@ -323,7 +330,7 @@ export function createStore(relays: Relays, publisher: string): Store {
         disputesReady,
       ),
       follow(
-        key,
+        owner,
         authors,
         MOSTRO_ORDER_KIND,
         MAP.liveWindowMs,
@@ -366,6 +373,7 @@ export function createStore(relays: Relays, publisher: string): Store {
       disputesReady.value = false
       ordersReady.value = false
       watched = null
+      generation += 1
       relays.close()
     },
   }
