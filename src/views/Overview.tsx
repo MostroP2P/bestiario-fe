@@ -258,7 +258,9 @@ export function Overview(props: { readonly window: Span }) {
     mapHeight,
   ])
 
-  const mapReady = atlasState.status === 'ready' && projection !== null && !loading
+  // Not before the instances have answered: an empty map drawn then would
+  // announce no activity that nobody reported.
+  const mapReady = atlasState.status === 'ready' && projection !== null && !marketsLoading
 
   return (
     <>

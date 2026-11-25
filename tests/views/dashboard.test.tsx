@@ -15,6 +15,8 @@ const dOf = (event: Event) => event.tags.find((tag) => tag[0] === 'd')?.[1] ?? '
 let served: Event[] = fixtures
 /** Mostro's own events — the live layer, asked for by kind and not by `d`. */
 let servedMostro: Event[] = []
+/** When true, the instances' order query never answers: a slow relay. */
+let ordersStall = false
 /** Every filter the site put on the wire, so a test can read what it asked. */
 const asked: Filter[] = []
 
@@ -24,6 +26,7 @@ vi.mock('~/nostr/pool', () => ({
       asked.push(filter)
       const kinds = filter.kinds ?? []
       if (!kinds.includes(30666)) {
+        if (ordersStall && kinds.includes(38383)) return new Promise<Event[]>(() => {})
         return Promise.resolve(servedMostro.filter((e) => kinds.includes(e.kind)))
       }
       const wanted = filter['#d']
@@ -83,6 +86,7 @@ beforeAll(() => {
 beforeEach(() => {
   served = fixtures
   servedMostro = []
+  ordersStall = false
   asked.length = 0
   resetStore()
   clearCache()
@@ -283,6 +287,24 @@ describe('Dashboard · real figures', () => {
       expect(container.querySelector('.b-dispute-scroll, .b-empty')).not.toBeNull()
     })
     expect(container.textContent).not.toContain(archived.slice(0, 8))
+  })
+
+  test('keeps the map a skeleton until the instances have answered for their orders', async () => {
+    // Arrange — the archive and the dispute book answer; the order query
+    // does not. An empty map now would claim no activity nobody reported.
+    ordersStall = true
+
+    // Act
+    const { container } = render(<Dashboard />)
+
+    // Assert
+    await waitFor(() => {
+      expect(asked.some((filter) => filter.kinds?.includes(38383))).toBe(true)
+      const said = [...container.querySelectorAll('.b-empty')].map((n) => n.textContent)
+      expect(said).toContain(en.disputes.empty(2))
+    })
+    expect(container.querySelector('.b-skeleton-map')).not.toBeNull()
+    expect(container.querySelector('.b-map-canvas svg')).toBeNull()
   })
 
   test('asks every instance the archive names for its own order events', async () => {
