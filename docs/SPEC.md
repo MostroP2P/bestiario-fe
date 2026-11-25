@@ -447,7 +447,7 @@ The one screen a reader who wants a number, not a study, can stop at.
   revision per order. One line per order, from the currency's country to
   the instance, while the order is a trade in course (`in-progress`,
   `active`, `fiat-sent`, `waiting-buyer-invoice`, `waiting-payment`) and for
-  five minutes after it completes (`success`, `completed-by-admin`,
+  an hour after it completes (`success`, `completed-by-admin`,
   `settled-by-admin`). An order nobody has taken (`pending`), and one that
   was canceled or expired, draws nothing. A trade in course reaches back two
   days, for the same reason the book does. A currency is on the map, and in

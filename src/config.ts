@@ -77,9 +77,10 @@ export const BACKOFF = {
  * on the map.
  *
  * `graceMs` is how long a completed order keeps its line after it settles.
- * It is deliberately a knob: at today's volume five minutes reads as a
- * network doing something, and at ten times today's volume it would read as
- * noise, at which point this drops to a minute without touching the renderer.
+ * It is deliberately a knob: at today's volume an hour keeps the map
+ * reading as a network doing something, and at many times today's volume it
+ * would read as noise, at which point this drops without touching the
+ * renderer.
  *
  * `liveWindowMs` bounds a trade in course the same way the dispute book is
  * bounded: an instance that stops publishing would otherwise leave a line up
@@ -87,7 +88,7 @@ export const BACKOFF = {
  * holding years of orders does not send them all to draw a map about now.
  */
 export const MAP = {
-  graceMs: 5 * 60 * 1000,
+  graceMs: 60 * 60 * 1000,
   liveWindowMs: 2 * 24 * 60 * 60 * 1000,
   /** Statuses of a trade in course: the order has been taken and is not done. */
   liveStatuses: [

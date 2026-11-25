@@ -6,7 +6,7 @@
  * (kind 38383). A line's lifetime is not the order's: an order that settles
  * keeps its line for a grace period, so a network that completes quickly
  * still reads as a network doing something. That period is the knob in
- * `config.ts` — five minutes at today's volume, a minute at ten times it —
+ * `config.ts` — an hour at today's volume, less as the volume grows —
  * and nothing else in the renderer knows about time.
  *
  * A live order is only live while its instance has spoken of it recently:

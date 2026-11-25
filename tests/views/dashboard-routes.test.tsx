@@ -71,7 +71,7 @@ function orderEvents(): Event[] {
     orderEvent(AR_KEY, 'brl-1', 'BRL', 'pending', 1 * MINUTE),
     orderEvent(VE_KEY, 'cup-1', 'CUP', 'in-progress', 4 * MINUTE),
     orderEvent(VE_KEY, 'cup-1', 'CUP', 'canceled', 2 * MINUTE),
-    orderEvent(VE_KEY, 'eur-1', 'EUR', 'success', 6 * MINUTE),
+    orderEvent(VE_KEY, 'eur-1', 'EUR', 'success', 61 * MINUTE),
   ]
 }
 
@@ -322,7 +322,7 @@ describe('the map, from the instances own orders', () => {
 
     await waitFor(() => {
       expect(container.querySelector('.b-map-caption')?.textContent ?? '').toMatch(
-        /5 minutes/,
+        /60 minutes/,
       )
     })
   })
