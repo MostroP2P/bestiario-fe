@@ -1,61 +1,16 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import type { Event, Filter } from 'nostr-tools'
+import type { Event } from 'nostr-tools'
+import { behaviour, event, resetBehaviour } from './fake-pool'
 
-/** What the fake SimplePool will do. Set per test before opening relays. */
-let behaviour: {
-  query: (filter: Filter) => Promise<Event[]>
-  subscribeCalls: { filter: Filter; onevent: (event: Event) => void }[]
-  closed: string[][]
-  subscriptionsClosed: number
-}
-
-vi.mock('nostr-tools/pool', () => ({
-  SimplePool: class {
-    querySync(_relays: string[], filter: Filter) {
-      return behaviour.query(filter)
-    }
-    subscribe(
-      _relays: string[],
-      filter: Filter,
-      handlers: { onevent: (e: Event) => void },
-    ) {
-      behaviour.subscribeCalls.push({ filter, onevent: handlers.onevent })
-      return {
-        close: () => {
-          behaviour.subscriptionsClosed++
-        },
-      }
-    }
-    close(relays: string[]) {
-      behaviour.closed.push(relays)
-    }
-  },
+vi.mock('nostr-tools/pool', async () => ({
+  SimplePool: (await import('./fake-pool')).FakePool,
 }))
 
 const { openRelays } = await import('~/nostr/pool')
 
 const RELAYS = ['wss://one', 'wss://two']
 
-function event(createdAt: number): Event {
-  return {
-    id: 'x',
-    pubkey: 'p',
-    created_at: createdAt,
-    kind: 30666,
-    tags: [['d', 'index']],
-    content: '{}',
-    sig: 's',
-  }
-}
-
-beforeEach(() => {
-  behaviour = {
-    query: () => Promise.resolve([]),
-    subscribeCalls: [],
-    closed: [],
-    subscriptionsClosed: 0,
-  }
-})
+beforeEach(resetBehaviour)
 
 afterEach(() => vi.clearAllMocks())
 
