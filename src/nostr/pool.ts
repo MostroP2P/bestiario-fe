@@ -25,7 +25,11 @@ export type RelayState = {
 }
 
 export interface Relays {
-  /** Every matching event any relay holds, within the timeout. */
+  /**
+   * Every matching event any relay holds, within the timeout. A filter with
+   * a `since` and no `limit` is a window, and is read whole however little a
+   * relay answers per query.
+   */
   query(filter: Filter, timeoutMs?: number): Promise<Event[]>
   /** A standing subscription. Returns the unsubscribe. */
   subscribe(filter: Filter, onEvent: (event: Event) => void): () => void
@@ -33,6 +37,20 @@ export interface Relays {
   states(): RelayState[]
   close(): void
 }
+
+/**
+ * How many events a window query asks one relay for at a time.
+ *
+ * A relay answers at most its own cap per query whatever `limit` says —
+ * relay.mostro.network stops at 300 — and without a `limit` it answers the
+ * *oldest* events from `since`. A window read in one query then misses its
+ * newest end, which for a live map is the only end that matters. So a window
+ * is read newest first, a page at a time, each relay on its own.
+ */
+const WINDOW_PAGE = 500
+
+/** A ceiling on pages per relay, so a misbehaving relay cannot hold a query open. */
+const MAX_WINDOW_PAGES = 40
 
 export function openRelays(urls: readonly string[]): Relays {
   const pool = new SimplePool()
@@ -55,23 +73,84 @@ export function openRelays(urls: readonly string[]): Relays {
     }
   }
 
+  const markSilent = () => {
+    for (const [url, state] of states) {
+      if (state.status === 'connecting') states.set(url, { ...state, status: 'silent' })
+    }
+  }
+
+  const markFailed = (urls: readonly string[], error: unknown) => {
+    const message = error instanceof Error ? error.message : 'unknown error'
+    for (const url of urls) {
+      const state = states.get(url)
+      if (state) states.set(url, { ...state, status: 'failed', error: message })
+    }
+  }
+
+  /**
+   * One relay's whole window, newest page first, each page ending where the
+   * last one's oldest event was. `until` is inclusive, so a second shared by
+   * two pages is asked twice and deduplicated rather than skipped. A page
+   * with nothing new ends the walk: that is a relay that has run out, or one
+   * that ignores `until`.
+   */
+  async function readWindow(
+    url: string,
+    filter: Filter & { since: number },
+    timeoutMs: number,
+  ): Promise<Event[]> {
+    const seen = new Map<string, Event>()
+    let until: number | undefined
+    for (let page = 0; page < MAX_WINDOW_PAGES; page++) {
+      const events = await pool.querySync(
+        [url],
+        { ...filter, limit: WINDOW_PAGE, ...(until === undefined ? {} : { until }) },
+        { maxWait: timeoutMs },
+      )
+      const fresh = events.filter((event) => !seen.has(event.id))
+      if (fresh.length === 0) break
+      for (const event of fresh) seen.set(event.id, event)
+      const oldest = Math.min(...events.map((event) => event.created_at))
+      if (oldest <= filter.since) break
+      until = oldest
+    }
+    return [...seen.values()]
+  }
+
+  async function queryWindow(
+    filter: Filter & { since: number },
+    timeoutMs: number,
+  ): Promise<Event[]> {
+    const answers = await Promise.all(
+      relays.map(async (url) => {
+        try {
+          return await readWindow(url, filter, timeoutMs)
+        } catch (error: unknown) {
+          markFailed([url], error)
+          return []
+        }
+      }),
+    )
+    const merged = new Map<string, Event>()
+    for (const event of answers.flat()) merged.set(event.id, event)
+    const events = [...merged.values()]
+    for (const event of events) sawEvent(event)
+    if (events.length === 0) markSilent()
+    return events
+  }
+
   return {
     async query(filter, timeoutMs = TIMEOUTS.document) {
+      if (filter.since !== undefined && filter.limit === undefined) {
+        return queryWindow({ ...filter, since: filter.since }, timeoutMs)
+      }
       try {
         const events = await pool.querySync(relays, filter, { maxWait: timeoutMs })
         for (const event of events) sawEvent(event)
-        if (events.length === 0) {
-          for (const [url, state] of states) {
-            if (state.status === 'connecting')
-              states.set(url, { ...state, status: 'silent' })
-          }
-        }
+        if (events.length === 0) markSilent()
         return events
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'unknown error'
-        for (const [url, state] of states) {
-          states.set(url, { ...state, status: 'failed', error: message })
-        }
+        markFailed(relays, error)
         return []
       }
     },

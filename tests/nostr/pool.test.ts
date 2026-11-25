@@ -3,7 +3,7 @@ import type { Event, Filter } from 'nostr-tools'
 
 /** What the fake SimplePool will do. Set per test before opening relays. */
 let behaviour: {
-  query: (filter: Filter) => Promise<Event[]>
+  query: (filter: Filter, relays: string[]) => Promise<Event[]>
   subscribeCalls: { filter: Filter; onevent: (event: Event) => void }[]
   closed: string[][]
   subscriptionsClosed: number
@@ -11,8 +11,8 @@ let behaviour: {
 
 vi.mock('nostr-tools/pool', () => ({
   SimplePool: class {
-    querySync(_relays: string[], filter: Filter) {
-      return behaviour.query(filter)
+    querySync(relays: string[], filter: Filter) {
+      return behaviour.query(filter, relays)
     }
     subscribe(
       _relays: string[],
@@ -181,5 +181,127 @@ describe('close', () => {
     relays.close()
 
     expect(behaviour.closed).toEqual([RELAYS])
+  })
+})
+
+describe('a window query against relays that cap their answers', () => {
+  /** An order event, with an id unique to its relay, second and index. */
+  function held(url: string, count: number, newest: number): Event[] {
+    return Array.from({ length: count }, (_, i) => ({
+      ...event(newest - i * 60),
+      id: `${url}-${i}`,
+      kind: 38383,
+    }))
+  }
+
+  /**
+   * relay.mostro.network answers at most 300 events per query: the oldest
+   * from `since` without a `limit`, the newest with one.
+   */
+  function capped(store: Record<string, Event[]>, caps: Record<string, number>) {
+    return (filter: Filter, relays: string[]) => {
+      const url = relays[0]!
+      const matching = (store[url] ?? [])
+        .filter((e) => filter.since === undefined || e.created_at >= filter.since)
+        .filter((e) => filter.until === undefined || e.created_at <= filter.until)
+      const ordered = [...matching].sort((a, b) =>
+        filter.limit === undefined
+          ? a.created_at - b.created_at
+          : b.created_at - a.created_at,
+      )
+      const cap = caps[url] ?? Infinity
+      return Promise.resolve(ordered.slice(0, Math.min(cap, filter.limit ?? cap)))
+    }
+  }
+
+  const NOW = 1_800_000_000
+
+  test('reads the whole window from a relay that answers only part of it', async () => {
+    // Arrange — ten events in the window, a relay that answers four a query.
+    const store = { 'wss://one': held('wss://one', 10, NOW) }
+    behaviour.query = capped(store, { 'wss://one': 4 })
+    const relays = openRelays(['wss://one'])
+
+    // Act
+    const events = await relays.query({ kinds: [38383], since: NOW - 3600 })
+
+    // Assert
+    expect(events.map((e) => e.id).sort()).toEqual(
+      store['wss://one'].map((e) => e.id).sort(),
+    )
+  })
+
+  test('keeps the newest events, which one query from since would have missed', async () => {
+    const store = { 'wss://one': held('wss://one', 10, NOW) }
+    behaviour.query = capped(store, { 'wss://one': 4 })
+    const relays = openRelays(['wss://one'])
+
+    const events = await relays.query({ kinds: [38383], since: NOW - 3600 })
+
+    expect(events.some((e) => e.created_at === NOW)).toBe(true)
+  })
+
+  test('pages each relay on its own, so a deeper relay leaves no gap in a shallower one', async () => {
+    // Arrange — one relay caps at three, the other at five.
+    const store = {
+      'wss://one': held('wss://one', 9, NOW),
+      'wss://two': held('wss://two', 9, NOW - 30),
+    }
+    behaviour.query = capped(store, { 'wss://one': 3, 'wss://two': 5 })
+    const relays = openRelays(['wss://one', 'wss://two'])
+
+    // Act
+    const events = await relays.query({ kinds: [38383], since: NOW - 3600 })
+
+    // Assert
+    expect(events).toHaveLength(18)
+  })
+
+  test('stops at since, and never asks for what is older', async () => {
+    const store = { 'wss://one': held('wss://one', 10, NOW) }
+    behaviour.query = capped(store, { 'wss://one': 4 })
+    const relays = openRelays(['wss://one'])
+
+    const events = await relays.query({ kinds: [38383], since: NOW - 5 * 60 })
+
+    expect(events.every((e) => e.created_at >= NOW - 5 * 60)).toBe(true)
+    expect(events).toHaveLength(6)
+  })
+
+  test('stops when a page brings nothing new, so a relay that ignores until cannot loop', async () => {
+    // Arrange — a relay that answers the same page whatever it is asked.
+    const page = held('wss://one', 3, NOW)
+    let calls = 0
+    behaviour.query = () => {
+      calls += 1
+      return Promise.resolve(page)
+    }
+    const relays = openRelays(['wss://one'])
+
+    // Act
+    const events = await relays.query({ kinds: [38383], since: NOW - 3600 })
+
+    // Assert
+    expect(events).toHaveLength(3)
+    expect(calls).toBe(2)
+  })
+
+  test('keeps what one relay answered when another fails', async () => {
+    behaviour.query = (filter, urls) =>
+      urls[0] === 'wss://two'
+        ? Promise.reject(new Error('socket hang up'))
+        : capped({ 'wss://one': held('wss://one', 5, NOW) }, { 'wss://one': 2 })(
+            filter,
+            urls,
+          )
+    const relays = openRelays(['wss://one', 'wss://two'])
+
+    const events = await relays.query({ kinds: [38383], since: NOW - 3600 })
+
+    expect(events).toHaveLength(5)
+    expect(relays.states().find((s) => s.url === 'wss://two')).toMatchObject({
+      status: 'failed',
+    })
+    expect(relays.states().find((s) => s.url === 'wss://one')?.status).toBe('live')
   })
 })
