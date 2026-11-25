@@ -80,7 +80,11 @@ export type Store = {
   stop(): void
 }
 
-/** The newest event per `d`: a relay serving a stale replaceable event is normal. */
+function isRenderable(state: DocState | undefined): boolean {
+  return state?.status === 'live' || state?.status === 'cached'
+}
+
+/** The newest event per `d`:a relay serving a stale replaceable event is normal. */
 function newestPerD(events: readonly Event[]): Map<string, Event> {
   const newest = new Map<string, Event>()
   for (const event of events) {
@@ -192,7 +196,13 @@ export function createStore(relays: Relays, publisher: string): Store {
           entry,
         })
       } else {
-        setDoc(entry.d, { status: 'loading' })
+        // A replacement in flight leaves the verified figure where it is: a
+        // new index every few minutes must not blank every panel to a
+        // skeleton and back. The swap happens below, once the replacement
+        // has verified or failed; only a `d` with nothing to show waits.
+        if (!isRenderable(documents.value.get(entry.d))) {
+          setDoc(entry.d, { status: 'loading' })
+        }
         wanted.push(entry)
       }
     }
