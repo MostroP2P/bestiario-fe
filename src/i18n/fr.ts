@@ -176,6 +176,8 @@ export const fr: Strings = {
     loadingGeometry: 'CHARGEMENT DE LA GÉOMÉTRIE…',
     noGeometry: (reason) => `PAS DE GÉOMÉTRIE · ${reason}`,
     activeMarkets: 'MARCHÉS ACTIFS',
+    noRoster:
+      'La liste des instances n’a pas pu être vérifiée : la carte ne peut pas dire qui négocie en ce moment.',
     approximateInstances: (approximate, total) =>
       `${approximate} ${plural(total, 'instance sur', 'instances sur')} ${total} ${plural(total, 'ne nomme', 'ne nomment')} aucun pays : leur point est une dispersion et non un emplacement. Les lignes sont réelles : chacune est un ordre de cette instance.`,
     describe: {

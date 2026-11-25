@@ -228,6 +228,8 @@ export type Strings = {
     readonly loadingGeometry: string
     readonly noGeometry: (reason: string) => string
     readonly activeMarkets: string
+    /** Shown when the instance roster is unavailable or fails its proof. */
+    readonly noRoster: string
     /** Shown when some instances name no country. */
     readonly approximateInstances: (approximate: number, total: number) => string
     readonly describe: {

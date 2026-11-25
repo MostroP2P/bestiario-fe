@@ -107,3 +107,21 @@ export function activeLines(
   lines.sort((a, b) => b.updatedAt - a.updatedAt || a.orderId.localeCompare(b.orderId))
   return lines.slice(0, cfg.maxLines)
 }
+
+/**
+ * The currencies with a line, each weighed by its lines, before the drawing
+ * cap: the cap samples what is drawn, never which markets are counted.
+ */
+export function activeMarkets(
+  orders: readonly LiveOrder[],
+  nowMs: number,
+  cfg: LineConfig,
+): { code: string; weight: number }[] {
+  const lines = new Map<string, number>()
+  for (const line of activeLines(orders, nowMs, { ...cfg, maxLines: Infinity })) {
+    lines.set(line.fiat, (lines.get(line.fiat) ?? 0) + 1)
+  }
+  return [...lines.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([code, weight]) => ({ code, weight }))
+}

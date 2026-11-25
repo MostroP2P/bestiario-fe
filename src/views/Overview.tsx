@@ -28,7 +28,7 @@ import { useAtlas } from '~/map/useAtlas'
 import { useMeasuredSize, usePrefersReducedMotion } from '~/map/hooks'
 import { placeCurrencies, placeMostros } from '~/map/placements'
 import { currencyOrders, instanceRows } from '~/model/instances'
-import { activeLines } from '~/model/live-lines'
+import { activeLines, activeMarkets } from '~/model/live-lines'
 import { openDisputes } from '~/model/open-disputes'
 import { DISPUTES, MAP } from '~/config'
 import { currencyMatrix } from '~/model/matrix'
@@ -79,11 +79,19 @@ export function Overview(props: { readonly window: Span }) {
   const disputes = metricsOf(payloadOf(documents, windowAddress('disputes', window_)))
   const fees = metricsOf(payloadOf(documents, windowAddress('dev-fees', window_)))
 
+  const instancesState = documents.get(windowAddress('instances', window_))
+  const instancesPayload = payloadOf(documents, windowAddress('instances', window_))
   const instances = useMemo(
-    () =>
-      instanceRows(metricsOf(payloadOf(documents, windowAddress('instances', window_)))),
-    [documents, window_],
+    () => instanceRows(metricsOf(instancesPayload)),
+    [instancesPayload],
   )
+  /**
+   * The roster answered and could not be read: unpublished, withheld or
+   * failing its proof. Nobody can say then which keys may draw on the map,
+   * and an empty map would read as a calm network.
+   */
+  const rosterFailed =
+    instancesState?.status === 'unavailable' || instancesState?.status === 'unverified'
 
   // An instance is addressed by its pubkey, which is a row of its block and
   // never its label.
@@ -111,9 +119,14 @@ export function Overview(props: { readonly window: Span }) {
     () => instances.map((instance) => instance.pubkey).join(' '),
     [instances],
   )
+  // Only from a roster that is in hand: while the next window's is still on
+  // its way the set is unknown, not empty, and releasing the watch then
+  // would drop every line and ask the relays for them again.
+  const rosterInHand = instancesPayload !== undefined
   useEffect(() => {
+    if (!rosterInHand) return
     setInstanceAuthors(instanceKey ? instanceKey.split(' ') : [])
-  }, [instanceKey])
+  }, [instanceKey, rosterInHand])
 
   /** What each instance traded, when the publisher says. */
   const trades = useMemo(
@@ -190,14 +203,11 @@ export function Overview(props: { readonly window: Span }) {
   // currency is on the map only while one of those is.
   const flows = useMemo(() => activeLines(orderEvents, nowMs, MAP), [orderEvents, nowMs])
 
-  /** The currencies the map draws, each weighed by its lines. */
-  const marketWeights = useMemo(() => {
-    const lines = new Map<string, number>()
-    for (const line of flows) lines.set(line.fiat, (lines.get(line.fiat) ?? 0) + 1)
-    return [...lines.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([code, weight]) => ({ code, weight }))
-  }, [flows])
+  /** The currencies trading now, counted before the drawing cap samples them. */
+  const marketWeights = useMemo(
+    () => activeMarkets(orderEvents, nowMs, MAP),
+    [orderEvents, nowMs],
+  )
 
   /** An empty map is only news once the instances are named and have answered. */
   // Not `loading`: that waits on the window's orders document, and the map
@@ -205,6 +215,7 @@ export function Overview(props: { readonly window: Span }) {
   const marketsLoading =
     boot.status === 'loading' ||
     !settled(windowAddress('instances', window_)) ||
+    rosterFailed ||
     !ordersReady
 
   const graceMinutes = Math.round(MAP.graceMs / 60_000)
@@ -288,7 +299,12 @@ export function Overview(props: { readonly window: Span }) {
         {/* The drawing is measured, not the section, so the projection is
               fitted to the globe's own box at every width. */}
         <div class="b-map-canvas" ref={mapRef}>
-          {!mapReady && <SkeletonMap />}
+          {!mapReady && !rosterFailed && <SkeletonMap />}
+          {rosterFailed && (
+            <p class="b-map-state" data-failed="true">
+              {strings.map.noRoster}
+            </p>
+          )}
           {atlasState.status === 'failed' && (
             <p class="b-map-state" data-failed="true">
               {strings.map.noGeometry(atlasState.reason)}
@@ -311,7 +327,7 @@ export function Overview(props: { readonly window: Span }) {
             the headline may not quietly drop it. */}
         <div class="b-map-count">
           <span class="b-eyebrow">{strings.map.activeMarkets}</span>
-          {marketsLoading ? (
+          {rosterFailed ? null : marketsLoading ? (
             <Skeleton width="52px" height="30px" />
           ) : (
             <strong>{marketWeights.length}</strong>

@@ -174,6 +174,8 @@ export const pt: Strings = {
     loadingGeometry: 'CARREGANDO GEOMETRIA…',
     noGeometry: (reason) => `SEM GEOMETRIA · ${reason}`,
     activeMarkets: 'MERCADOS ATIVOS',
+    noRoster:
+      'Não foi possível verificar a lista de instâncias, então o mapa não pode dizer quem está operando agora.',
     approximateInstances: (approximate, total) =>
       `${approximate} de ${total} ${plural(total, 'instância não nomeia', 'instâncias não nomeiam')} um país, então o ponto delas é uma dispersão e não uma localização. As linhas são reais: cada uma é uma ordem dessa instância.`,
     describe: {

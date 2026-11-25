@@ -17,6 +17,8 @@ let served: Event[] = fixtures
 let servedMostro: Event[] = []
 /** When true, the instances' order query never answers: a slow relay. */
 let ordersStall = false
+/** Archive documents a slow relay takes its time over. */
+let slowDocs = new Set<string>()
 /** Every filter the site put on the wire, so a test can read what it asked. */
 const asked: Filter[] = []
 
@@ -30,7 +32,9 @@ vi.mock('~/nostr/pool', () => ({
         return Promise.resolve(servedMostro.filter((e) => kinds.includes(e.kind)))
       }
       const wanted = filter['#d']
-      return Promise.resolve(served.filter((e) => !wanted || wanted.includes(dOf(e))))
+      const found = served.filter((e) => !wanted || wanted.includes(dOf(e)))
+      if (!wanted?.some((d) => slowDocs.has(d))) return Promise.resolve(found)
+      return new Promise<Event[]>((resolve) => setTimeout(() => resolve(found), 100))
     },
     subscribe: () => () => {},
     states: () => [{ url: 'wss://relay.mostro.network', status: 'live', newestAt: 1 }],
@@ -87,7 +91,10 @@ beforeEach(() => {
   served = fixtures
   servedMostro = []
   ordersStall = false
+  slowDocs = new Set()
   asked.length = 0
+  // The window lives in the hash; a test that moved it must not move the next.
+  window.history.replaceState(null, '', '/')
   resetStore()
   clearCache()
   clearAtlasCache()
@@ -319,6 +326,53 @@ describe('Dashboard · real figures', () => {
       expect(container.querySelector('.b-map-canvas svg')).not.toBeNull()
     })
     expect(container.querySelector('.b-map-count strong')?.textContent).toBe('0')
+  })
+
+  test('says the map cannot be read when the instance roster fails verification', async () => {
+    // Arrange — the roster's content no longer matches what was signed.
+    served = fixtures.map((e) =>
+      dOf(e) === 'instances:30d'
+        ? { ...e, content: e.content.replace('Mostro', 'Mallory') }
+        : e,
+    )
+
+    // Act
+    const { container } = render(<Dashboard />)
+
+    // Assert — a failure, and neither a count nor an empty map claiming calm.
+    await waitFor(() => {
+      const failure = container.querySelector('.b-map-state[data-failed="true"]')
+      expect(failure).not.toBeNull()
+      expect(failure?.textContent).toBe(en.map.noRoster)
+    })
+    expect(container.querySelector('.b-map-count strong')).toBeNull()
+    expect(container.querySelector('.b-map-canvas svg')).toBeNull()
+  })
+
+  test('keeps following the instances while the next window loads', async () => {
+    // Arrange
+    const { container, getByLabelText } = render(<Dashboard />)
+    await waitFor(() => {
+      expect(container.querySelector('.b-map-count strong')).not.toBeNull()
+    })
+
+    // Act — a new window whose roster takes a moment to arrive, and names
+    // the same instances.
+    slowDocs = new Set(['instances:7d'])
+    fireEvent.change(getByLabelText(en.header.windowNav), { target: { value: '7d' } })
+    // The slow roster has answered once the 7d documents were asked for and
+    // their answer has had time to land.
+    await waitFor(() => {
+      expect(asked.some((f) => f['#d']?.includes('instances:7d'))).toBe(true)
+    })
+    await new Promise((resolve) => setTimeout(resolve, 250))
+    await waitFor(() => {
+      expect(container.querySelector('.b-map-count strong')).not.toBeNull()
+    })
+
+    // Assert — the order layer was asked once: the watch was never released
+    // and taken again while the new roster was loading.
+    expect(asked.filter((filter) => filter.kinds?.includes(38383))).toHaveLength(1)
   })
 
   test('asks every instance the archive names for its own order events', async () => {

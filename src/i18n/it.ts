@@ -175,6 +175,8 @@ export const it: Strings = {
     loadingGeometry: 'CARICAMENTO GEOMETRIA…',
     noGeometry: (reason) => `NESSUNA GEOMETRIA · ${reason}`,
     activeMarkets: 'MERCATI ATTIVI',
+    noRoster:
+      'Non è stato possibile verificare l’elenco delle istanze, quindi la mappa non può dire chi sta scambiando ora.',
     approximateInstances: (approximate, total) =>
       `${approximate} ${plural(total, 'istanza su', 'istanze su')} ${total} ${plural(total, 'non nomina', 'non nominano')} un paese, quindi il loro punto è una dispersione e non una posizione. Le linee sono reali: ognuna è un ordine di quell’istanza.`,
     describe: {

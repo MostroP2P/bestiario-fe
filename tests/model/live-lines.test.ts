@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { activeLines, type LiveOrder } from '~/model/live-lines'
+import { activeLines, activeMarkets, type LiveOrder } from '~/model/live-lines'
 
 const CFG = {
   graceMs: 10 * 60 * 1000,
@@ -159,5 +159,29 @@ describe('activeLines', () => {
     const twice = activeLines([...orders].reverse(), NOW, { ...CFG, maxLines: 2 })
 
     expect(once).toEqual(twice)
+  })
+})
+
+describe('activeMarkets', () => {
+  test('counts every market with a line, even past the drawing cap', () => {
+    // Arrange — three recent ARS orders fill a cap of three; an older USD
+    // order is still a trade in course.
+    const orders = [
+      ...Array.from({ length: 3 }, (_, i) => order({ id: `ars-${i}`, fiat: 'ARS' })),
+      order({ id: 'usd-1', fiat: 'USD', updatedAt: NOW - 60_000 }),
+    ]
+
+    // Act
+    const markets = activeMarkets(orders, NOW, { ...CFG, maxLines: 3 })
+
+    // Assert
+    expect(markets).toEqual([
+      { code: 'ARS', weight: 3 },
+      { code: 'USD', weight: 1 },
+    ])
+  })
+
+  test('leaves out a market whose only order drew no line', () => {
+    expect(activeMarkets([order({ status: 'canceled' })], NOW, CFG)).toEqual([])
   })
 })

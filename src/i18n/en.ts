@@ -180,6 +180,8 @@ export const en: Strings = {
     loadingGeometry: 'LOADING GEOMETRY…',
     noGeometry: (reason) => `NO GEOMETRY · ${reason}`,
     activeMarkets: 'ACTIVE MARKETS',
+    noRoster:
+      'The instance roster could not be verified, so the map cannot say who is trading now.',
     approximateInstances: (approximate, total) =>
       `${approximate} of ${total} ${plural(total, 'instance names', 'instances name')} no country, so their point is a scattering and not a location. The lines are real: each one is an order at that instance.`,
     describe: {
