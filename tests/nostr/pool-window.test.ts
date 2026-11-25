@@ -181,8 +181,15 @@ describe('a window query against relays that cap their answers', () => {
       const store = { 'wss://one': held('wss://one', 20, NOW) }
       const waits: number[] = []
       const started = Date.now()
+      // Like querySync: a page slower than its maxWait gives up at maxWait
+      // with nothing, rather than taking as long as the relay does.
       behaviour.query = (filter, urls, opts) => {
-        waits.push(opts.maxWait ?? Infinity)
+        const maxWait = opts.maxWait ?? Infinity
+        waits.push(maxWait)
+        if (maxWait < 3_000) {
+          vi.advanceTimersByTime(maxWait)
+          return Promise.resolve([])
+        }
         vi.advanceTimersByTime(3_000)
         return capped(store, { 'wss://one': 2 })(filter, urls)
       }
@@ -191,11 +198,13 @@ describe('a window query against relays that cap their answers', () => {
       // Act
       const events = await relays.query({ kinds: [38383], since: NOW - 3600 }, 8_000)
 
-      // Assert — three pages fit, each given only what was left, and what
-      // they brought is kept: two, then one new apiece past the shared second.
-      expect(Date.now() - started).toBeLessThanOrEqual(9_000)
+      // Assert — the read ends at the budget, never past it. Each page gets
+      // only what is left: two full pages fit, the third runs out of time,
+      // and what the first two brought (two, then one new past the shared
+      // second) is kept.
+      expect(Date.now() - started).toBeLessThanOrEqual(8_000)
       expect(waits).toEqual([8_000, 5_000, 2_000])
-      expect(events).toHaveLength(4)
+      expect(events).toHaveLength(3)
     })
   })
 

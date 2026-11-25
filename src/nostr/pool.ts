@@ -27,8 +27,12 @@ export type RelayState = {
 export interface Relays {
   /**
    * Every matching event any relay holds, within the timeout. A filter with
-   * a `since` and no `limit` is a window, and is read whole however little a
-   * relay answers per query.
+   * a `since` and no `limit` is a window, read newest page first however
+   * little a relay answers per query, and whole up to one limit NIP-01 sets:
+   * a filter has no offset, so when a relay holds more events in one second
+   * than it answers per query, the ones past its cap in that second are not
+   * reached. Another relay, or the standing subscription, may still bring
+   * them; nothing here can promise it.
    */
   query(filter: Filter, timeoutMs?: number): Promise<Event[]>
   /** A standing subscription. Returns the unsubscribe. */
