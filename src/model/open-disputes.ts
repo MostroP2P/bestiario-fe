@@ -33,9 +33,17 @@ export type DisputeBook = {
   readonly maxEntries: number
 }
 
+/** What an instance's addressable event is identified and ordered by. */
+export type Revision = {
+  readonly eventId: string
+  readonly id: string
+  readonly instancePubkey: string
+  readonly updatedAt: number
+}
+
 /** An addressable event's identity: the author and its `d`, never the `d` alone. */
-export function keyOf(dispute: LiveDispute): string {
-  return `${dispute.instancePubkey}:${dispute.id}`
+export function keyOf(revision: Revision): string {
+  return `${revision.instancePubkey}:${revision.id}`
 }
 
 /**
@@ -47,7 +55,7 @@ export function keyOf(dispute: LiveDispute): string {
  * dispute it opened moments before — and keeping whichever arrived first
  * would make the panel depend on which relay answered first.
  */
-export function supersedes(next: LiveDispute, held: LiveDispute): boolean {
+export function supersedes(next: Revision, held: Revision): boolean {
   if (next.updatedAt !== held.updatedAt) return next.updatedAt > held.updatedAt
   return next.eventId < held.eventId
 }

@@ -13,12 +13,20 @@
  */
 import { signal, type Signal } from '@preact/signals'
 import type { Event } from 'nostr-tools'
-import { BESTIARIO_KIND, DISPUTES, MOSTRO_DISPUTE_KIND, TIMEOUTS } from '~/config'
+import {
+  BESTIARIO_KIND,
+  DISPUTES,
+  MAP,
+  MOSTRO_DISPUTE_KIND,
+  MOSTRO_ORDER_KIND,
+  TIMEOUTS,
+} from '~/config'
 import type { Relays, RelayState } from '~/nostr/pool'
 import { verifyDocument, verifyFrom, verifyIndex, type Failure } from '~/nostr/verify'
 import type { Envelope, IndexDoc, IndexEntry } from '~/nostr/documents'
-import { disputeFrom } from '~/nostr/mostro'
-import { keyOf, supersedes, type LiveDispute } from '~/model/open-disputes'
+import { disputeFrom, orderFrom } from '~/nostr/mostro'
+import { keyOf, supersedes, type LiveDispute, type Revision } from '~/model/open-disputes'
+import type { LiveOrder } from '~/model/live-lines'
 import { openCache, readCached, writeCached } from './cache'
 
 export type DocState =
@@ -53,12 +61,22 @@ export type Store = {
    * empty book before they have is a verdict nobody has given yet.
    */
   readonly disputesReady: Signal<boolean>
+  /**
+   * The instances' own order events, newest revision per order. Raw, like
+   * the disputes: which of them draw a line is `model/live-lines.ts`'s call.
+   */
+  readonly orders: Signal<readonly LiveOrder[]>
+  /** Whether the relays have answered for the orders of the watched instances. */
+  readonly ordersReady: Signal<boolean>
   /** Fetch the index and open the standing subscription to it. */
   start(): Promise<void>
   /** Ensure these `d` values are loaded, from cache where the hash matches. */
   need(ds: readonly string[]): Promise<void>
-  /** Follow these instances' dispute events. Re-watching the same set is free. */
-  watchDisputes(authors: readonly string[]): Promise<void>
+  /**
+   * Follow these instances' own events — their disputes and their orders.
+   * Re-watching the same set is free.
+   */
+  watchInstances(authors: readonly string[]): Promise<void>
   stop(): void
 }
 
@@ -80,9 +98,12 @@ export function createStore(relays: Relays, publisher: string): Store {
   const relayStates = signal<readonly RelayState[]>(relays.states())
   const disputes = signal<readonly LiveDispute[]>([])
   const disputesReady = signal(false)
+  const orders = signal<readonly LiveOrder[]>([])
+  const ordersReady = signal(false)
 
   let unsubscribe: (() => void) | null = null
-  let disputeUnsubscribe: (() => void) | null = null
+  /** The standing subscriptions to the instances' own events. */
+  let liveUnsubscribe: (() => void)[] = []
   /**
    * The instance set currently followed, as a stable key. Null until the
    * first watch: the empty set is a set, and answering it is what tells the
@@ -209,59 +230,55 @@ export function createStore(relays: Relays, publisher: string): Store {
   }
 
   /**
-   * Follow the instances' own dispute events (kind 38386).
+   * Follow one kind of the instances' own addressable events into a signal.
    *
    * A different trust anchor from everything else here, and deliberately a
    * narrow one: these events are signed by each Mostro, so the check is that
    * the signature holds and the author is one of the instances the archive
-   * named. Nothing else may put a row on the book.
+   * named. Nothing else may put a row on the book or a line on the map.
    *
    * The query and the standing subscription share one filter, and `since`
-   * bounds it at the book's own window: a relay holding years of settled
-   * disputes must not send them all to fill a panel about now.
+   * bounds it at the panel's own window: a relay holding years of settled
+   * trades must not send them all to fill a panel about now.
    */
-  async function watchDisputes(authors: readonly string[]): Promise<void> {
-    const key = [...authors].sort().join(' ')
-    if (key === watched) return
-    watched = key
-
-    disputeUnsubscribe?.()
-    disputeUnsubscribe = null
-    disputes.value = []
-    disputesReady.value = false
-    if (authors.length === 0) {
-      // Nothing to wait for: no instance to ask is an answered question.
-      disputesReady.value = true
-      return
-    }
-
+  async function follow<T extends Revision>(
+    key: string,
+    authors: readonly string[],
+    kind: number,
+    windowMs: number,
+    parse: (event: Event) => T | null,
+    into: Signal<readonly T[]>,
+    ready: Signal<boolean>,
+  ): Promise<void> {
     const known = new Set(authors)
-    const book = new Map<string, LiveDispute>()
+    const held = new Map<string, T>()
     const filter = {
-      kinds: [MOSTRO_DISPUTE_KIND],
+      kinds: [kind],
       authors: [...authors],
-      since: Math.floor((Date.now() - DISPUTES.windowMs) / 1000),
+      since: Math.floor((Date.now() - windowMs) / 1000),
     }
 
     const take = (event: Event) => {
       if (!verifyFrom(event, known).ok) return
-      const dispute = disputeFrom(event)
-      if (!dispute) return
-      // 38386 is addressable: an older revision alongside the current one is
-      // a relay being normal, and must never undo a status.
-      const held = book.get(keyOf(dispute))
-      if (held && !supersedes(dispute, held)) return
-      book.set(keyOf(dispute), dispute)
-      disputes.value = [...book.values()]
+      const revision = parse(event)
+      if (!revision) return
+      // Addressable: an older revision alongside the current one is a relay
+      // being normal, and must never undo a status.
+      const current = held.get(keyOf(revision))
+      if (current && !supersedes(revision, current)) return
+      held.set(keyOf(revision), revision)
+      into.value = [...held.values()]
     }
 
-    // Standing before the query is awaited, and not after it: a dispute
+    // Standing before the query is awaited, and not after it: a revision
     // published in between would otherwise be lost until its instance
-    // touched it again, which for a settled dispute is never.
-    disputeUnsubscribe = relays.subscribe(filter, (event) => {
-      take(event)
-      refreshRelays()
-    })
+    // touched it again, which for a settled trade is never.
+    liveUnsubscribe.push(
+      relays.subscribe(filter, (event) => {
+        take(event)
+        refreshRelays()
+      }),
+    )
 
     const events = await relays.query(filter)
     // The set may have moved while the query was in flight; the newer watch
@@ -270,7 +287,51 @@ export function createStore(relays: Relays, publisher: string): Store {
     if (watched !== key) return
     refreshRelays()
     for (const event of events) take(event)
-    disputesReady.value = true
+    ready.value = true
+  }
+
+  function closeLive(): void {
+    for (const close of liveUnsubscribe) close()
+    liveUnsubscribe = []
+  }
+
+  async function watchInstances(authors: readonly string[]): Promise<void> {
+    const key = [...authors].sort().join(' ')
+    if (key === watched) return
+    watched = key
+
+    closeLive()
+    disputes.value = []
+    orders.value = []
+    disputesReady.value = false
+    ordersReady.value = false
+    if (authors.length === 0) {
+      // Nothing to wait for: no instance to ask is an answered question.
+      disputesReady.value = true
+      ordersReady.value = true
+      return
+    }
+
+    await Promise.all([
+      follow(
+        key,
+        authors,
+        MOSTRO_DISPUTE_KIND,
+        DISPUTES.windowMs,
+        disputeFrom,
+        disputes,
+        disputesReady,
+      ),
+      follow(
+        key,
+        authors,
+        MOSTRO_ORDER_KIND,
+        MAP.liveWindowMs,
+        orderFrom,
+        orders,
+        ordersReady,
+      ),
+    ])
   }
 
   return {
@@ -279,6 +340,8 @@ export function createStore(relays: Relays, publisher: string): Store {
     relays: relayStates,
     disputes,
     disputesReady,
+    orders,
+    ordersReady,
 
     async start() {
       openCache()
@@ -294,14 +357,14 @@ export function createStore(relays: Relays, publisher: string): Store {
 
     need: fetchDocuments,
 
-    watchDisputes,
+    watchInstances,
 
     stop() {
       unsubscribe?.()
       unsubscribe = null
-      disputeUnsubscribe?.()
-      disputeUnsubscribe = null
+      closeLive()
       disputesReady.value = false
+      ordersReady.value = false
       watched = null
       relays.close()
     },

@@ -223,12 +223,11 @@ export type Strings = {
 
   readonly map: {
     readonly heading: string
-    readonly caption: string
+    /** What the map draws: trades in course, and orders completed this recently. */
+    readonly caption: (graceMinutes: number) => string
     readonly loadingGeometry: string
     readonly noGeometry: (reason: string) => string
     readonly activeMarkets: string
-    /** Shown while the per-instance orders documents are not published. */
-    readonly illustrativeRoutes: string
     /** Shown when some instances name no country. */
     readonly approximateInstances: (approximate: number, total: number) => string
     readonly describe: {

@@ -38,7 +38,7 @@ function disputeEvent(
 function fakeRelays(held: readonly Event[] = [], options: { stall?: boolean } = {}) {
   const filters: Filter[] = []
   let push: ((event: Event) => void) | null = null
-  let answer: (() => void) | null = null
+  const answers: (() => void)[] = []
   let closed = 0
   const relays: Relays = {
     query(filter) {
@@ -50,12 +50,13 @@ function fakeRelays(held: readonly Event[] = [], options: { stall?: boolean } = 
       // lost until the instance speaks again.
       if (!options.stall) return Promise.resolve(events)
       return new Promise<Event[]>((resolve) => {
-        answer = () => resolve(events)
+        answers.push(() => resolve(events))
       })
     },
     subscribe(filter, onEvent) {
       filters.push(filter)
-      if (filter.kinds?.includes(MOSTRO_DISPUTE_KIND)) push = onEvent
+      if (!filter.kinds?.includes(MOSTRO_DISPUTE_KIND)) return () => {}
+      push = onEvent
       return () => {
         closed += 1
         push = null
@@ -69,7 +70,7 @@ function fakeRelays(held: readonly Event[] = [], options: { stall?: boolean } = 
     filters,
     send: (event: Event) => push?.(event),
     isSubscribed: () => push !== null,
-    answerQuery: () => answer?.(),
+    answerQuery: () => answers.forEach((answer) => answer()),
     closedSubscriptions: () => closed,
   }
 }
@@ -81,7 +82,7 @@ describe('the open dispute book', () => {
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
 
     // Act
-    await subject.watchDisputes(INSTANCES)
+    await subject.watchInstances(INSTANCES)
 
     // Assert
     const asked = pool.filters.find((filter) =>
@@ -97,7 +98,7 @@ describe('the open dispute book', () => {
     const pool = fakeRelays()
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
 
-    await subject.watchDisputes([])
+    await subject.watchInstances([])
 
     expect(pool.filters).toEqual([])
     expect(subject.disputes.value).toEqual([])
@@ -112,7 +113,7 @@ describe('the open dispute book', () => {
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
 
     // Act
-    await subject.watchDisputes(INSTANCES)
+    await subject.watchInstances(INSTANCES)
 
     // Assert
     expect(subject.disputes.value.map((dispute) => dispute.id).sort()).toEqual(['a', 'b'])
@@ -123,7 +124,7 @@ describe('the open dispute book', () => {
     const pool = fakeRelays([disputeEvent({ secret: stranger })])
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
 
-    await subject.watchDisputes(INSTANCES)
+    await subject.watchInstances(INSTANCES)
 
     expect(subject.disputes.value).toEqual([])
   })
@@ -136,7 +137,7 @@ describe('the open dispute book', () => {
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
 
     // Act
-    await subject.watchDisputes(INSTANCES)
+    await subject.watchInstances(INSTANCES)
 
     // Assert
     expect(subject.disputes.value).toEqual([])
@@ -147,7 +148,7 @@ describe('the open dispute book', () => {
     const opened = disputeEvent({ id: 'a', status: 'initiated', createdAt: 1_000 })
     const pool = fakeRelays([opened])
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
-    await subject.watchDisputes(INSTANCES)
+    await subject.watchInstances(INSTANCES)
     expect(subject.disputes.value).toHaveLength(1)
 
     // Act — the same dispute, settled a moment later.
@@ -163,7 +164,7 @@ describe('the open dispute book', () => {
       disputeEvent({ id: 'a', status: 'in-progress', createdAt: 2_000 }),
     ])
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
-    await subject.watchDisputes(INSTANCES)
+    await subject.watchInstances(INSTANCES)
 
     pool.send(disputeEvent({ id: 'a', status: 'initiated', createdAt: 1_000 }))
 
@@ -174,8 +175,8 @@ describe('the open dispute book', () => {
     const pool = fakeRelays()
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
 
-    await subject.watchDisputes(INSTANCES)
-    await subject.watchDisputes([...INSTANCES].reverse())
+    await subject.watchInstances(INSTANCES)
+    await subject.watchInstances([...INSTANCES].reverse())
 
     expect(
       pool.filters.filter((f) => f.kinds?.includes(MOSTRO_DISPUTE_KIND)),
@@ -189,7 +190,7 @@ describe('the open dispute book', () => {
     const opened = disputeEvent({ id: 'a', status: 'initiated', createdAt: 1_000 })
     const pool = fakeRelays([opened], { stall: true })
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
-    const watching = subject.watchDisputes(INSTANCES)
+    const watching = subject.watchInstances(INSTANCES)
     await Promise.resolve()
 
     // Act — the instance publishes while the query is still in flight.
@@ -210,7 +211,7 @@ describe('the open dispute book', () => {
     const [low, high] = [first, second].sort((x, y) => x.id.localeCompare(y.id))
     const pool = fakeRelays([high!])
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
-    await subject.watchDisputes(INSTANCES)
+    await subject.watchInstances(INSTANCES)
 
     // Act — the lower id arrives second, and still wins.
     pool.send(low!)
@@ -226,7 +227,7 @@ describe('the open dispute book', () => {
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
     expect(subject.disputesReady.value).toBe(false)
 
-    await subject.watchDisputes([])
+    await subject.watchInstances([])
 
     expect(subject.disputesReady.value).toBe(true)
   })
@@ -234,7 +235,7 @@ describe('the open dispute book', () => {
   test('stopping the store closes the dispute subscription', async () => {
     const pool = fakeRelays()
     const subject = createStore(pool.relays, PUBLISHER_PUBKEY)
-    await subject.watchDisputes(INSTANCES)
+    await subject.watchInstances(INSTANCES)
 
     subject.stop()
 

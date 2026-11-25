@@ -13,20 +13,67 @@ import { sha256Hex } from '~/nostr/hash'
 import type { Metric, WindowPayload } from '~/nostr/documents'
 
 /**
- * The map in its measured mode.
+ * The map, drawn from the instances' own order events.
  *
- * `orders:<window>:i:<pubkey>` is what turns the routes from illustration
- * into fact, and it is not on the relays yet — the daemon change is merged
- * and undeployed. So the snapshot here is built and signed at test time,
- * with real hashes over the real canonicalisation, and the whole trust path
- * runs over it exactly as it will over the publisher's.
+ * The archive names the instances; each instance's 38383 events say which of
+ * its orders are trades in course or just completed. Only those put a line
+ * on the map. The snapshot is built and signed at test time, with real
+ * hashes over the real canonicalisation, and the order events are signed by
+ * the instances' own keys, so the whole trust path runs over both.
  */
 
 const KEY = generateSecretKey()
 const PUBLISHER = getPublicKey(KEY)
 
-const AR_PUBKEY = 'a'.repeat(64)
-const VE_PUBKEY = 'b'.repeat(64)
+const AR_KEY = generateSecretKey()
+const VE_KEY = generateSecretKey()
+const AR_PUBKEY = getPublicKey(AR_KEY)
+const VE_PUBKEY = getPublicKey(VE_KEY)
+
+const MINUTE = 60
+
+/** One revision of an order, as its instance signs it. */
+function orderEvent(
+  key: Uint8Array,
+  id: string,
+  fiat: string,
+  status: string,
+  ageSeconds: number,
+): Event {
+  return finalizeEvent(
+    {
+      kind: 38383,
+      created_at: Math.floor(Date.now() / 1000) - ageSeconds,
+      tags: [
+        ['d', id],
+        ['k', 'sell'],
+        ['f', fiat],
+        ['s', status],
+        ['z', 'order'],
+      ],
+      content: '',
+    },
+    key,
+  )
+}
+
+/**
+ * What the instances said: three currencies with a trade in course or just
+ * completed, and three that must not reach the map — an order nobody took,
+ * one that was canceled after being taken, and one completed too long ago.
+ */
+function orderEvents(): Event[] {
+  return [
+    orderEvent(AR_KEY, 'ars-1', 'ARS', 'in-progress', 2 * MINUTE),
+    orderEvent(AR_KEY, 'ars-2', 'ARS', 'in-progress', 3 * MINUTE),
+    orderEvent(AR_KEY, 'usd-1', 'USD', 'success', 1 * MINUTE),
+    orderEvent(VE_KEY, 'ves-1', 'VES', 'in-progress', 1 * MINUTE),
+    orderEvent(AR_KEY, 'brl-1', 'BRL', 'pending', 1 * MINUTE),
+    orderEvent(VE_KEY, 'cup-1', 'CUP', 'in-progress', 4 * MINUTE),
+    orderEvent(VE_KEY, 'cup-1', 'CUP', 'canceled', 2 * MINUTE),
+    orderEvent(VE_KEY, 'eur-1', 'EUR', 'success', 6 * MINUTE),
+  ]
+}
 
 // The map scatters each node inside its country from one seed drawn per page
 // load, so a live seed lays the map out differently on every run — and which
@@ -75,9 +122,12 @@ const DOCS: Record<string, WindowPayload> = {
   [`orders:30d:i:${AR_PUBKEY}`]: {
     range: RANGE,
     metrics: [
-      count('orders.created', 15),
+      count('orders.created', 19),
       count('orders.ARS.created', 13),
       count('orders.USD.created', 2),
+      // Traded in the window, and with nothing in course now: the archive's
+      // figure alone must not put it on the map.
+      count('orders.BRL.created', 4),
     ],
   },
   [`orders:30d:i:${VE_PUBKEY}`]: {
@@ -143,8 +193,13 @@ const dOf = (event: Event) => event.tags.find((tag) => tag[0] === 'd')?.[1] ?? '
 vi.mock('~/nostr/pool', () => ({
   openRelays: () => ({
     query: (filter: Filter) => {
+      const kinds = filter.kinds ?? []
       const wanted = filter['#d']
-      return Promise.resolve(events.filter((e) => !wanted || wanted.includes(dOf(e))))
+      return Promise.resolve(
+        events.filter(
+          (e) => kinds.includes(e.kind) && (!wanted || wanted.includes(dOf(e))),
+        ),
+      )
     },
     subscribe: () => () => {},
     states: () => [{ url: 'wss://test', status: 'live', newestAt: 1 }],
@@ -161,7 +216,7 @@ const topology = JSON.parse(
 ) as unknown
 
 beforeAll(async () => {
-  events = await buildSnapshot()
+  events = [...(await buildSnapshot()), ...orderEvents()]
 
   globalThis.ResizeObserver = class {
     private cb: ResizeObserverCallback
@@ -201,17 +256,17 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('the map, once the cross is published', () => {
+describe('the map, from the instances own orders', () => {
   test('trusts the snapshot it was built for', () => {
     expect(PUBLISHER).toHaveLength(64)
   })
 
-  test('draws a route for every currency an instance actually traded', async () => {
-    // Arrange / Act — ARS and USD at one instance, VES at the other.
+  test('draws only the currencies with a trade in course or just completed', async () => {
+    // Arrange / Act
     const { container } = render(<Dashboard />)
 
-    // Assert — the scoped documents arrive one round trip after the
-    // instances that named them, so the end state is what is waited for.
+    // Assert — the order events arrive once the instances are named, so the
+    // end state is what is waited for.
     await waitFor(() => {
       expect(container.querySelectorAll('[data-layer="currencies"] > g')).toHaveLength(3)
     })
@@ -221,12 +276,27 @@ describe('the map, once the cross is published', () => {
       .map((g) => g.getAttribute('data-code') ?? '')
       .sort()
     expect(codes).toEqual(['ARS', 'USD', 'VES'])
-    expect(container.querySelectorAll('[data-layer="arcs"] path').length).toBeGreaterThan(
-      5,
-    )
   })
 
-  test('draws one node per instance and names it', async () => {
+  test('draws one line per order, not one per currency', async () => {
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(4)
+    })
+  })
+
+  test('gives a traveller to every line, so the movement is visible', async () => {
+    const { container } = render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('[data-layer="travellers"] circle')).toHaveLength(
+        4,
+      )
+    })
+  })
+
+  test('draws one node per instance trading now and names it', async () => {
     const { container } = render(<Dashboard />)
 
     await waitFor(() => {
@@ -238,29 +308,22 @@ describe('the map, once the cross is published', () => {
     expect(labels.some((label) => label.includes('Mostro'))).toBe(true)
   })
 
-  test('stops calling the routes illustrative once they are measured', async () => {
+  test('counts the markets the map draws, so the headline matches the drawing', async () => {
     const { container } = render(<Dashboard />)
 
     await waitFor(() => {
-      expect(
-        container.querySelectorAll('[data-layer="arcs"] path').length,
-      ).toBeGreaterThan(0)
+      expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(4)
     })
-    expect(container.querySelector('.b-map-gap')?.textContent ?? '').not.toMatch(
-      /ilustrativas/,
-    )
+    expect(container.querySelector('.b-map-count strong')?.textContent).toBe('3')
   })
 
-  test('gives a busier pair more routes than a quieter one', async () => {
+  test('says how long a completed order stays on the map', async () => {
     const { container } = render(<Dashboard />)
 
     await waitFor(() => {
-      expect(container.querySelectorAll('[data-layer="currencies"] > g')).toHaveLength(3)
+      expect(container.querySelector('.b-map-caption')?.textContent ?? '').toMatch(
+        /5 minutes/,
+      )
     })
-    // ARS carries 13 of the 20 orders and must be the fattest bundle.
-    const sizes = [...container.querySelectorAll('[data-layer="currencies"] > g')].map(
-      (g) => Number(g.querySelector('circle[stroke-opacity]')?.getAttribute('r') ?? 0),
-    )
-    expect(Math.max(...sizes)).toBeGreaterThan(Math.min(...sizes))
   })
 })

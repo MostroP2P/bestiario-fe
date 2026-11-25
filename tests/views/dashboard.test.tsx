@@ -245,13 +245,21 @@ describe('Dashboard · real figures', () => {
     expect(expected.length).toBeGreaterThan(5)
   })
 
-  test('draws a market on the map for each currency it can place', async () => {
+  test('draws no market while no instance has a trade in course', async () => {
+    // The archive says which currencies traded in the window; the map is
+    // about now, and no instance has said anything about its orders.
     const { container } = render(<Dashboard />)
 
+    // Everything has answered once the table lists the window's currencies
+    // and the instances' live layer has spoken (the dispute book is empty).
     await waitFor(() => {
-      const nodes = container.querySelectorAll('[data-layer="currencies"] > g')
-      expect(nodes.length).toBeGreaterThan(0)
+      expect(container.querySelectorAll('.b-table tbody th').length).toBeGreaterThan(5)
+      const said = [...container.querySelectorAll('.b-empty')].map((n) => n.textContent)
+      expect(said).toContain(en.disputes.empty(2))
     })
+    expect(container.querySelector('.b-map-count strong')?.textContent).toBe('0')
+    expect(container.querySelectorAll('[data-layer="currencies"] > g')).toHaveLength(0)
+    expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(0)
   })
 
   test('no longer reads the book out of the archive it was published in', async () => {
@@ -277,55 +285,50 @@ describe('Dashboard · real figures', () => {
     expect(container.textContent).not.toContain(archived.slice(0, 8))
   })
 
-  test('draws movement out of every market that traded', async () => {
-    // How many routes a market gets is measured: its share of the busiest.
-    const { container } = render(<Dashboard />)
+  test('asks every instance the archive names for its own order events', async () => {
+    // Arrange / Act
+    render(<Dashboard />)
 
+    // Assert — kind 38383, authored by the instances, bounded at two days.
     await waitFor(() => {
-      expect(
-        container.querySelectorAll('[data-layer="arcs"] path').length,
-      ).toBeGreaterThan(10)
+      expect(asked.some((filter) => filter.kinds?.includes(38383))).toBe(true)
     })
+    const filter = asked.find((f) => f.kinds?.includes(38383))!
+    expect(filter.authors).toContain(instancePubkey)
+    expect(filter.authors).not.toContain(PUBLISHER_PUBKEY)
+    const since = filter.since ?? 0
+    expect(Math.abs(since - (Date.now() - 2 * 86_400_000) / 1000)).toBeLessThan(5)
   })
 
-  test('gives a traveller to every route, so the movement is visible', async () => {
+  test('an order signed by somebody who is not an instance never reaches the map', async () => {
+    // Arrange — a well-formed trade in course, signed by a key nobody named.
+    servedMostro = [
+      finalizeEvent(
+        {
+          kind: 38383,
+          created_at: Math.floor(Date.now() / 1000),
+          tags: [
+            ['d', 'forged'],
+            ['f', 'IRR'],
+            ['s', 'in-progress'],
+            ['z', 'order'],
+          ],
+          content: '',
+        },
+        generateSecretKey(),
+      ),
+    ]
+
+    // Act
     const { container } = render(<Dashboard />)
 
+    // Assert
     await waitFor(() => {
-      const arcs = container.querySelectorAll('[data-layer="arcs"] path').length
-      expect(container.querySelectorAll('[data-layer="travellers"] circle')).toHaveLength(
-        arcs,
-      )
+      expect(container.querySelectorAll('.b-table tbody th').length).toBeGreaterThan(5)
+      const said = [...container.querySelectorAll('.b-empty')].map((n) => n.textContent)
+      expect(said).toContain(en.disputes.empty(2))
     })
-  })
-
-  test('says the routes are illustrative rather than letting them be read as fact', async () => {
-    // Nothing published names an instance, so nothing on this map may claim
-    // one. The note is what keeps the drawing honest.
-    const { container } = render(<Dashboard />)
-
-    await waitFor(() => {
-      const note = container.querySelector('.b-map-gap')?.textContent ?? ''
-      expect(note).toMatch(/illustrative/)
-      // Names the document whose absence is the reason.
-      expect(note).toMatch(/orders:…:i:<pubkey>/)
-    })
-  })
-
-  test('labels no anchor, because none of them is a place anything named', async () => {
-    const { container } = render(<Dashboard />)
-
-    await waitFor(() => {
-      expect(
-        container.querySelectorAll('[data-layer="arcs"] path').length,
-      ).toBeGreaterThan(0)
-    })
-    // Every label on the map is a currency code; none is an instance.
-    const labels = [...container.querySelectorAll('svg text')].map(
-      (t) => t.textContent ?? '',
-    )
-    expect(labels.length).toBeGreaterThan(0)
-    for (const label of labels) expect(label).toMatch(/^[A-Z]{3}$/)
+    expect(container.querySelectorAll('[data-layer="currencies"] > g')).toHaveLength(0)
   })
 
   test('reports the archive extent the index states', async () => {

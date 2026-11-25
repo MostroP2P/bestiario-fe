@@ -170,15 +170,13 @@ export const it: Strings = {
 
   map: {
     heading: 'MERCATI DELLA RETE',
-    caption:
-      'Ogni punto è una valuta con ordini nella finestra scelta, nel suo paese. La sua dimensione e quante rotte ne partono sono il suo volume di ordini.',
+    caption: (minutes) =>
+      `Ogni linea è un ordine in corso, o completato meno di ${minutes} ${plural(minutes, 'minuto', 'minuti')} fa, tra la valuta nel suo paese e l’istanza Mostro che lo gestisce. Letto in diretta dagli eventi di ogni istanza.`,
     loadingGeometry: 'CARICAMENTO GEOMETRIA…',
     noGeometry: (reason) => `NESSUNA GEOMETRIA · ${reason}`,
     activeMarkets: 'MERCATI ATTIVI',
-    illustrativeRoutes:
-      'Le rotte sono illustrative: vanno verso ancoraggi senza nome, non verso le istanze Mostro. Il daemon non ha ancora pubblicato orders:…:i:<pubkey>, e senza quel dato nulla dice quale istanza tratta quale valuta. Ciò che è misurato è la valuta, il suo paese e i suoi ordini.',
     approximateInstances: (approximate, total) =>
-      `${approximate} ${plural(total, 'istanza su', 'istanze su')} ${total} ${plural(total, 'non nomina', 'non nominano')} un paese, quindi il loro punto è una dispersione e non una posizione. Le rotte sono misurate: ognuna è una valuta che quell’istanza ha trattato.`,
+      `${approximate} ${plural(total, 'istanza su', 'istanze su')} ${total} ${plural(total, 'non nomina', 'non nominano')} un paese, quindi il loro punto è una dispersione e non una posizione. Le linee sono reali: ognuna è un ordine di quell’istanza.`,
     describe: {
       empty: 'Nessun flusso di ordini da mostrare.',
       flows: (arcs, currencies, instances) =>
