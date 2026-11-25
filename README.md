@@ -39,7 +39,7 @@ One screen today, over a window the reader picks (24 h, 7 d, 30 d, 90 d, or
 the whole archive):
 
 - **The map.** What the network is trading now: one line per order in
-  course, or completed in the last five minutes, from the country its ISO
+  course, or completed in the last hour, from the country its ISO
   4217 code names to the Mostro instance running it.
 - **Orders**: created, completed, canceled, completion and abandonment rates,
   and how many are open or in progress right now.
@@ -60,7 +60,7 @@ each instance's own order events (Nostr kind 38383), and only from the
 instances the archive names, so a key nobody named cannot draw a line.
 
 A line is an order that has been taken and is not done yet, or one that
-completed less than five minutes ago. An order sitting untaken in the book,
+completed less than an hour ago. An order sitting untaken in the book,
 or one that was canceled or expired, never traded and draws nothing. The
 window selector does not change the map: it is about now.
 

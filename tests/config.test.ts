@@ -17,8 +17,8 @@ describe('map configuration', () => {
     expect(MAP.graceMs).toBeGreaterThan(0)
   })
 
-  test('a settled order keeps its line for five minutes', () => {
-    expect(MAP.graceMs).toBe(5 * 60 * 1000)
+  test('a settled order keeps its line for an hour', () => {
+    expect(MAP.graceMs).toBe(60 * 60 * 1000)
   })
 
   test('draws a trade in course, and not an order nobody has taken', () => {
