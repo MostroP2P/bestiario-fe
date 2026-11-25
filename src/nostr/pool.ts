@@ -87,32 +87,55 @@ export function openRelays(urls: readonly string[]): Relays {
     }
   }
 
+  // Set by `close()`. A window read awaits one page at a time, and a page
+  // asked after close would have SimplePool dial the relay all over again.
+  let closed = false
+
   /**
    * One relay's whole window, newest page first, each page ending where the
    * last one's oldest event was. `until` is inclusive, so a second shared by
-   * two pages is asked twice and deduplicated rather than skipped. A page
-   * with nothing new ends the walk: that is a relay that has run out, or one
-   * that ignores `until`.
+   * two pages is asked twice and deduplicated rather than skipped.
+   *
+   * A page with nothing new means one of two things. Either the relay has
+   * run out or ignores `until`, or the boundary second alone fills a page,
+   * so asking it again can only return the same events. Both are handled by
+   * one step to the second below. If that still brings nothing new, the walk
+   * ends. Events past the relay's cap *within* that one second cannot be
+   * reached: a NIP-01 filter has no offset. The step at least keeps
+   * everything older than that second, and the other relays and the live
+   * subscription may still supply what this one could not.
+   *
+   * Every page shares one deadline, so the whole window answers within the
+   * caller's timeout, however slowly each page arrives.
    */
   async function readWindow(
     url: string,
     filter: Filter & { since: number },
-    timeoutMs: number,
+    deadline: number,
   ): Promise<Event[]> {
     const seen = new Map<string, Event>()
     let until: number | undefined
-    for (let page = 0; page < MAX_WINDOW_PAGES; page++) {
+    let stepped = false
+    for (let page = 0; page < MAX_WINDOW_PAGES && !closed; page++) {
+      const remaining = deadline - Date.now()
+      if (remaining <= 0) break
       const events = await pool.querySync(
         [url],
         { ...filter, limit: WINDOW_PAGE, ...(until === undefined ? {} : { until }) },
-        { maxWait: timeoutMs },
+        { maxWait: remaining },
       )
       const fresh = events.filter((event) => !seen.has(event.id))
-      if (fresh.length === 0) break
+      if (fresh.length === 0) {
+        if (stepped || until === undefined || until - 1 < filter.since) break
+        until -= 1
+        stepped = true
+        continue
+      }
       for (const event of fresh) seen.set(event.id, event)
       const oldest = Math.min(...events.map((event) => event.created_at))
       if (oldest <= filter.since) break
       until = oldest
+      stepped = false
     }
     return [...seen.values()]
   }
@@ -121,10 +144,11 @@ export function openRelays(urls: readonly string[]): Relays {
     filter: Filter & { since: number },
     timeoutMs: number,
   ): Promise<Event[]> {
+    const deadline = Date.now() + timeoutMs
     const answers = await Promise.all(
       relays.map(async (url) => {
         try {
-          return await readWindow(url, filter, timeoutMs)
+          return await readWindow(url, filter, deadline)
         } catch (error: unknown) {
           markFailed([url], error)
           return []
@@ -170,6 +194,7 @@ export function openRelays(urls: readonly string[]): Relays {
     },
 
     close() {
+      closed = true
       pool.close(relays)
     },
   }
