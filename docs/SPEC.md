@@ -441,14 +441,28 @@ The one screen a reader who wants a number, not a study, can stop at.
   open forever. Ages are measured against the reader's clock, from each
   event's signed `created_at`.
 
+- The map. Not a published figure and not governed by the window selector
+  either: it is read from the instances' own order events — Mostro's kind
+  `38383`, `d` the order id, `f` its currency and `s` its status — newest
+  revision per order. One line per order, from the currency's country to
+  the instance, while the order is a trade in course (`in-progress`,
+  `active`, `fiat-sent`, `waiting-buyer-invoice`, `waiting-payment`) and for
+  five minutes after it completes (`success`, `completed-by-admin`,
+  `settled-by-admin`). An order nobody has taken (`pending`), and one that
+  was canceled or expired, draws nothing. A trade in course reaches back two
+  days, for the same reason the book does. A currency is on the map, and in
+  the ACTIVE MARKETS count, only while it has a line. The knobs are `MAP` in
+  `src/config.ts`.
+
 `d` set: `orders:<w>`, `volume:<w>`, `disputes:<w>`, `dev-fees:<w>`, plus the
 series partitions for the window.
 
-The dispute events are the one place this route reads something the publisher
-did not sign. The trust anchor there is the instance set: only a key the
-`instances:<w>` document names may put a row on the book, and its signature
-is checked like any other. What such an event proves is that *that instance*
-said this about its own dispute — never that the archive agrees.
+The dispute and order events are the one place this route reads something
+the publisher did not sign. The trust anchor there is the instance set: only
+a key the `instances:<w>` document names may put a row on the book or a line
+on the map, and its signature is checked like any other. What such an event
+proves is that *that instance* said this about its own dispute or order —
+never that the archive agrees.
 
 Until §14.2 lands there is no `summary` document, so this route composes its
 tiles from the four family documents. The tiles are named for the metric
