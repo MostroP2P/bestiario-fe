@@ -26,7 +26,8 @@ export type RelayState = {
 
 export interface Relays {
   /**
-   * Every matching event any relay holds, within the timeout. A filter with
+   * Every matching event any relay holds, within the timeout (plus the time
+   * to open a relay's socket, which SimplePool bounds on its own). A filter with
    * a `since` and no `limit` is a window, read newest page first however
    * little a relay answers per query, and whole up to one limit NIP-01 sets:
    * a filter has no offset, so when a relay holds more events in one second
@@ -109,8 +110,14 @@ export function openRelays(urls: readonly string[]): Relays {
    * everything older than that second, and the other relays and the live
    * subscription may still supply what this one could not.
    *
-   * Every page shares one deadline, so the whole window answers within the
-   * caller's timeout, however slowly each page arrives.
+   * Every page shares one deadline and waits only for what is left of it,
+   * so slow pages cannot add up past the caller's timeout. The deadline
+   * bounds the *wait for events*, not the dial: SimplePool's `querySync`
+   * first waits for the socket on its own connection timeout (up to
+   * `max(0.8 × maxWait, maxWait − 1 s)` in nostr-tools 2.25), and only then
+   * starts the `maxWait` clock. Only the first page dials, since later pages
+   * reuse the socket, so a window read can overrun the timeout by at most
+   * one connection time. That is the same overrun a single query has.
    */
   async function readWindow(
     url: string,
