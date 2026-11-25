@@ -17,6 +17,26 @@ describe('map configuration', () => {
     expect(MAP.graceMs).toBeGreaterThan(0)
   })
 
+  test('a settled order keeps its line for five minutes', () => {
+    expect(MAP.graceMs).toBe(5 * 60 * 1000)
+  })
+
+  test('draws a trade in course, and not an order nobody has taken', () => {
+    expect(MAP.liveStatuses).toContain('in-progress')
+    expect(MAP.liveStatuses).not.toContain('pending')
+  })
+
+  test('keeps a completed order for its grace period and nothing that failed', () => {
+    expect(MAP.settlingStatuses).toContain('success')
+    for (const failed of ['canceled', 'expired', 'canceled-by-admin']) {
+      expect([...MAP.liveStatuses, ...MAP.settlingStatuses]).not.toContain(failed)
+    }
+  })
+
+  test('lets a trade in course go quiet for longer than it can last', () => {
+    expect(MAP.liveWindowMs).toBeGreaterThan(MAP.graceMs)
+  })
+
   test('caps the number of lines drawn at once', () => {
     expect(MAP.maxLines).toBeGreaterThan(0)
   })

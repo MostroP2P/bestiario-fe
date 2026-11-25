@@ -169,15 +169,15 @@ export const es: Strings = {
 
   map: {
     heading: 'MERCADOS DE LA RED',
-    caption:
-      'Cada punto es una moneda con órdenes en la ventana elegida, en su país. Su tamaño y cuántas rutas salen de él son su volumen de órdenes.',
+    caption: (minutes) =>
+      `Cada línea es una orden en curso, o completada hace menos de ${minutes} ${plural(minutes, 'minuto', 'minutos')}, entre la moneda en su país y el mostro que la opera. Se lee en vivo de los eventos de cada instancia.`,
     loadingGeometry: 'CARGANDO GEOMETRÍA…',
     noGeometry: (reason) => `SIN GEOMETRÍA · ${reason}`,
     activeMarkets: 'MERCADOS ACTIVOS',
-    illustrativeRoutes:
-      'Las rutas son ilustrativas: van a anclajes sin nombre, no a mostros. El daemon todavía no ha publicado orders:…:i:<pubkey>, y sin eso nada dice qué instancia opera qué moneda. Lo medido es la moneda, su país y sus órdenes.',
+    noRoster:
+      'No se pudo verificar la lista de instancias, así que el mapa no puede decir quién opera ahora.',
     approximateInstances: (approximate, total) =>
-      `${approximate} de ${total} ${plural(total, 'instancia no nombra', 'instancias no nombran')} un país, así que su punto es una dispersión y no una ubicación. Las rutas están medidas: cada una es una moneda que esa instancia operó.`,
+      `${approximate} de ${total} ${plural(total, 'instancia no nombra', 'instancias no nombran')} un país, así que su punto es una dispersión y no una ubicación. Las líneas son reales: cada una es una orden de esa instancia.`,
     describe: {
       empty: 'Sin flujo de órdenes que mostrar.',
       flows: (arcs, currencies, instances) =>

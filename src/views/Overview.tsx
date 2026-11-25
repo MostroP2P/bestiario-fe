@@ -26,12 +26,11 @@ import { Skeleton, SkeletonKpi, SkeletonMap } from '~/components/Skeleton'
 import { WorldPulse } from '~/components/WorldPulse'
 import { useAtlas } from '~/map/useAtlas'
 import { useMeasuredSize, usePrefersReducedMotion } from '~/map/hooks'
-import { placeAnchors, placeCurrencies, placeMostros } from '~/map/placements'
-import { ANCHOR_COUNT, flowLines } from '~/map/flows'
-import { networkLines, tradedCurrencies } from '~/map/network'
+import { placeCurrencies, placeMostros } from '~/map/placements'
 import { currencyOrders, instanceRows } from '~/model/instances'
+import { activeLines, activeMarkets } from '~/model/live-lines'
 import { openDisputes } from '~/model/open-disputes'
-import { DISPUTES } from '~/config'
+import { DISPUTES, MAP } from '~/config'
 import { currencyMatrix } from '~/model/matrix'
 import { printAddress } from '~/nostr/address'
 import { createProjection } from '~/map/projection'
@@ -53,9 +52,10 @@ export function Overview(props: { readonly window: Span }) {
   // instance the first pass named. The store fetches each set in one round
   // trip and serves anything already cached.
   const [scoped, setScoped] = useState<readonly string[]>([])
-  // The instances whose dispute events the open book is read from. Named by a
-  // document, so the set arrives on the second pass with the scoped orders.
-  const [disputeAuthors, setDisputeAuthors] = useState<readonly string[]>([])
+  // The instances whose own events the open book and the map are read from.
+  // Named by a document, so the set arrives on the second pass with the
+  // scoped orders.
+  const [instanceAuthors, setInstanceAuthors] = useState<readonly string[]>([])
   const needed = useMemo(
     () => [
       ...(['orders', 'volume', 'disputes', 'dev-fees', 'instances'] as const).map(
@@ -70,18 +70,28 @@ export function Overview(props: { readonly window: Span }) {
     documents,
     disputes: disputeEvents,
     disputesReady,
-  } = useStore(needed, disputeAuthors)
+    orders: orderEvents,
+    ordersReady,
+  } = useStore(needed, instanceAuthors)
 
   const orders = metricsOf(payloadOf(documents, windowAddress('orders', window_)))
   const volume = metricsOf(payloadOf(documents, windowAddress('volume', window_)))
   const disputes = metricsOf(payloadOf(documents, windowAddress('disputes', window_)))
   const fees = metricsOf(payloadOf(documents, windowAddress('dev-fees', window_)))
 
+  const instancesState = documents.get(windowAddress('instances', window_))
+  const instancesPayload = payloadOf(documents, windowAddress('instances', window_))
   const instances = useMemo(
-    () =>
-      instanceRows(metricsOf(payloadOf(documents, windowAddress('instances', window_)))),
-    [documents, window_],
+    () => instanceRows(metricsOf(instancesPayload)),
+    [instancesPayload],
   )
+  /**
+   * The roster answered and could not be read: unpublished, withheld or
+   * failing its proof. Nobody can say then which keys may draw on the map,
+   * and an empty map would read as a calm network.
+   */
+  const rosterFailed =
+    instancesState?.status === 'unavailable' || instancesState?.status === 'unverified'
 
   // An instance is addressed by its pubkey, which is a row of its block and
   // never its label.
@@ -102,15 +112,21 @@ export function Overview(props: { readonly window: Span }) {
     setScoped(scopedKey ? scopedKey.split(' ') : [])
   }, [scopedKey])
 
-  // Only the instances the archive names may put a row on the dispute book:
-  // an event signed by anyone else is somebody else's claim about Mostro.
+  // Only the instances the archive names may put a row on the dispute book or
+  // a line on the map: an event signed by anyone else is somebody else's
+  // claim about Mostro.
   const instanceKey = useMemo(
     () => instances.map((instance) => instance.pubkey).join(' '),
     [instances],
   )
+  // Only from a roster that is in hand: while the next window's is still on
+  // its way the set is unknown, not empty, and releasing the watch then
+  // would drop every line and ask the relays for them again.
+  const rosterInHand = instancesPayload !== undefined
   useEffect(() => {
-    setDisputeAuthors(instanceKey ? instanceKey.split(' ') : [])
-  }, [instanceKey])
+    if (!rosterInHand) return
+    setInstanceAuthors(instanceKey ? instanceKey.split(' ') : [])
+  }, [instanceKey, rosterInHand])
 
   /** What each instance traded, when the publisher says. */
   const trades = useMemo(
@@ -127,9 +143,6 @@ export function Overview(props: { readonly window: Span }) {
       }),
     [instances, documents, window_],
   )
-
-  /** The cross is published: every line stands for a figure that was signed. */
-  const measuredRoutes = trades.length > 0
 
   /** The same cross the map is drawn from, read as a grid. */
   const matrix = useMemo(() => currencyMatrix(instances, trades), [instances, trades])
@@ -185,16 +198,27 @@ export function Overview(props: { readonly window: Span }) {
     [mapWidth, mapHeight],
   )
 
+  // Not a published figure either: the instances' own 38383 events, kept to
+  // trades in course and to orders completed in the last few minutes. A
+  // currency is on the map only while one of those is.
+  const flows = useMemo(() => activeLines(orderEvents, nowMs, MAP), [orderEvents, nowMs])
+
+  /** The currencies trading now, counted before the drawing cap samples them. */
   const marketWeights = useMemo(
-    () =>
-      measuredRoutes
-        ? tradedCurrencies(trades)
-        : currencies.map((row) => ({
-            code: row.code,
-            weight: Number(row.figures.get('orders')?.value ?? 0),
-          })),
-    [measuredRoutes, trades, currencies],
+    () => activeMarkets(orderEvents, nowMs, MAP),
+    [orderEvents, nowMs],
   )
+
+  /** An empty map is only news once the instances are named and have answered. */
+  // Not `loading`: that waits on the window's orders document, and the map
+  // is about now, whatever the archive holds for the window.
+  const marketsLoading =
+    boot.status === 'loading' ||
+    !settled(windowAddress('instances', window_)) ||
+    rosterFailed ||
+    !ordersReady
+
+  const graceMinutes = Math.round(MAP.graceMs / 60_000)
 
   const placed = useMemo(
     () =>
@@ -210,25 +234,10 @@ export function Overview(props: { readonly window: Span }) {
 
   const mostros = useMemo(
     () =>
-      atlasState.status === 'ready' && measuredRoutes
+      atlasState.status === 'ready'
         ? placeMostros(instances, atlasState.atlas, seed)
         : null,
-    [atlasState, measuredRoutes, instances, seed],
-  )
-
-  const anchors = useMemo(
-    () =>
-      atlasState.status === 'ready' && !measuredRoutes
-        ? placeAnchors(atlasState.atlas, seed, ANCHOR_COUNT)
-        : null,
-    [atlasState, measuredRoutes, seed],
-  )
-
-  // Real routes when the cross is published; the illustrative fan otherwise.
-  const flows = useMemo(
-    () =>
-      measuredRoutes ? networkLines(trades) : flowLines(marketWeights, ANCHOR_COUNT),
-    [measuredRoutes, trades, marketWeights],
+    [atlasState, instances, seed],
   )
 
   const instanceName = useMemo(
@@ -241,15 +250,14 @@ export function Overview(props: { readonly window: Span }) {
   )
 
   const scene = useMemo(() => {
-    if (!projection || !placed || atlasState.status !== 'ready') return EMPTY_SCENE
-    if (!mostros && !anchors) return EMPTY_SCENE
+    if (!projection || !placed || !mostros || atlasState.status !== 'ready') {
+      return EMPTY_SCENE
+    }
     return buildScene({
       lines: flows,
       currencies: marketWeights,
       currencyAt: (code) => placed.get(code) ?? null,
-      instanceAt: (id) => mostros?.get(id)?.point ?? anchors?.get(id) ?? null,
-      // A real instance is named; an anchor is not, and an empty label is
-      // what keeps the map from inventing one.
+      instanceAt: (id) => mostros.get(id)?.point ?? null,
       instanceLabel: (pubkey) => instanceName.get(pubkey) ?? '',
       project: projection.project,
       maxBow: mapHeight * MAX_BOW_OF_HEIGHT,
@@ -258,7 +266,6 @@ export function Overview(props: { readonly window: Span }) {
     projection,
     placed,
     mostros,
-    anchors,
     atlasState,
     marketWeights,
     flows,
@@ -266,7 +273,9 @@ export function Overview(props: { readonly window: Span }) {
     mapHeight,
   ])
 
-  const mapReady = atlasState.status === 'ready' && projection !== null && !loading
+  // Not before the instances have answered: an empty map drawn then would
+  // announce no activity that nobody reported.
+  const mapReady = atlasState.status === 'ready' && projection !== null && !marketsLoading
 
   return (
     <>
@@ -290,7 +299,12 @@ export function Overview(props: { readonly window: Span }) {
         {/* The drawing is measured, not the section, so the projection is
               fitted to the globe's own box at every width. */}
         <div class="b-map-canvas" ref={mapRef}>
-          {!mapReady && <SkeletonMap />}
+          {!mapReady && !rosterFailed && <SkeletonMap />}
+          {rosterFailed && (
+            <p class="b-map-state" data-failed="true">
+              {strings.map.noRoster}
+            </p>
+          )}
           {atlasState.status === 'failed' && (
             <p class="b-map-state" data-failed="true">
               {strings.map.noGeometry(atlasState.reason)}
@@ -308,12 +322,12 @@ export function Overview(props: { readonly window: Span }) {
             />
           )}
         </div>
-        {/* Every market the archive published, not only the ones the map
-            could place: a currency whose country does not resolve is still
-            an active market, and the headline may not quietly drop it. */}
+        {/* Every market trading now, not only the ones the map could place:
+            a currency whose country does not resolve is still trading, and
+            the headline may not quietly drop it. */}
         <div class="b-map-count">
           <span class="b-eyebrow">{strings.map.activeMarkets}</span>
-          {loading ? (
+          {rosterFailed ? null : marketsLoading ? (
             <Skeleton width="52px" height="30px" />
           ) : (
             <strong>{marketWeights.length}</strong>
@@ -321,15 +335,11 @@ export function Overview(props: { readonly window: Span }) {
         </div>
 
         <div class="b-map-caption">
-          <p>{strings.map.caption}</p>
-          {measuredRoutes ? (
-            approximate > 0 && (
-              <p class="b-map-gap">
-                {strings.map.approximateInstances(approximate, instances.length)}
-              </p>
-            )
-          ) : (
-            <p class="b-map-gap">{strings.map.illustrativeRoutes}</p>
+          <p>{strings.map.caption(graceMinutes)}</p>
+          {approximate > 0 && (
+            <p class="b-map-gap">
+              {strings.map.approximateInstances(approximate, instances.length)}
+            </p>
           )}
         </div>
       </section>

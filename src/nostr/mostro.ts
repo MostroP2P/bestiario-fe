@@ -5,13 +5,15 @@
  * the instances speaking for themselves, in the moment. The two are kept
  * apart on purpose: nothing here is hashed against the index, and nothing
  * here is signed by the publisher this build trusts. What a 38386 event
- * proves is that *that instance* said this about its own dispute.
+ * proves is that *that instance* said this about its own dispute, and what a
+ * 38383 event proves is the same about one of its orders.
  *
  * Parsing only. Who may sign an event is decided where the events arrive.
  */
 import type { Event } from 'nostr-tools'
-import { MOSTRO_DISPUTE_KIND } from '~/config'
+import { MOSTRO_DISPUTE_KIND, MOSTRO_ORDER_KIND } from '~/config'
 import type { LiveDispute } from '~/model/open-disputes'
+import type { LiveOrder } from '~/model/live-lines'
 
 function tag(event: Event, name: string): string | undefined {
   return event.tags.find((entry) => entry[0] === name)?.[1]
@@ -38,6 +40,35 @@ export function disputeFrom(event: Event): LiveDispute | null {
   return {
     eventId: event.id,
     id,
+    status,
+    instancePubkey: event.pubkey,
+    updatedAt: event.created_at * 1000,
+  }
+}
+
+/**
+ * The order a 38383 event carries, or null.
+ *
+ * The same rule as for disputes: no `d` is no identity, no `s` is no status,
+ * and no `f` is no currency to draw a line from. The code is upper-cased
+ * because the map places ISO 4217 codes and an instance is free to write
+ * `ars`.
+ */
+export function orderFrom(event: Event): LiveOrder | null {
+  if (event.kind !== MOSTRO_ORDER_KIND) return null
+
+  const z = tag(event, 'z')
+  if (z !== undefined && z !== 'order') return null
+
+  const id = tag(event, 'd')
+  const status = tag(event, 's')
+  const fiat = tag(event, 'f')?.trim().toUpperCase()
+  if (!id || !status || !fiat) return null
+
+  return {
+    eventId: event.id,
+    id,
+    fiat,
     status,
     instancePubkey: event.pubkey,
     updatedAt: event.created_at * 1000,

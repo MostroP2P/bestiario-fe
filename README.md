@@ -38,8 +38,9 @@ about whether they are right.
 One screen today, over a window the reader picks (24 h, 7 d, 30 d, 90 d, or
 the whole archive):
 
-- **The map.** Every currency the network traded in the window, placed in the
-  country its ISO 4217 code names, sized by how many orders it carried.
+- **The map.** What the network is trading now: one line per order in
+  course, or completed in the last five minutes, from the country its ISO
+  4217 code names to the Mostro instance running it.
 - **Orders**: created, completed, canceled, completion and abandonment rates,
   and how many are open or in progress right now.
 - **Volume**: total sats, ticket average and percentiles, the largest order,
@@ -52,19 +53,16 @@ the whole archive):
 - **The archive's real extent**, so a period outside it reads as unindexed
   rather than as a quiet network.
 
-### About the routes on the map
+### About the lines on the map
 
-The routes are illustrative, and the site says so on the map itself.
+The map is live, and it is not one of the archive's figures. It is read from
+each instance's own order events (Nostr kind 38383), and only from the
+instances the archive names, so a key nobody named cannot draw a line.
 
-How many routes leave a currency is measured — its share of the busiest
-market. Where each one goes is not: bestiario publishes no document naming an
-instance, so nothing on the wire says which instance trades which currency.
-The far ends are anonymous anchors, drawn without a name so that nothing
-invites a reader to think a Mostro instance sits there.
-
-The fix is upstream and is written: a window document for every report, so
-`instances` reaches a relay. Until it does, the map draws movement and
-refuses to draw a claim.
+A line is an order that has been taken and is not done yet, or one that
+completed less than five minutes ago. An order sitting untaken in the book,
+or one that was canceled or expired, never traded and draws nothing. The
+window selector does not change the map: it is about now.
 
 ## What it cannot show
 

@@ -15,6 +15,10 @@ const dOf = (event: Event) => event.tags.find((tag) => tag[0] === 'd')?.[1] ?? '
 let served: Event[] = fixtures
 /** Mostro's own events — the live layer, asked for by kind and not by `d`. */
 let servedMostro: Event[] = []
+/** When true, the instances' order query never answers: a slow relay. */
+let ordersStall = false
+/** Archive documents a slow relay takes its time over. */
+let slowDocs = new Set<string>()
 /** Every filter the site put on the wire, so a test can read what it asked. */
 const asked: Filter[] = []
 
@@ -24,10 +28,13 @@ vi.mock('~/nostr/pool', () => ({
       asked.push(filter)
       const kinds = filter.kinds ?? []
       if (!kinds.includes(30666)) {
+        if (ordersStall && kinds.includes(38383)) return new Promise<Event[]>(() => {})
         return Promise.resolve(servedMostro.filter((e) => kinds.includes(e.kind)))
       }
       const wanted = filter['#d']
-      return Promise.resolve(served.filter((e) => !wanted || wanted.includes(dOf(e))))
+      const found = served.filter((e) => !wanted || wanted.includes(dOf(e)))
+      if (!wanted?.some((d) => slowDocs.has(d))) return Promise.resolve(found)
+      return new Promise<Event[]>((resolve) => setTimeout(() => resolve(found), 100))
     },
     subscribe: () => () => {},
     states: () => [{ url: 'wss://relay.mostro.network', status: 'live', newestAt: 1 }],
@@ -83,7 +90,11 @@ beforeAll(() => {
 beforeEach(() => {
   served = fixtures
   servedMostro = []
+  ordersStall = false
+  slowDocs = new Set()
   asked.length = 0
+  // The window lives in the hash; a test that moved it must not move the next.
+  window.history.replaceState(null, '', '/')
   resetStore()
   clearCache()
   clearAtlasCache()
@@ -245,13 +256,20 @@ describe('Dashboard · real figures', () => {
     expect(expected.length).toBeGreaterThan(5)
   })
 
-  test('draws a market on the map for each currency it can place', async () => {
+  test('draws no market while no instance has a trade in course', async () => {
+    // The archive says which currencies traded in the window; the map is
+    // about now, and no instance has said anything about its orders.
     const { container } = render(<Dashboard />)
 
+    // The count only leaves its skeleton once the instances have answered
+    // for their orders, so it is the barrier the map's emptiness waits on.
     await waitFor(() => {
-      const nodes = container.querySelectorAll('[data-layer="currencies"] > g')
-      expect(nodes.length).toBeGreaterThan(0)
+      expect(container.querySelectorAll('.b-table tbody th').length).toBeGreaterThan(5)
+      expect(container.querySelector('.b-map-count strong')).not.toBeNull()
     })
+    expect(container.querySelector('.b-map-count strong')?.textContent).toBe('0')
+    expect(container.querySelectorAll('[data-layer="currencies"] > g')).toHaveLength(0)
+    expect(container.querySelectorAll('[data-layer="arcs"] path')).toHaveLength(0)
   })
 
   test('no longer reads the book out of the archive it was published in', async () => {
@@ -277,55 +295,131 @@ describe('Dashboard · real figures', () => {
     expect(container.textContent).not.toContain(archived.slice(0, 8))
   })
 
-  test('draws movement out of every market that traded', async () => {
-    // How many routes a market gets is measured: its share of the busiest.
+  test('keeps the map a skeleton until the instances have answered for their orders', async () => {
+    // Arrange — the archive and the dispute book answer; the order query
+    // does not. An empty map now would claim no activity nobody reported.
+    ordersStall = true
+
+    // Act
     const { container } = render(<Dashboard />)
 
+    // Assert
     await waitFor(() => {
-      expect(
-        container.querySelectorAll('[data-layer="arcs"] path').length,
-      ).toBeGreaterThan(10)
+      expect(asked.some((filter) => filter.kinds?.includes(38383))).toBe(true)
+      const said = [...container.querySelectorAll('.b-empty')].map((n) => n.textContent)
+      expect(said).toContain(en.disputes.empty(2))
     })
+    expect(container.querySelector('.b-skeleton-map')).not.toBeNull()
+    expect(container.querySelector('.b-map-canvas svg')).toBeNull()
   })
 
-  test('gives a traveller to every route, so the movement is visible', async () => {
+  test('draws the map even when the window has no orders document', async () => {
+    // Arrange — the map is about now; a window the archive has nothing for
+    // must not hold it as a skeleton.
+    served = fixtures.filter((e) => dOf(e) !== 'orders:30d')
+
+    // Act
     const { container } = render(<Dashboard />)
 
+    // Assert
     await waitFor(() => {
-      const arcs = container.querySelectorAll('[data-layer="arcs"] path').length
-      expect(container.querySelectorAll('[data-layer="travellers"] circle')).toHaveLength(
-        arcs,
-      )
+      expect(container.querySelector('.b-map-canvas svg')).not.toBeNull()
     })
+    expect(container.querySelector('.b-map-count strong')?.textContent).toBe('0')
   })
 
-  test('says the routes are illustrative rather than letting them be read as fact', async () => {
-    // Nothing published names an instance, so nothing on this map may claim
-    // one. The note is what keeps the drawing honest.
-    const { container } = render(<Dashboard />)
-
-    await waitFor(() => {
-      const note = container.querySelector('.b-map-gap')?.textContent ?? ''
-      expect(note).toMatch(/illustrative/)
-      // Names the document whose absence is the reason.
-      expect(note).toMatch(/orders:…:i:<pubkey>/)
-    })
-  })
-
-  test('labels no anchor, because none of them is a place anything named', async () => {
-    const { container } = render(<Dashboard />)
-
-    await waitFor(() => {
-      expect(
-        container.querySelectorAll('[data-layer="arcs"] path').length,
-      ).toBeGreaterThan(0)
-    })
-    // Every label on the map is a currency code; none is an instance.
-    const labels = [...container.querySelectorAll('svg text')].map(
-      (t) => t.textContent ?? '',
+  test('says the map cannot be read when the instance roster fails verification', async () => {
+    // Arrange — the roster's content no longer matches what was signed.
+    served = fixtures.map((e) =>
+      dOf(e) === 'instances:30d'
+        ? { ...e, content: e.content.replace('Mostro', 'Mallory') }
+        : e,
     )
-    expect(labels.length).toBeGreaterThan(0)
-    for (const label of labels) expect(label).toMatch(/^[A-Z]{3}$/)
+
+    // Act
+    const { container } = render(<Dashboard />)
+
+    // Assert — a failure, and neither a count nor an empty map claiming calm.
+    await waitFor(() => {
+      const failure = container.querySelector('.b-map-state[data-failed="true"]')
+      expect(failure).not.toBeNull()
+      expect(failure?.textContent).toBe(en.map.noRoster)
+    })
+    expect(container.querySelector('.b-map-count strong')).toBeNull()
+    expect(container.querySelector('.b-map-canvas svg')).toBeNull()
+  })
+
+  test('keeps following the instances while the next window loads', async () => {
+    // Arrange
+    const { container, getByLabelText } = render(<Dashboard />)
+    await waitFor(() => {
+      expect(container.querySelector('.b-map-count strong')).not.toBeNull()
+    })
+
+    // Act — a new window whose roster takes a moment to arrive, and names
+    // the same instances.
+    slowDocs = new Set(['instances:7d'])
+    fireEvent.change(getByLabelText(en.header.windowNav), { target: { value: '7d' } })
+    // The slow roster has answered once the 7d documents were asked for and
+    // their answer has had time to land.
+    await waitFor(() => {
+      expect(asked.some((f) => f['#d']?.includes('instances:7d'))).toBe(true)
+    })
+    await new Promise((resolve) => setTimeout(resolve, 250))
+    await waitFor(() => {
+      expect(container.querySelector('.b-map-count strong')).not.toBeNull()
+    })
+
+    // Assert — the order layer was asked once: the watch was never released
+    // and taken again while the new roster was loading.
+    expect(asked.filter((filter) => filter.kinds?.includes(38383))).toHaveLength(1)
+  })
+
+  test('asks every instance the archive names for its own order events', async () => {
+    // Arrange / Act
+    render(<Dashboard />)
+
+    // Assert — kind 38383, authored by the instances, bounded at two days.
+    await waitFor(() => {
+      expect(asked.some((filter) => filter.kinds?.includes(38383))).toBe(true)
+    })
+    const filter = asked.find((f) => f.kinds?.includes(38383))!
+    expect(filter.authors).toContain(instancePubkey)
+    expect(filter.authors).not.toContain(PUBLISHER_PUBKEY)
+    const since = filter.since ?? 0
+    expect(Math.abs(since - (Date.now() - 2 * 86_400_000) / 1000)).toBeLessThan(5)
+  })
+
+  test('an order signed by somebody who is not an instance never reaches the map', async () => {
+    // Arrange — a well-formed trade in course, signed by a key nobody named.
+    servedMostro = [
+      finalizeEvent(
+        {
+          kind: 38383,
+          created_at: Math.floor(Date.now() / 1000),
+          tags: [
+            ['d', 'forged'],
+            ['f', 'IRR'],
+            ['s', 'in-progress'],
+            ['z', 'order'],
+          ],
+          content: '',
+        },
+        generateSecretKey(),
+      ),
+    ]
+
+    // Act
+    const { container } = render(<Dashboard />)
+
+    // Assert
+    // The count only leaves its skeleton once the instances have answered
+    // for their orders, so it is the barrier the map's emptiness waits on.
+    await waitFor(() => {
+      expect(container.querySelectorAll('.b-table tbody th').length).toBeGreaterThan(5)
+      expect(container.querySelector('.b-map-count strong')).not.toBeNull()
+    })
+    expect(container.querySelectorAll('[data-layer="currencies"] > g')).toHaveLength(0)
   })
 
   test('reports the archive extent the index states', async () => {

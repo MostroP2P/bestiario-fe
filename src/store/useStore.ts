@@ -12,6 +12,7 @@ import { openRelays } from '~/nostr/pool'
 import { createStore, type BootState, type DocState, type Store } from './store'
 import type { RelayState } from '~/nostr/pool'
 import type { LiveDispute } from '~/model/open-disputes'
+import type { LiveOrder } from '~/model/live-lines'
 
 let shared: Store | null = null
 
@@ -33,16 +34,20 @@ export type StoreView = {
   readonly disputes: readonly LiveDispute[]
   /** False while the relays have not yet answered for the watched instances. */
   readonly disputesReady: boolean
+  /** The watched instances' own order events, behind the map. */
+  readonly orders: readonly LiveOrder[]
+  readonly ordersReady: boolean
 }
 
 /**
- * The documents a route needs, and — when it asks — the dispute events of the
- * instances it names. The second set is not addressed by `d`: it is the
- * instances' own live layer, and it is followed only while a view wants it.
+ * The documents a route needs, and — when it asks — the dispute and order
+ * events of the instances it names. The second set is not addressed by `d`:
+ * it is the instances' own live layer, and it is followed only while a view
+ * wants it.
  */
 export function useStore(
   needed: readonly string[],
-  disputeAuthors: readonly string[] = [],
+  instanceAuthors: readonly string[] = [],
 ): StoreView {
   const store = useMemo(() => sharedStore(), [])
   const [view, setView] = useState<StoreView>({
@@ -51,6 +56,8 @@ export function useStore(
     relays: store.relays.value,
     disputes: store.disputes.value,
     disputesReady: store.disputesReady.value,
+    orders: store.orders.value,
+    ordersReady: store.ordersReady.value,
   })
 
   useEffect(() => {
@@ -61,6 +68,8 @@ export function useStore(
         relays: store.relays.value,
         disputes: store.disputes.value,
         disputesReady: store.disputesReady.value,
+        orders: store.orders.value,
+        ordersReady: store.ordersReady.value,
       })
     const stop = [
       store.boot.subscribe(read),
@@ -68,6 +77,8 @@ export function useStore(
       store.relays.subscribe(read),
       store.disputes.subscribe(read),
       store.disputesReady.subscribe(read),
+      store.orders.subscribe(read),
+      store.ordersReady.subscribe(read),
     ]
     void store.start()
     return () => stop.forEach((unsubscribe) => unsubscribe())
@@ -83,16 +94,16 @@ export function useStore(
   // render and not the first. Re-watching the same set is free.
   //
   // The store outlives any one view, so a view that asked for a watch releases
-  // it on the way out: otherwise the overview's dispute subscription would
+  // it on the way out: otherwise the overview's live subscriptions would
   // outlive the overview, and a reader on another route would keep paying for
   // traffic nothing renders. A view that named nobody holds nothing to release.
-  const authorsKey = disputeAuthors.join(' ')
+  const authorsKey = instanceAuthors.join(' ')
   useEffect(() => {
     const authors = authorsKey.split(' ').filter(Boolean)
-    void store.watchDisputes(authors)
+    void store.watchInstances(authors)
     if (authors.length === 0) return
     return () => {
-      void store.watchDisputes([])
+      void store.watchInstances([])
     }
   }, [store, authorsKey])
 

@@ -169,15 +169,15 @@ export const pt: Strings = {
 
   map: {
     heading: 'MERCADOS DA REDE',
-    caption:
-      'Cada ponto é uma moeda com ordens na janela escolhida, no país dela. O tamanho do ponto e quantas rotas saem dele são o volume de ordens dessa moeda.',
+    caption: (minutes) =>
+      `Cada linha é uma ordem em andamento, ou concluída há menos de ${minutes} ${plural(minutes, 'minuto', 'minutos')}, entre a moeda no seu país e o mostro que a opera. Lido ao vivo dos eventos de cada instância.`,
     loadingGeometry: 'CARREGANDO GEOMETRIA…',
     noGeometry: (reason) => `SEM GEOMETRIA · ${reason}`,
     activeMarkets: 'MERCADOS ATIVOS',
-    illustrativeRoutes:
-      'As rotas são ilustrativas: vão para âncoras sem nome, não para mostros. O daemon ainda não publicou orders:…:i:<pubkey>, e sem ele nada diz qual instância opera qual moeda. O que é medido é a moeda, o seu país e as suas ordens.',
+    noRoster:
+      'Não foi possível verificar a lista de instâncias, então o mapa não pode dizer quem está operando agora.',
     approximateInstances: (approximate, total) =>
-      `${approximate} de ${total} ${plural(total, 'instância não nomeia', 'instâncias não nomeiam')} um país, então o ponto delas é uma dispersão e não uma localização. As rotas são medidas: cada uma é uma moeda que essa instância operou.`,
+      `${approximate} de ${total} ${plural(total, 'instância não nomeia', 'instâncias não nomeiam')} um país, então o ponto delas é uma dispersão e não uma localização. As linhas são reais: cada uma é uma ordem dessa instância.`,
     describe: {
       empty: 'Sem fluxo de ordens para mostrar.',
       flows: (arcs, currencies, instances) =>

@@ -171,15 +171,15 @@ export const fr: Strings = {
 
   map: {
     heading: 'MARCHÉS DU RÉSEAU',
-    caption:
-      'Chaque point est une monnaie avec des ordres dans la fenêtre choisie, dans son pays. Sa taille et le nombre de routes qui en partent sont son volume d’ordres.',
+    caption: (minutes) =>
+      `Chaque ligne est un ordre en cours, ou terminé il y a moins de ${minutes} ${plural(minutes, 'minute', 'minutes')}, entre la monnaie dans son pays et le mostro qui l’opère. Lu en direct depuis les événements de chaque instance.`,
     loadingGeometry: 'CHARGEMENT DE LA GÉOMÉTRIE…',
     noGeometry: (reason) => `PAS DE GÉOMÉTRIE · ${reason}`,
     activeMarkets: 'MARCHÉS ACTIFS',
-    illustrativeRoutes:
-      'Les routes sont illustratives : elles vont vers des ancrages sans nom, pas vers des mostros. Le démon n’a pas encore publié orders:…:i:<pubkey>, et sans cela rien ne dit quelle instance négocie quelle monnaie. Ce qui est mesuré, c’est la monnaie, son pays et ses ordres.',
+    noRoster:
+      'La liste des instances n’a pas pu être vérifiée : la carte ne peut pas dire qui négocie en ce moment.',
     approximateInstances: (approximate, total) =>
-      `${approximate} ${plural(total, 'instance sur', 'instances sur')} ${total} ${plural(total, 'ne nomme', 'ne nomment')} aucun pays : leur point est une dispersion et non un emplacement. Les routes sont mesurées : chacune est une monnaie que cette instance a négociée.`,
+      `${approximate} ${plural(total, 'instance sur', 'instances sur')} ${total} ${plural(total, 'ne nomme', 'ne nomment')} aucun pays : leur point est une dispersion et non un emplacement. Les lignes sont réelles : chacune est un ordre de cette instance.`,
     describe: {
       empty: 'Aucun flux d’ordres à montrer.',
       flows: (arcs, currencies, instances) =>

@@ -54,11 +54,16 @@ test.describe('the overview', () => {
     await expect(orders).not.toHaveText(before ?? '')
   })
 
-  test('draws a market on the map for every currency it can place', async ({ page }) => {
+  test('draws the map, and no market while no instance is trading', async ({ page }) => {
+    // The fixture relay carries the archive and none of the instances' own
+    // order events, so the map is drawn and says nothing is trading now. The
+    // lines themselves are covered in tests/views/dashboard-routes.test.tsx,
+    // where the instances' keys are generated and their orders signed.
     await page.goto('/')
 
-    await expect(page.locator('[data-layer="currencies"] > g').first()).toBeVisible()
-    await expect(page.locator('[data-layer="arcs"] path').first()).toBeVisible()
+    await expect(page.locator('.b-map-canvas svg')).toBeVisible()
+    await expect(page.locator('.b-map-count strong')).toHaveText('0')
+    await expect(page.locator('[data-layer="arcs"] path')).toHaveCount(0)
   })
 
   test('keeps the explanation off the drawing at every width', async ({ page }) => {

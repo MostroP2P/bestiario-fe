@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { activeLines, type LiveOrder } from '~/model/live-lines'
+import { activeLines, activeMarkets, type LiveOrder } from '~/model/live-lines'
 
 const CFG = {
   graceMs: 10 * 60 * 1000,
+  liveWindowMs: 2 * 24 * 60 * 60 * 1000,
   liveStatuses: ['pending', 'in-progress'],
   settlingStatuses: ['success'],
   maxLines: 400,
@@ -12,6 +13,7 @@ const NOW = 1_700_000_000_000
 
 function order(over: Partial<LiveOrder> = {}): LiveOrder {
   return {
+    eventId: 'e1',
     id: 'a1',
     fiat: 'ARS',
     status: 'pending',
@@ -84,13 +86,45 @@ describe('activeLines', () => {
     expect(short).toEqual([])
   })
 
-  test('never expires a live order, however old it is', () => {
-    const stale = order({
-      status: 'in-progress',
-      updatedAt: NOW - 30 * 24 * 60 * 60 * 1000,
-    })
+  test('keeps a live order on the map inside the live window', () => {
+    const taken = order({ status: 'in-progress', updatedAt: NOW - CFG.liveWindowMs + 1 })
 
-    expect(activeLines([stale], NOW, CFG)).toHaveLength(1)
+    expect(activeLines([taken], NOW, CFG)).toHaveLength(1)
+  })
+
+  test('drops a live order its instance has not spoken of for the live window', () => {
+    // An instance that goes quiet would otherwise hold a line up forever.
+    const stale = order({ status: 'in-progress', updatedAt: NOW - CFG.liveWindowMs })
+
+    expect(activeLines([stale], NOW, CFG)).toEqual([])
+  })
+
+  test('draws an order once, at its newest status', () => {
+    // Arrange — the same order taken, then completed; a relay hands both.
+    const taken = order({ eventId: 'e1', status: 'in-progress', updatedAt: NOW - 60_000 })
+    const done = order({ eventId: 'e2', status: 'success', updatedAt: NOW - 30_000 })
+
+    // Act
+    const lines = activeLines([done, taken], NOW, CFG)
+
+    // Assert
+    expect(lines).toHaveLength(1)
+    expect(lines[0]?.phase).toBe('settling')
+  })
+
+  test('never lets an older revision bring back a canceled order', () => {
+    const taken = order({ eventId: 'e1', status: 'in-progress', updatedAt: NOW - 60_000 })
+    const canceled = order({ eventId: 'e2', status: 'canceled', updatedAt: NOW - 30_000 })
+
+    expect(activeLines([canceled, taken], NOW, CFG)).toEqual([])
+    expect(activeLines([taken, canceled], NOW, CFG)).toEqual([])
+  })
+
+  test('keeps the same id at two instances apart, because an order is the instance and its d', () => {
+    const here = order({ instancePubkey: 'npub-a' })
+    const there = order({ instancePubkey: 'npub-b' })
+
+    expect(activeLines([here, there], NOW, CFG)).toHaveLength(2)
   })
 
   test('draws nothing for a status that is neither live nor settling', () => {
@@ -125,5 +159,29 @@ describe('activeLines', () => {
     const twice = activeLines([...orders].reverse(), NOW, { ...CFG, maxLines: 2 })
 
     expect(once).toEqual(twice)
+  })
+})
+
+describe('activeMarkets', () => {
+  test('counts every market with a line, even past the drawing cap', () => {
+    // Arrange — three recent ARS orders fill a cap of three; an older USD
+    // order is still a trade in course.
+    const orders = [
+      ...Array.from({ length: 3 }, (_, i) => order({ id: `ars-${i}`, fiat: 'ARS' })),
+      order({ id: 'usd-1', fiat: 'USD', updatedAt: NOW - 60_000 }),
+    ]
+
+    // Act
+    const markets = activeMarkets(orders, NOW, { ...CFG, maxLines: 3 })
+
+    // Assert
+    expect(markets).toEqual([
+      { code: 'ARS', weight: 3 },
+      { code: 'USD', weight: 1 },
+    ])
+  })
+
+  test('leaves out a market whose only order drew no line', () => {
+    expect(activeMarkets([order({ status: 'canceled' })], NOW, CFG)).toEqual([])
   })
 })
