@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from 'vitest'
 import { cleanup, render } from '@testing-library/preact'
-import { WorldPulse, describeScene } from '~/components/WorldPulse'
+import { WorldPulse, describeScene, instanceFootprint } from '~/components/WorldPulse'
 import { buildScene, type Scene } from '~/map/scene'
 import { createProjection } from '~/map/projection'
 import type { Line } from '~/model/live-lines'
@@ -114,6 +114,38 @@ describe('WorldPulse', () => {
     // Assert
     expect(radii).toHaveLength(2)
     expect(Math.max(...radii)).toBeGreaterThan(Math.min(...radii))
+  })
+
+  test('keeps the busiest instance small enough that the lines reaching it stay visible', () => {
+    // Arrange — every line ends at one instance, so it is the peak and drawn
+    // at its largest. A mark the size of a currency's ring buried the ends of
+    // the very lines it is there to anchor.
+    const lines = Array.from({ length: 12 }, (_, i) => line({ orderId: `o${i}` }))
+
+    // Act
+    const { container } = draw(lines)
+    const mark = container.querySelector('[data-layer="instances"] rect')
+    const glow = container.querySelector('[data-layer="instances"] circle')
+
+    // Assert — the diamond's reach is its half-diagonal.
+    const reach = (Number(mark?.getAttribute('width')) / 2) * Math.SQRT2
+    expect(reach).toBeLessThanOrEqual(6)
+    expect(Number(glow?.getAttribute('r'))).toBeLessThanOrEqual(14)
+  })
+
+  test('reserves an unnamed instance its whole drawn ring, stroke included', () => {
+    // Arrange — the quietest instance on a busy map: its radius is near the
+    // scale's floor, where the diamond's diagonal is smaller than the ring an
+    // anchor is drawn with. Labels must still keep off the ring.
+    const r = 1.84
+
+    // Act
+    const anchor = instanceFootprint(r, false)
+    const named = instanceFootprint(r, true)
+
+    // Assert — a 2.5 px ring with a 1 px stroke reaches 3 px.
+    expect(anchor).toBeCloseTo(3)
+    expect(named).toBeCloseTo(r * Math.SQRT2)
   })
 
   test('gives the busiest market the same size whatever the network volume', () => {
