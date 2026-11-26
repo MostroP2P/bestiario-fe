@@ -116,6 +116,23 @@ describe('WorldPulse', () => {
     expect(Math.max(...radii)).toBeGreaterThan(Math.min(...radii))
   })
 
+  test('keeps the busiest instance small enough that the lines reaching it stay visible', () => {
+    // Arrange — every line ends at one instance, so it is the peak and drawn
+    // at its largest. A mark the size of a currency's ring buried the ends of
+    // the very lines it is there to anchor.
+    const lines = Array.from({ length: 12 }, (_, i) => line({ orderId: `o${i}` }))
+
+    // Act
+    const { container } = draw(lines)
+    const mark = container.querySelector('[data-layer="instances"] rect')
+    const glow = container.querySelector('[data-layer="instances"] circle')
+
+    // Assert — the diamond's reach is its half-diagonal.
+    const reach = (Number(mark?.getAttribute('width')) / 2) * Math.SQRT2
+    expect(reach).toBeLessThanOrEqual(6)
+    expect(Number(glow?.getAttribute('r'))).toBeLessThanOrEqual(14)
+  })
+
   test('gives the busiest market the same size whatever the network volume', () => {
     // A map of a quiet day and a map of a busy one read alike; the figures
     // themselves are in the table, where they can be compared without

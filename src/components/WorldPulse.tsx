@@ -69,13 +69,28 @@ function arcStyle(arc: SceneArc) {
  * figures themselves are in the table below, where a reader can compare them
  * without measuring a circle.
  */
-const MIN_RADIUS = 2.4
-const MAX_RADIUS = 11
+const CURRENCY_SCALE = { min: 2.4, max: 11 }
 
-function radiusFor(weight: number, peak: number): number {
-  if (peak <= 0) return MIN_RADIUS
+/**
+ * An instance's mark is the end of every line it runs, not a measure of
+ * anything the reader compares: it only has to say "a mostro is here". On
+ * the currencies' scale the busiest one became a diamond reaching past its
+ * own lines, and the orders it anchors disappeared under it. Its own,
+ * smaller scale keeps the ends of the lines in sight.
+ */
+const INSTANCE_SCALE = { min: 1.6, max: 4 }
+
+/** How far an instance's glow reaches, in multiples of its mark. */
+const INSTANCE_GLOW = 3
+
+function radiusFor(
+  weight: number,
+  peak: number,
+  scale: { readonly min: number; readonly max: number },
+): number {
+  if (peak <= 0) return scale.min
   const share = Math.sqrt(Math.max(0, weight) / peak)
-  return MIN_RADIUS + share * (MAX_RADIUS - MIN_RADIUS)
+  return scale.min + share * (scale.max - scale.min)
 }
 
 export function WorldPulse(props: WorldPulseProps) {
@@ -85,15 +100,17 @@ export function WorldPulse(props: WorldPulseProps) {
   const nodes = useMemo(() => {
     const instancePeak = Math.max(1, ...scene.instances.map((i) => i.lines))
     const currencyPeak = Math.max(1, ...scene.currencies.map((c) => c.weight))
-    const instances = scene.instances.map((i) => ({
-      ...i,
-      key: `i:${i.pubkey}`,
-      r: radiusFor(i.lines, instancePeak),
-    }))
+    const instances = scene.instances.map((i) => {
+      const r = radiusFor(i.lines, instancePeak, INSTANCE_SCALE)
+      // The mark is a square turned on its corner, so it reaches further
+      // than its radius by the diagonal. Its label and its footprint start
+      // there, not at the radius, or the label sits on the next node over.
+      return { ...i, key: `i:${i.pubkey}`, r, reach: r * Math.SQRT2 }
+    })
     const currencies = scene.currencies.map((c) => ({
       ...c,
       key: `c:${c.code}`,
-      r: radiusFor(c.weight, currencyPeak),
+      r: radiusFor(c.weight, currencyPeak, CURRENCY_SCALE),
     }))
 
     // Busiest first: when two labels cannot both fit, the one carrying more
@@ -106,7 +123,7 @@ export function WorldPulse(props: WorldPulseProps) {
         .map((n) => ({
           key: n.key,
           lines: n.lines,
-          x: n.xy[0] + n.r + 5,
+          x: n.xy[0] + n.reach + 5,
           y: n.xy[1] + 3,
           text: n.label,
         })),
@@ -125,14 +142,7 @@ export function WorldPulse(props: WorldPulseProps) {
     // not its own. The glow around a node is decoration and is not an
     // obstacle; the mark itself is.
     const markers: Marker[] = [
-      // An instance's mark is a square turned on its corner, so it reaches
-      // further than its radius by the diagonal.
-      ...instances.map((n) => ({
-        key: n.key,
-        x: n.xy[0],
-        y: n.xy[1],
-        r: n.r * Math.SQRT2,
-      })),
+      ...instances.map((n) => ({ key: n.key, x: n.xy[0], y: n.xy[1], r: n.reach })),
       ...currencies.map((n) => ({ key: n.key, x: n.xy[0], y: n.xy[1], r: n.r })),
     ]
 
@@ -253,7 +263,7 @@ export function WorldPulse(props: WorldPulseProps) {
                   <circle
                     cx={instance.xy[0]}
                     cy={instance.xy[1]}
-                    r={r * 3.2}
+                    r={r * INSTANCE_GLOW}
                     fill="url(#wp-glow-instance)"
                   />
                   <rect
@@ -281,7 +291,7 @@ export function WorldPulse(props: WorldPulseProps) {
                 />
               )}
               {named && nodes.shown.has(instance.key) && (
-                <NodeLabel node={instance.xy} r={r} text={instance.label} />
+                <NodeLabel node={instance.xy} r={instance.reach} text={instance.label} />
               )}
             </g>
           )
