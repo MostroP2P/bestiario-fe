@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from 'vitest'
 import { cleanup, render } from '@testing-library/preact'
-import { WorldPulse, describeScene } from '~/components/WorldPulse'
+import { WorldPulse, describeScene, instanceFootprint } from '~/components/WorldPulse'
 import { buildScene, type Scene } from '~/map/scene'
 import { createProjection } from '~/map/projection'
 import type { Line } from '~/model/live-lines'
@@ -131,6 +131,21 @@ describe('WorldPulse', () => {
     const reach = (Number(mark?.getAttribute('width')) / 2) * Math.SQRT2
     expect(reach).toBeLessThanOrEqual(6)
     expect(Number(glow?.getAttribute('r'))).toBeLessThanOrEqual(14)
+  })
+
+  test('reserves an unnamed instance its whole drawn ring, stroke included', () => {
+    // Arrange — the quietest instance on a busy map: its radius is near the
+    // scale's floor, where the diamond's diagonal is smaller than the ring an
+    // anchor is drawn with. Labels must still keep off the ring.
+    const r = 1.84
+
+    // Act
+    const anchor = instanceFootprint(r, false)
+    const named = instanceFootprint(r, true)
+
+    // Assert — a 2.5 px ring with a 1 px stroke reaches 3 px.
+    expect(anchor).toBeCloseTo(3)
+    expect(named).toBeCloseTo(r * Math.SQRT2)
   })
 
   test('gives the busiest market the same size whatever the network volume', () => {

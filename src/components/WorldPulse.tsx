@@ -83,6 +83,22 @@ const INSTANCE_SCALE = { min: 1.6, max: 4 }
 /** How far an instance's glow reaches, in multiples of its mark. */
 const INSTANCE_GLOW = 3
 
+/** An anchor's ring: never thinner than a pixel-and-a-half circle can read. */
+function anchorRadius(r: number): number {
+  return Math.max(2.5, r * 0.7)
+}
+
+/**
+ * How far an instance's mark reaches from its centre, which is the footprint
+ * labels keep off and where its own label starts. A named instance is a
+ * diamond and reaches by its diagonal; an anchor is a ring with a one-pixel
+ * stroke, half of which lies outside its radius. Near the scale's floor the
+ * ring is the larger of the two, so each is measured as it is drawn.
+ */
+export function instanceFootprint(r: number, named: boolean): number {
+  return named ? r * Math.SQRT2 : anchorRadius(r) + 0.5
+}
+
 function radiusFor(
   weight: number,
   peak: number,
@@ -102,10 +118,14 @@ export function WorldPulse(props: WorldPulseProps) {
     const currencyPeak = Math.max(1, ...scene.currencies.map((c) => c.weight))
     const instances = scene.instances.map((i) => {
       const r = radiusFor(i.lines, instancePeak, INSTANCE_SCALE)
-      // The mark is a square turned on its corner, so it reaches further
-      // than its radius by the diagonal. Its label and its footprint start
-      // there, not at the radius, or the label sits on the next node over.
-      return { ...i, key: `i:${i.pubkey}`, r, reach: r * Math.SQRT2 }
+      // Its label and its footprint start where the mark ends, not at the
+      // radius, or the label sits on the next node over.
+      return {
+        ...i,
+        key: `i:${i.pubkey}`,
+        r,
+        reach: instanceFootprint(r, i.label.length > 0),
+      }
     })
     const currencies = scene.currencies.map((c) => ({
       ...c,
@@ -282,7 +302,7 @@ export function WorldPulse(props: WorldPulseProps) {
                 <circle
                   cx={instance.xy[0]}
                   cy={instance.xy[1]}
-                  r={Math.max(2.5, r * 0.7)}
+                  r={anchorRadius(r)}
                   fill="none"
                   stroke={PALETTE.instance}
                   stroke-width="1"
