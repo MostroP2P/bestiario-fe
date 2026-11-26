@@ -68,8 +68,17 @@ function arcStyle(arc: SceneArc) {
  * the peak keeps the map readable whatever the network's volume, and the
  * figures themselves are in the table below, where a reader can compare them
  * without measuring a circle.
+ *
+ * The ceiling is low for the same reason. The lines are the orders; a
+ * currency is where they start, and at 11 px with a wide glow the busiest
+ * ones merged with their neighbours into one blot and hid the ends of their
+ * own lines. Size still ranks them, within a range that leaves the lines on
+ * top.
  */
-const CURRENCY_SCALE = { min: 2.4, max: 11 }
+const CURRENCY_SCALE = { min: 2.4, max: 6 }
+
+/** How far a currency's glow reaches, in multiples of its ring. */
+const CURRENCY_GLOW = 2.5
 
 /**
  * An instance's mark is the end of every line it runs, not a measure of
@@ -326,7 +335,7 @@ export function WorldPulse(props: WorldPulseProps) {
               <circle
                 cx={currency.xy[0]}
                 cy={currency.xy[1]}
-                r={r * 3.4}
+                r={r * CURRENCY_GLOW}
                 fill="url(#wp-glow-currency)"
               />
               <circle

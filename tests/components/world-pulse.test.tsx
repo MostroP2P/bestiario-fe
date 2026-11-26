@@ -148,6 +148,23 @@ describe('WorldPulse', () => {
     expect(named).toBeCloseTo(r * Math.SQRT2)
   })
 
+  test('keeps the busiest currency from swallowing its neighbours and the lines into it', () => {
+    // Arrange — one currency carries every line, so it is drawn at its
+    // largest. At 11 px with a glow three and a half times that, neighbouring
+    // currencies merged into one blot and the ends of the lines were lost.
+    const lines = Array.from({ length: 12 }, (_, i) => line({ orderId: `o${i}` }))
+
+    // Act
+    const { container } = draw(lines)
+    const [glow, ring] = [
+      ...container.querySelectorAll('[data-layer="currencies"] circle'),
+    ]
+
+    // Assert
+    expect(Number(ring?.getAttribute('r'))).toBeLessThanOrEqual(6)
+    expect(Number(glow?.getAttribute('r'))).toBeLessThanOrEqual(15)
+  })
+
   test('gives the busiest market the same size whatever the network volume', () => {
     // A map of a quiet day and a map of a busy one read alike; the figures
     // themselves are in the table, where they can be compared without
